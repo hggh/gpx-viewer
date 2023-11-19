@@ -1,0 +1,15 @@
+Django
+django-extensions
+
+psycopg2
+pyyml
+
+gpx
+overpy
+numpy
+pandas
+
+pycodestyle
+
+redis
+celery==5.3.5

@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{{object.name }}</h1>
+
+<label for="inputPassword5" class="form-label">OpenStreetMap language:</label>
+<select class="form-select form-select-sm" aria-label="OSM language" id="osm_tile_lang">
+    <option value="https://tile.openstreetmap.de/{z}/{x}/{y}.png" selected>german</option>
+    <option value="https://tile.openstreetmap.org/{z}/{x}/{y}.png">english</option>
+</select>
+
+
+{% if object.job_status == False %}
+<div class="alert alert-warning" role="alert">
+    OSM Query is not done ... please click <a href="">reload</a>
+</div>
+{% endif %}
+
+<div class="container-xxl">
+    <div id="map" style="width: 900px; height: 500px;"></div>
+</div>
+
+<div class="container" style="border: solid; border-width:1px;">
+    Download Infomation as GPX Waypoint Track
+    <form method="POST" action="/gpxtrack/{{object.slug}}/download">
+        {% csrf_token %}
+        <input type="hidden" name="slug" value="{{object.slug}}"/>
+        <select name="waypoint_types" class="form-select-sm" multiple aria-label="Multiple select example">
+            {% for waypoint_type in waypoint_types %}
+            <option selected value="{{waypoint_type.pk}}">{{waypoint_type.name }}</option>
+            {% endfor %}
+        </select>
+
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary">Download Waypoints</button>
+        </div>
+        
+    </form>
+</div>
+
+<ul class="nav nav-tabs" id="myTab" role="tablist">
+    {% for wpt in waypoint_types %}
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="{{ wpt.html_id }}-tab" data-bs-toggle="tab" data-bs-target="#{{ wpt.html_id }}-tab-pane" type="button" role="tab" aria-controls="{{ wpt.html_id }}-tab-pane" aria-selected="true">{{wpt.name}} <img src="{{wpt.marker_image_path}}" /></button>
+        </li>
+    {% endfor %}
+  </ul>
+  <div class="tab-content" id="myTabContent">
+    {% for wpt in object.get_waypoint_types_with_entries %}
+    <div class="tab-pane fade" id="{{wpt.object.html_id }}-tab-pane" role="tabpanel" aria-labelledby="{{wpt.object.html_id }}-tab" tabindex="0">
+        <table class="table table-hover">
+        <tbody>
+        {% for wp in wpt.waypoints %}
+            <tr>
+                <td>{{ wp.name }} / {{ wp.id }}</td>
+                <td>{% if wp.get_url %}<a href="{{wp.get_url}}" target="_blank">{{wp.get_url }}{% endif %}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+        </table>
+    </div>
+    {% endfor %}
+  </div>
+  
+
+<script>
+    var osm_query_feature = false;
+    const map = L.map('map').setView([51.505, 10.09], 3);
+    
+    const tiles = L.tileLayer('https://tile.openstreetmap.de/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(map);
+
+    map.on('click', function(e) {
+        if (osm_query_feature) {
+            osm_query_feature = false;
+            document.getElementById('map').style.cursor = '';
+            window.open(
+                "https://www.openstreetmap.org/query?lat=" + e.latlng.lat + "&lon=" + e.latlng.lng,
+                "_blank"
+            );
+        }
+    });
+
+    L.Control.QueryOSM = L.Control.extend({
+        pressed_query: function(e) {
+            if (osm_query_feature == false) {
+                document.getElementById('map').style.cursor = 'crosshair';
+            }
+            else {
+                document.getElementById('map').style.cursor = '';
+            }
+            osm_query_feature = !osm_query_feature;
+            e.stopPropagation();
+        },
+        onAdd: function(map) {
+            this.map = map;
+            var img = L.DomUtil.create('img', 'foobar');
+            img.src = '/static/patch-question.png';
+            img.title = "Query OpenStreetmap Object";
+
+            L.DomEvent.on(img, 'click', this.pressed_query, this);
+            return img;
+        },
+        onRemove: function(map) {
+        }
+    });
+    
+    L.control.queryosm = function(opts) {
+        return new L.Control.QueryOSM(opts);
+    }
+    
+    L.control.queryosm({ position: 'topleft' }).addTo(map);
+
+    document.querySelector("#osm_tile_lang").addEventListener("change", (event) => {
+        tiles.setUrl(event.target.value);
+    });
+
+    {% for w in object.waypoints.all %}
+    var m = L.marker([{{ w.location.x }}, {{ w.location.y }}]);
+    {% if w.get_marker_content %}
+    m.bindPopup('{{w.get_marker_content}}').openPopup();
+    {% endif %}
+    m.setIcon(L.icon({
+        iconUrl: '{{w.waypoint_type.marker_image_path}}',
+        className: '{{w.get_marker_css_name}}',
+    }));
+    m.addTo(map);
+    {% endfor %}
+
+
+    var track_points = {{object.leaflet_polyline}};
+    var polyline = L.polyline(track_points, {color: 'red'}).addTo(map);
+    map.fitBounds(polyline.getBounds());
+</script>    
+{% endblock %}

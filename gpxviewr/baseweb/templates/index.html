@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+
+<form method="post" id="gpx_track_upload" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <div class="row mb-3">
+        <label for="inputFile" class="col-sm-2 col-form-label">GPX Track</label>
+        <div class="col-sm-10">
+            <input type="file" class="form-control" name="file" required id="id_file">
+        </div>
+    </div>
+    {% for wpt in waypoint_types %}
+    <div class="row mb-3 waypoint_types" data-wpt-name="{{wpt.name}}" data-wpt-name-html="{{wpt.html_id}}">
+        <label for="input_{{wpt.html_id}}" class="col-sm-2 col-form-label">{{ wpt.name }}</label>
+        <div class="col-sm-10">
+            <input class="form-check-input" type="checkbox" value="" id="{{wpt.html_id}}" checked>
+            <label class="form-check-label" for="flexCheckChecked">
+            </label>
+            <input type="number" class="form-control" id="{{wpt.html_id}}_around" value="{{ wpt.around }}" min="0" max="{{ wpt.around_max }}" step="10" required>
+            <label class="form-check-label" for="flexCheckChecked">meters</label>
+        </div>
+    </div>
+    {% endfor %}
+    <input type="hidden" name="wpt_options" value="{dd:ddd}" id="wpt_options">
+    <button type="submit" class="btn btn-primary">Upload GPX Track!</button>
+</form>
+
+<script>
+    var f = document.querySelector("#gpx_track_upload")
+    f.onsubmit = function() {
+        var data = {};
+        var waypoint_types = document.querySelectorAll('.waypoint_types');
+        for (var i =0; i < waypoint_types.length; i++) {
+            var name = waypoint_types[i].dataset.wptName;
+            var name_html = waypoint_types[i].dataset.wptNameHtml;
+            data[name] = {
+                'enabled': document.querySelector("#" + name_html).checked,
+                'around': document.querySelector("#" + name_html + "_around").value
+            };
+        }
+        document.querySelector("#wpt_options").value = JSON.stringify(data);
+    };
+</script>
+{% endblock %}

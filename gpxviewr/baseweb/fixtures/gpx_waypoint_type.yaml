@@ -1,0 +1,30 @@
+- model: baseweb.GPXWayPointType
+  pk: 1
+  fields:
+    name: toilets
+    gpx_sym_name: Restroom
+    osm_name: amenity
+    osm_value: toilets
+    around: 600
+    around_max: 5000
+    marker_filename: marker_toilets.png
+- model: baseweb.GPXWayPointType
+  pk: 2
+  fields:
+    name: camping
+    gpx_sym_name: Campground
+    osm_name: tourism
+    osm_value: camp_site
+    around: 5000
+    around_max: 10000
+    marker_filename: marker_camp_site.png
+- model: baseweb.GPXWayPointType
+  pk: 3
+  fields:
+    name: drinking water
+    gpx_sym_name: Drinking Water
+    osm_name: amenity
+    osm_value: drinking_water
+    around: 600
+    around_max: 2000
+    marker_filename: marker_drinking_water.png
