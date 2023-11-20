@@ -141,6 +141,9 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 # 2 weeks
 SESSION_COOKIE_AGE = 1209600
 
+
+LOCAL_STORAGE_DIRECTORY = Path.joinpath(BASE_DIR, 'storage-fs')
+
 try:
     from .local_settings import *
 except ImportError:

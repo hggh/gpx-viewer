@@ -20,7 +20,7 @@ import pandas
 from gpx import GPX, Waypoint
 
 
-fs = FileSystemStorage(location=Path.joinpath(settings.BASE_DIR, 'storage-fs'))
+fs = FileSystemStorage(location=settings.LOCAL_STORAGE_DIRECTORY)
 
 
 def generate_slug_token():
