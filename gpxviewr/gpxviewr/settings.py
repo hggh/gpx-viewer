@@ -140,3 +140,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 # 2 weeks
 SESSION_COOKIE_AGE = 1209600
+
+try:
+    from .local_settings import *
+except ImportError:
+    print("Could not load local_settings.py")

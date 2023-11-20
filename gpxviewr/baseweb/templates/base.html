@@ -32,6 +32,18 @@
 	</style>
 </head>
 <body>
-    {% block content %}{% endblock%}
+	<nav class="navbar navbar-dark bg-dark">
+		<span class="navbar-brand">GPX / OSM Tool</span>
+
+		<a href="/"><button class="btn btn-outline-info my-2 my-sm-0">Upload new GPX Track</button></a>
+	</nav>
+	<div class="container-fluid">
+		{% block content %}{% endblock%}
+	</div>
+
+	<hr/>
+	<footer class="">
+		Jonas Genannt (<a href="https://github.com/hggh/gpx-viewer">GitHub</a>)
+	</footer>
 </body>
 </html>

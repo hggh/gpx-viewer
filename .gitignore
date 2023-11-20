@@ -1,4 +1,5 @@
 gpxviewr/storage-fs
+gpxviewr/gpxviewr/local_settings.py
 
 # Django #
 *.log
