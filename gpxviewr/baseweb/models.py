@@ -91,7 +91,7 @@ class GPXTrack(TimeStampedModel):
 
         return points
 
-    def generate_waypoints(self, point_type, around_meters=None):
+    def generate_waypoints(self, point_type, around_meters=None, around_duplicate=0):
         if around_meters is None:
             around_meters = point_type.around
 
@@ -110,7 +110,8 @@ class GPXTrack(TimeStampedModel):
                         self.query_data_osm(
                             points=points,
                             around_meters=around_meters,
-                            point_type=point_type
+                            point_type=point_type,
+                            around_duplicate=around_duplicate,
                         )
                         time.sleep(1)
                         points = []
@@ -119,11 +120,12 @@ class GPXTrack(TimeStampedModel):
                 self.query_data_osm(
                     points=points,
                     around_meters=around_meters,
-                    point_type=point_type
+                    point_type=point_type,
+                    around_duplicate=around_duplicate,
                 )
                 time.sleep(1)
 
-    def query_data_osm(self, points, around_meters, point_type):
+    def query_data_osm(self, points, around_meters, point_type, around_duplicate):
         track_points = pandas.DataFrame(points, columns=["lat", "lon"])
         track_latlong_flatten = ",".join(track_points.to_numpy().flatten().astype("str"))
 
@@ -147,9 +149,8 @@ class GPXTrack(TimeStampedModel):
             if "name" in node.tags:
                 wp.name = node.tags.get("name")
 
-            # since splitting check if we have it already?
             c = GPXTrackWayPoint.objects.all().filter(
-                location__distance_lt=(Point([node.lat, node.lon]), Distance(m=4)),
+                location__distance_lt=(Point([node.lat, node.lon]), Distance(m=around_duplicate)),
                 waypoint_type=point_type,
                 gpx_track=self,
             )
@@ -166,9 +167,8 @@ class GPXTrack(TimeStampedModel):
             if "name" in way.tags:
                 wp.name = way.tags.get("name")
 
-            # since splitting check if we have it already?
             c = GPXTrackWayPoint.objects.all().filter(
-                location__distance_lt=(Point([way.center_lat, way.center_lon]), Distance(m=4)),
+                location__distance_lt=(Point([way.center_lat, way.center_lon]), Distance(m=around_duplicate)),
                 waypoint_type=point_type,
                 gpx_track=self,
             )
@@ -183,6 +183,7 @@ class GPXWayPointType(models.Model):
     osm_value = models.TextField(max_length=100, null=False, blank=False)
     around = models.IntegerField(null=False, blank=False)
     around_max = models.IntegerField(null=False, blank=False)
+    around_duplicate = models.IntegerField(null=False, blank=False, default=3000)
     marker_filename = models.CharField(max_length=100, null=True)
 
     def __str__(self):

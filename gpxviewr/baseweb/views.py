@@ -62,8 +62,6 @@ class GPXTrackDownloadView(FormView):
 
         gpx_file = self.object.generate_download_gpx_file(waypoint_types)
 
-        print(gpx_file)
-
         r = FileResponse(gpx_file, as_attachment=True, filename='waypoints.gpx')
         r['Content-Disposition'] = 'attachment; filename={0}'.format("waypoints.gpx")
 

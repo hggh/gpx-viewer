@@ -7,6 +7,7 @@
     osm_value: toilets
     around: 600
     around_max: 5000
+    around_duplicate: 3000
     marker_filename: marker_toilets.png
 - model: baseweb.GPXWayPointType
   pk: 2
@@ -17,6 +18,7 @@
     osm_value: camp_site
     around: 5000
     around_max: 10000
+    around_duplicate: 3000
     marker_filename: marker_camp_site.png
 - model: baseweb.GPXWayPointType
   pk: 3
@@ -27,4 +29,16 @@
     osm_value: drinking_water
     around: 600
     around_max: 2000
+    around_duplicate: 3000
     marker_filename: marker_drinking_water.png
+- model: baseweb.GPXWayPointType
+  pk: 4
+  fields:
+    name: fuel/gas station
+    gpx_sym_name: Gas Station
+    osm_name: amenity
+    osm_value: fuel
+    around: 100
+    around_max: 300
+    around_duplicate: 10000
+    marker_filename: marker_fuel.png
