@@ -7,8 +7,6 @@ from datetime import timedelta
 from django.utils import timezone
 from django.core.files.storage import FileSystemStorage
 from django.conf import settings
-from django.utils.html import escape
-from django.utils.safestring import mark_safe
 from django.contrib.gis.db import models
 from django.contrib.gis.measure import Distance
 from django.contrib.gis.geos import Point
@@ -214,15 +212,20 @@ class GPXTrackWayPoint(TimeStampedModel):
 
     location = models.PointField(geography=True, default=Point(0.0, 0.0), db_index=True)
 
-    def get_marker_content(self):
-        content = ''
-        if self.is_camping_site():
-            if self.name:
-                content = self.name
-            if self.get_url():
-                content += ' <a href="{}" target="_blank">{}</a>'.format(self.get_url(), self.get_url())
+    def get_json_data(self):
+        data = {
+            "lat": self.location.x,
+            "lon": self.location.y,
+            "class_name": self.get_marker_css_name(),
+            "url": self.get_url(),
+            "name": self.name,
+            "waypoint_type": {
+                "html_id": self.waypoint_type.html_id(),
+                "marker_image_path": self.waypoint_type.marker_image_path(),
 
-        return mark_safe(content)
+            }
+        }
+        return data
 
     def get_marker_css_name(self):
         if self.is_camping_site() is True and self.get_url():

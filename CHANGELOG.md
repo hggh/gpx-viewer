@@ -1,6 +1,10 @@
 # CHANGELOG
 
 
+### XX. November 2023
+
+ * use XMLHttpRequest to get waypoint information to generate it in JavaScript
+
 ### 24. November 2023
 
  * add fuel/gas station

@@ -3,7 +3,7 @@ from django import http
 from django.forms.forms import BaseForm
 from django.shortcuts import render
 from django.views.generic import TemplateView, CreateView, DetailView, FormView
-from django.http import FileResponse
+from django.http import FileResponse, HttpRequest, HttpResponse, JsonResponse
 
 from .models import (
     GPXTrack,
@@ -49,6 +49,20 @@ class GPXTrackDetailView(DetailView):
 
         context['waypoint_types'] = GPXWayPointType.objects.all()
         return context
+
+
+class GPXTrackWaypointView(DetailView):
+    template_name = 'foo'
+    model = GPXTrack
+
+    def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        self.object = self.get_object()
+
+        data = []
+        for w in self.object.waypoints.all():
+            data.append(w.get_json_data())
+
+        return JsonResponse({"waypoints": data})
 
 
 class GPXTrackDownloadView(FormView):

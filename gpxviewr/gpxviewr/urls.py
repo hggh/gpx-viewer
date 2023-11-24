@@ -22,6 +22,7 @@ from django.conf.urls.static import static
 from baseweb.views import (
     RobotsTxtView,
     GPXTrackDetailView,
+    GPXTrackWaypointView,
     GPXTrackDownloadView,
     IndexView,
 )
@@ -31,5 +32,6 @@ urlpatterns = [
     path('', IndexView.as_view(), name='root'),
     path('gpxtrack/<slug:slug>', GPXTrackDetailView.as_view(), name='gpx-track-detail'),
     path('gpxtrack/<slug:slug>/download', GPXTrackDownloadView.as_view(), name='gpx-track-download-detail'),
+    path('gpxtrack/<slug:slug>/waypoints', GPXTrackWaypointView.as_view(), name='gpx-track-waypoints-detail'),
     path('admin/', admin.site.urls),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

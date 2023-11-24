@@ -118,22 +118,43 @@
         tiles.setUrl(event.target.value);
     });
 
-    {% for w in object.waypoints.all %}
-    var m = L.marker([{{ w.location.x }}, {{ w.location.y }}]);
-    {% if w.get_marker_content %}
-    m.bindPopup('{{w.get_marker_content}}').openPopup();
-    {% endif %}
-    m.setIcon(L.icon({
-        iconUrl: '{{w.waypoint_type.marker_image_path}}',
-        className: '{{w.get_marker_css_name}}',
-    }));
-    m.addTo(map);
-    {% endfor %}
+    var waypoints_url = "{% url 'gpx-track-waypoints-detail' object.slug %}";
+    var waypoints_request = new XMLHttpRequest();
+    waypoints_request.open('GET', waypoints_url);
 
+    var waypoints_data = [];
+    waypoints_request.addEventListener('load', function(event) {
+        waypoints_data = JSON.parse(waypoints_request.responseText)["waypoints"];
+        setUpMarks(waypoints_data);
+
+    });
+    waypoints_request.send();
 
     var track_points = {{object.leaflet_polyline}};
     var polyline = L.polyline(track_points, {color: 'red'}).addTo(map);
     map.fitBounds(polyline.getBounds());
+
+
+    function setUpMarks(waypoints) {
+        for (const waypoint of waypoints) {
+            var m = L.marker([waypoint.lat, waypoint.lon]);
+            m.setIcon(L.icon({
+                iconUrl: waypoint.waypoint_type.marker_image_path,
+                className: waypoint.class_name,
+            }));
+            if (waypoint.name != "" || waypoint.url != null) {
+                var content = "";
+                if (waypoint.name != "") {
+                    content += "<b>" + waypoint.name + "</b><br/>";
+                }
+                if (waypoint.url != null) {
+                    content += "Homepage: <a href='" + waypoint.url + "' target='_blank'>" + waypoint.url + "</a>";
+                }
+                m.bindPopup(content).openPopup();
+            }
+            m.addTo(map);
+        }
+    }
 </script>
 </main>
 {% endblock %}
