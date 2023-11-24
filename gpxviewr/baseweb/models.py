@@ -197,6 +197,14 @@ class GPXWayPointType(models.Model):
     def __str__(self):
         return self.name
 
+    def get_json_data(self):
+        data = {
+            "name": self.name,
+            "html_id": self.html_id(),
+            "marker_image_path": self.marker_image_path(),
+        }
+        return data
+
     def html_id(self):
         return "{}_{}".format(self.osm_name, self.osm_value)
 

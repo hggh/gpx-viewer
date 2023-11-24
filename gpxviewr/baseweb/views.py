@@ -58,11 +58,15 @@ class GPXTrackWaypointView(DetailView):
     def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         self.object = self.get_object()
 
-        data = []
+        waypoints_data = []
         for w in self.object.waypoints.all():
-            data.append(w.get_json_data())
+            waypoints_data.append(w.get_json_data())
 
-        return JsonResponse({"waypoints": data})
+        waypoint_types_data = []
+        for wt in GPXWayPointType.objects.all():
+            waypoint_types_data.append(wt.get_json_data())
+
+        return JsonResponse({"waypoints": waypoints_data, "waypoint_types": waypoint_types_data})
 
 
 class GPXTrackDownloadView(FormView):

@@ -122,9 +122,14 @@
     var waypoints_request = new XMLHttpRequest();
     waypoints_request.open('GET', waypoints_url);
 
+    var map_layer_groups = {};
     var waypoints_data = [];
+    var waypoint_types_data = [];
     waypoints_request.addEventListener('load', function(event) {
-        waypoints_data = JSON.parse(waypoints_request.responseText)["waypoints"];
+        var d = JSON.parse(waypoints_request.responseText);
+        waypoints_data = d["waypoints"];
+        waypoint_types_data = d["waypoint_types"];
+        setUpLayerGroups(waypoint_types_data);
         setUpMarks(waypoints_data);
 
     });
@@ -135,6 +140,12 @@
     map.fitBounds(polyline.getBounds());
 
 
+    function setUpLayerGroups(waypoint_types) {
+        for (const wt of waypoint_types) {
+            map_layer_groups[wt.html_id] = L.layerGroup();
+            map_layer_groups[wt.html_id].addTo(map);
+        }
+    }
     function setUpMarks(waypoints) {
         for (const waypoint of waypoints) {
             var m = L.marker([waypoint.lat, waypoint.lon]);
@@ -152,7 +163,7 @@
                 }
                 m.bindPopup(content).openPopup();
             }
-            m.addTo(map);
+            m.addTo(map_layer_groups[waypoint.waypoint_type.html_id]);
         }
     }
 </script>

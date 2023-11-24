@@ -4,6 +4,7 @@
 ### XX. November 2023
 
  * use XMLHttpRequest to get waypoint information to generate it in JavaScript
+ * Marker to LayerGroups in Leaflet
 
 ### 24. November 2023
 
