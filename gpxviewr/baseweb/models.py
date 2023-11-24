@@ -1,7 +1,10 @@
 from pathlib import Path
 import secrets
 import time
+import os
+from datetime import timedelta
 
+from django.utils import timezone
 from django.core.files.storage import FileSystemStorage
 from django.conf import settings
 from django.utils.html import escape
@@ -10,6 +13,8 @@ from django.contrib.gis.db import models
 from django.contrib.gis.measure import Distance
 from django.contrib.gis.geos import Point
 from django.urls import reverse
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
 
 from django_extensions.db.models import TimeStampedModel
 
@@ -27,12 +32,17 @@ def generate_slug_token():
     return secrets.token_urlsafe(30)
 
 
+def generate_default_delete_after_date():
+    return (timezone.now() + timedelta(days=10)).strftime('%Y-%m-%d')
+
+
 class GPXTrack(TimeStampedModel):
     slug = models.SlugField(default=generate_slug_token, editable=False, max_length=50)
     name = models.TextField(max_length=100, null=False, blank=False)
     tracks = models.IntegerField(default=1, null=False)
     wpt_options = models.JSONField(default=dict)
     job_status = models.BooleanField(default=False, null=False)
+    delete_after = models.DateField(null=False, blank=False)
 
     file = models.FileField(storage=fs, upload_to="gpx_track/%Y/%m/%d/")
 
@@ -44,7 +54,7 @@ class GPXTrack(TimeStampedModel):
 
     def save(self, **kwargs):
         if self.name is None or self.name == '':
-            self.name = self.file.name
+            self.name = self.file.name.replace('.gpx', '')
 
         return super().save(**kwargs)
 
@@ -106,7 +116,7 @@ class GPXTrack(TimeStampedModel):
                     points.append((point.lat, point.lon))
                     curr += 1
 
-                    if curr == 1000:
+                    if curr == 2000:
                         self.query_data_osm(
                             points=points,
                             around_meters=around_meters,
@@ -226,3 +236,10 @@ class GPXTrackWayPoint(TimeStampedModel):
         if self.waypoint_type.osm_value == 'camp_site':
             return True
         return False
+
+
+@receiver(post_delete, sender=GPXTrack)
+def gpx_track_delete_file(sender, instance, *args, **kwargs):
+    p = instance.file.path
+    if os.path.exists(p):
+        os.remove(p)

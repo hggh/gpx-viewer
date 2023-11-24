@@ -1,3 +1,6 @@
+import logging
+
+from django.utils import timezone
 from baseweb.models import (
     GPXTrack,
     GPXWayPointType,
@@ -33,3 +36,13 @@ def gpx_track_query_osm(gpx_track_pk):
 
     g.job_status = True
     g.save()
+
+
+@shared_task
+def gpx_track_delete_after_days():
+    logger = logging.getLogger(__name__)
+
+    for gpx_track in GPXTrack.objects.all().filter(delete_after__lte=timezone.now()):
+        logger.warning(f"Delete Track {gpx_track.name}/{gpx_track.pk} delete date: {gpx_track.delete_after}")
+        gpx_track.delete()
+        # FIXME: auch das File löschen!

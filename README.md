@@ -4,6 +4,15 @@
 Demo: https://gpxviewr.genannt.name/gpxtrack/agaxdfkIoP5msdVKgNxtSjx9qz9yqWPICbzUkKyh
 
 
-## planed features
+## development
 
-* Tankstellen
+docker compose up -d
+
+
+run celery:
+
+celery -A gpxviewr worker -l INFO -B
+
+run webserver:
+
+./manage.py runserver

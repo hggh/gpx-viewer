@@ -8,6 +8,7 @@ from django.http import FileResponse
 from .models import (
     GPXTrack,
     GPXWayPointType,
+    generate_default_delete_after_date,
 )
 
 from .forms import (

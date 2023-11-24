@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+from celery.schedules import crontab
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -125,6 +126,12 @@ CELERY_TIMEZONE = "Europe/Berlin"
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
 CELERY_BROKER_URL = 'redis://localhost'
+CELERY_BEAT_SCHEDULE = {
+    'gpx_track_delete_after_days': {
+        'task': 'baseweb.tasks.gpx_track_delete_after_days',
+        'schedule': crontab(hour=1, minute=1),
+    }
+}
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/

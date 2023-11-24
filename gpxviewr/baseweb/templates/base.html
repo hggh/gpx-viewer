@@ -34,16 +34,31 @@
 <body>
 	<nav class="navbar navbar-dark bg-dark">
 		<span class="navbar-brand">GPX / OSM Tool</span>
-
 		<a href="/"><button class="btn btn-outline-info my-2 my-sm-0">Upload new GPX Track</button></a>
 	</nav>
 	<div class="container-fluid">
 		{% block content %}{% endblock%}
 	</div>
-
-	<hr/>
-	<footer class="">
-		Jonas Genannt (<a href="https://github.com/hggh/gpx-viewer">GitHub</a>)
-	</footer>
+	<div class="container">
+		<footer class="d-flex flex-wrap justify-content-between align-items-center py-3 my-4 border-top">
+			<div class="col-md-1 d-flex align-items-center">
+				<a class="mb-3 me-2 mb-md-0 text-muted text-decoration-none lh-1"
+				 title="GitHub Project / Code / Issues" href="https://github.com/hggh/gpx-viewer" target="_blank">GitHub</a>
+				|&nbsp;
+				<span>
+					<a class="mb-3 me-2 mb-md-0 text-muted text-decoration-none lh-1" 
+					title="Changelog" href="https://github.com/hggh/gpx-viewer/blob/main/CHANGELOG.md" target="_blank">CHANGELOG</a>
+				</span>
+			</div>
+			<ul class="nav col-md-7 justify-content-end list-unstyled d-flex">
+				<li class="ms-3">
+					<a class="text-muted" title="Twitter" href="https://twitter.com/hggh_" target="_blank"><img src="{% static 'bootstrap-icons-1.11.2/twitter-x.svg'%}"></a>
+				</li>
+				<li class="ms-3">
+					<a class="text-muted" title="BlueSky" href="https://bsky.app/profile/hggh.bsky.social" target="_blank"><img src="{% static 'bootstrap-icons-1.11.2/twitter.svg'%}"></a></li>
+				</li>
+			</ul>
+		</footer>
+	</div>
 </body>
 </html>
