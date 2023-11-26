@@ -3,6 +3,7 @@
 ### Unreleased
 
  * add URL to GPX Waypoint file if it's available in OSM
+ * find and show supermarket and convenience on map
 
 ### 24. November 2023
 

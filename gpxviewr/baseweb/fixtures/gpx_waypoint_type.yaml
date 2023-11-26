@@ -5,6 +5,7 @@
     gpx_sym_name: Restroom
     osm_name: amenity
     osm_value: toilets
+    osm_query_type: "="
     around: 600
     around_max: 5000
     around_duplicate: 3000
@@ -16,6 +17,7 @@
     gpx_sym_name: Campground
     osm_name: tourism
     osm_value: camp_site
+    osm_query_type: "="
     around: 5000
     around_max: 10000
     around_duplicate: 3000
@@ -27,6 +29,7 @@
     gpx_sym_name: Drinking Water
     osm_name: amenity
     osm_value: drinking_water
+    osm_query_type: "="
     around: 600
     around_max: 2000
     around_duplicate: 3000
@@ -38,7 +41,20 @@
     gpx_sym_name: Gas Station
     osm_name: amenity
     osm_value: fuel
+    osm_query_type: "="
     around: 100
     around_max: 300
     around_duplicate: 10000
     marker_filename: marker_fuel.png
+- model: baseweb.GPXWayPointType
+  pk: 5
+  fields:
+    name: convenience store
+    gpx_sym_name: Shopping Center
+    osm_name: shop
+    osm_value: supermarket|convenience
+    osm_query_type: "~"
+    around: 300
+    around_max: 1000
+    around_duplicate: 10000
+    marker_filename: marker_supermarkt.png

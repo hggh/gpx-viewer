@@ -148,7 +148,7 @@ class GPXTrack(TimeStampedModel):
         overpass_query = f"""
             [out:json][timeout: 500];
             (
-                nwr["{point_type.osm_name}" = "{point_type.osm_value}"](around:{around_meters},{track_latlong_flatten});
+                nwr["{point_type.osm_name}" {point_type.osm_query_type} "{point_type.osm_value}"](around:{around_meters},{track_latlong_flatten});
             );
             out center;
         """
@@ -196,6 +196,7 @@ class GPXWayPointType(models.Model):
     gpx_sym_name = models.CharField(max_length=100)
     osm_name = models.TextField(max_length=100, null=False, blank=False)
     osm_value = models.TextField(max_length=100, null=False, blank=False)
+    osm_query_type = models.CharField(max_length=10, null=False, blank=False, default='=')
     around = models.IntegerField(null=False, blank=False)
     around_max = models.IntegerField(null=False, blank=False)
     around_duplicate = models.IntegerField(null=False, blank=False, default=3000)
@@ -213,7 +214,7 @@ class GPXWayPointType(models.Model):
         return data
 
     def html_id(self):
-        return "{}_{}".format(self.osm_name, self.osm_value)
+        return "{}_{}".format(self.osm_name, self.osm_value).replace('|', '')
 
     def marker_image_path(self):
         return '/static/{}'.format(self.marker_filename)
