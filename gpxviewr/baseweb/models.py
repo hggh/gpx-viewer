@@ -21,6 +21,7 @@ import overpy
 import numpy
 import pandas
 from gpx import GPX, Waypoint
+from gpx.waypoint import Link
 
 
 fs = FileSystemStorage(location=settings.LOCAL_STORAGE_DIRECTORY)
@@ -81,6 +82,12 @@ class GPXTrack(TimeStampedModel):
             wp.lon = w.location.y
             wp.name = w.name
             wp.sym = w.waypoint_type.gpx_sym_name
+
+            if w.get_url():
+                wp_link = Link()
+                wp_link.href = w.get_url()
+                wp_link.text = w.get_url()
+                wp.links = [wp_link]
 
             waypoints.append(wp)
 

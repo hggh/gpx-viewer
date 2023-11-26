@@ -1,5 +1,8 @@
 # CHANGELOG
 
+### Unreleased
+
+ * add URL to GPX Waypoint file if it's available in OSM
 
 ### 24. November 2023
 
