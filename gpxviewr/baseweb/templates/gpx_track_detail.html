@@ -81,7 +81,7 @@
             osm_query_feature = false;
             document.getElementById('map').style.cursor = '';
             window.open(
-                "https://www.openstreetmap.org/query?lat=" + e.latlng.lat + "&lon=" + e.latlng.lng,
+                "https://www.openstreetmap.org/query?lat=" + e.latlng.lat + "&lon=" + e.latlng.lng + "#map=14/" + e.latlng.lat + "/" + e.latlng.lng,
                 "_blank"
             );
         }
