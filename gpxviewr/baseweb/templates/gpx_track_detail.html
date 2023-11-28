@@ -140,8 +140,10 @@
     var polyline = L.polyline(track_points, {color: 'red'}).addTo(map);
     map.fitBounds(polyline.getBounds());
 
-
     function setUpLayerGroups(waypoint_types) {
+        for (var k in  map_layer_groups) {
+            map_layer_groups[k].remove();
+        }
         for (const wt of waypoint_types) {
             map_layer_groups[wt.html_id] = L.layerGroup();
             map_layer_groups[wt.html_id].addTo(map);
