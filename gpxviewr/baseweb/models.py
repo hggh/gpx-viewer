@@ -76,7 +76,7 @@ class GPXTrack(TimeStampedModel):
         gpx.creator = 'GPX Tools by hggh'
         waypoints = []
 
-        for w in self.waypoints.all().filter(waypoint_type__in=options):
+        for w in self.waypoints.all().filter(waypoint_type__in=options).filter(hidden=False):
             wp = Waypoint()
             wp.lat = w.location.x
             wp.lon = w.location.y
@@ -225,6 +225,7 @@ class GPXTrackWayPoint(TimeStampedModel):
     waypoint_type = models.ForeignKey("GPXWayPointType", on_delete=models.CASCADE, related_name='waypoints')
     name = models.CharField(max_length=100, null=False, blank=True)
     tags = models.JSONField(default=dict)
+    hidden = models.BooleanField(null=False, blank=False, default=False)
 
     location = models.PointField(geography=True, default=Point(0.0, 0.0), db_index=True)
 
@@ -234,6 +235,7 @@ class GPXTrackWayPoint(TimeStampedModel):
             "lon": self.location.y,
             "class_name": self.get_marker_css_name(),
             "url": self.get_url(),
+            "hidden": self.hidden,
             "name": self.name,
             "waypoint_type": {
                 "html_id": self.waypoint_type.html_id(),

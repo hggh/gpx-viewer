@@ -2,12 +2,13 @@ from typing import Any
 from django import http
 from django.forms.forms import BaseForm
 from django.shortcuts import render
-from django.views.generic import TemplateView, CreateView, DetailView, FormView
+from django.views.generic import TemplateView, CreateView, DetailView, FormView, UpdateView
 from django.http import FileResponse, HttpRequest, HttpResponse, JsonResponse
 
 from .models import (
     GPXTrack,
     GPXWayPointType,
+    GPXTrackWayPoint,
     generate_default_delete_after_date,
 )
 
@@ -67,6 +68,16 @@ class GPXTrackWaypointView(DetailView):
             waypoint_types_data.append(wt.get_json_data())
 
         return JsonResponse({"waypoints": waypoints_data, "waypoint_types": waypoint_types_data})
+
+
+class GPXTrackWaypointUpdateView(UpdateView):
+    model = GPXTrackWayPoint
+    template_name = 'foo'
+    fields = ['hidden']
+
+    def form_valid(self, form):
+        self.object = form.save()
+        return JsonResponse({"status": "ok"})
 
 
 class GPXTrackDownloadView(FormView):

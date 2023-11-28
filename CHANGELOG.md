@@ -6,6 +6,7 @@
  * find and show supermarket and convenience on map
  * OpenStreetMap Map Query - link with correct zoomlevel on map
  * show/hide itmes on map: nicer position
+ * show/hide POIs on map and export
 
 ### 24. November 2023
 

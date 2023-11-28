@@ -26,7 +26,7 @@
 </div>
 
 <div class="container" style="border: solid; border-width:1px;">
-    Download Infomation as GPX Waypoint Track
+    <span>Download Infomation as GPX Waypoint Track (hidden POIs will be excluded!)</span>
     <form method="POST" action="/gpxtrack/{{object.slug}}/download">
         {% csrf_token %}
         <input type="hidden" name="slug" value="{{object.slug}}"/>
@@ -44,7 +44,7 @@
 <ul class="nav nav-tabs" id="myTab" role="tablist">
     {% for wpt in waypoint_types %}
         <li class="nav-item" role="presentation">
-            <input type="checkbox" checked name="wpt_{{wpt.html_id}}" data-id="{{wpt.html_id}}" title="Show/Hide on map" class="nav-link wpt_enable_checkbox" style="float:left">
+            <input type="checkbox" checked name="wpt_{{wpt.html_id}}" data-id="{{wpt.html_id}}" title="Show/Hide {{wpt.name }} on map" class="nav-link wpt_enable_checkbox" style="float:left">
             <button class="nav-link" id="{{ wpt.html_id }}-tab" data-bs-toggle="tab" data-bs-target="#{{ wpt.html_id }}-tab-pane" type="button" role="tab" aria-controls="{{ wpt.html_id }}-tab-pane" aria-selected="true">{{wpt.name}} <img src="{{wpt.marker_image_path}}" /></button>
         </li>
     {% endfor %}
@@ -58,6 +58,7 @@
             <tr>
                 <td>{{ wp.name }} / {{ wp.id }}</td>
                 <td>{% if wp.get_url %}<a href="{{wp.get_url}}" target="_blank">{{wp.get_url }}{% endif %}</td>
+                <td><button data-id="{{wp.pk }}" data-status="{{wp.hidden|lower}}" class="waypoint_show_hide btn btn-outline-info">{% if wp.hidden == True %}Show{% else %}Hide{% endif %}</button></td>
             </tr>
         {% endfor %}
         </tbody>
@@ -66,6 +67,7 @@
     {% endfor %}
   </div>
 <script>
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
     var osm_query_feature = false;
     const map = L.map('map').setView([51.505, 10.09], 3);
     
@@ -120,25 +122,27 @@
     });
 
     var waypoints_url = "{% url 'gpx-track-waypoints-detail' object.slug %}";
-    var waypoints_request = new XMLHttpRequest();
-    waypoints_request.open('GET', waypoints_url);
-
     var map_layer_groups = {};
-    var waypoints_data = [];
-    var waypoint_types_data = [];
-    waypoints_request.addEventListener('load', function(event) {
-        var d = JSON.parse(waypoints_request.responseText);
-        waypoints_data = d["waypoints"];
-        waypoint_types_data = d["waypoint_types"];
-        setUpLayerGroups(waypoint_types_data);
-        setUpMarks(waypoints_data);
-
-    });
-    waypoints_request.send();
 
     var track_points = {{object.leaflet_polyline}};
     var polyline = L.polyline(track_points, {color: 'red'}).addTo(map);
     map.fitBounds(polyline.getBounds());
+
+    function get_draw_waypoints() {
+        var waypoints_request = new XMLHttpRequest();
+        waypoints_request.open('GET', waypoints_url);
+
+        waypoints_request.addEventListener('load', function(event) {
+            var d = JSON.parse(waypoints_request.responseText);
+            var waypoints_data = d["waypoints"];
+            var waypoint_types_data = d["waypoint_types"];
+            setUpLayerGroups(waypoint_types_data);
+            setUpMarks(waypoints_data);
+        });
+        waypoints_request.send();
+    }
+
+    get_draw_waypoints();
 
     function setUpLayerGroups(waypoint_types) {
         for (var k in  map_layer_groups) {
@@ -151,6 +155,9 @@
     }
     function setUpMarks(waypoints) {
         for (const waypoint of waypoints) {
+            if (waypoint.hidden == true) {
+                continue;
+            }
             var m = L.marker([waypoint.lat, waypoint.lon]);
             m.setIcon(L.icon({
                 iconUrl: waypoint.waypoint_type.marker_image_path,
@@ -177,6 +184,33 @@
             else {
                 map_layer_groups[event.target.dataset.id].removeFrom(map);
             }
+        });
+    });
+
+    document.querySelectorAll(".waypoint_show_hide").forEach(box => {
+        box.addEventListener("click", (event) => {
+            var waypoint_id = event.target.dataset.id;
+            var current_status = event.target.dataset.status;
+            var waypoint_hidden = "";
+
+            if (event.target.dataset.status == "false") {
+                waypoint_hidden = "checked";
+                event.target.dataset.status = "true";
+                event.target.innerHTML = "Show";
+            }
+            else {
+                waypoint_hidden = "";
+                event.target.dataset.status = "false";
+                event.target.innerHTML = "Hide";
+            }
+            var r = new XMLHttpRequest();
+            r.open('POST', "/waypoint/" + waypoint_id + "/update");
+            r.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+            r.addEventListener('load', function(event) {
+                get_draw_waypoints();
+            });
+            r.send("hidden=" + waypoint_hidden + "&csrfmiddlewaretoken=" + csrftoken);
         });
     });
 </script>
