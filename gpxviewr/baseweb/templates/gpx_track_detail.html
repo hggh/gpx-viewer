@@ -58,7 +58,12 @@
             <tr>
                 <td>{{ wp.name }} / {{ wp.id }}</td>
                 <td>{% if wp.get_url %}<a href="{{wp.get_url}}" target="_blank">{{wp.get_url }}{% endif %}</td>
-                <td><button data-id="{{wp.pk }}" data-status="{{wp.hidden|lower}}" class="waypoint_show_hide btn btn-outline-info">{% if wp.hidden == True %}Show{% else %}Hide{% endif %}</button></td>
+                <td>
+                    <button data-id="{{wp.pk }}" data-status="{{wp.hidden|lower}}" class="waypoint_show_hide btn btn-outline-info">{% if wp.hidden == True %}Show{% else %}Hide{% endif %}</button>
+                </td>
+                <td class="col-md-2">
+                    <button class="waypoints_to_map btn btn-dark" data-lat="{{wp.location.x}}" data-lon="{{wp.location.y}}">on map</button>
+                </td>
             </tr>
         {% endfor %}
         </tbody>
@@ -211,6 +216,15 @@
                 get_draw_waypoints();
             });
             r.send("hidden=" + waypoint_hidden + "&csrfmiddlewaretoken=" + csrftoken);
+        });
+    });
+
+    document.querySelectorAll(".waypoints_to_map").forEach(box => {
+        box.addEventListener("click", (event) => {
+            map.flyTo(L.latLng(
+                event.target.dataset.lat,
+                event.target.dataset.lon
+            ), 12);
         });
     });
 </script>
