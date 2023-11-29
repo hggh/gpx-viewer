@@ -1,10 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
 
-
-
-<main class="col-12 col-md-9 col-xl-8 py-md-3 pl-md-5 bd-content" role="main">
-
 <h1 class="bd-title">{{object.name }}</h1>
 
 {% if object.job_status == False %}
@@ -13,64 +9,68 @@
 </div>
 {% endif %}
 
-<div>
-    <label class="form-label">OpenStreetMap language:</label>
-    <select class="form-select form-select-sm" aria-label="OSM language" id="osm_tile_lang">
-        <option value="https://tile.openstreetmap.de/{z}/{x}/{y}.png" selected>german</option>
-        <option value="https://tile.openstreetmap.org/{z}/{x}/{y}.png">english</option>
-    </select>
-    </div>
+<div class="row">
+    <div class="col-sm-6 col-lg-8">
+        <div id="map" style="width: 100%; height: 500px;"></div>
 
-<div class="container-xxl">
-    <div id="map" style="width: 100%; height: 500px;"></div>
-</div>
-
-<div class="container" style="border: solid; border-width:1px;">
-    <span>Download Infomation as GPX Waypoint Track (hidden POIs will be excluded!)</span>
-    <form method="POST" action="/gpxtrack/{{object.slug}}/download">
-        {% csrf_token %}
-        <input type="hidden" name="slug" value="{{object.slug}}"/>
-        <select name="waypoint_types" class="form-select-sm" multiple aria-label="Multiple select example">
-            {% for waypoint_type in waypoint_types %}
-            <option selected value="{{waypoint_type.pk}}">{{waypoint_type.name }}</option>
-            {% endfor %}
-        </select>
-        <div class="col-12">
-            <button type="submit" class="btn btn-primary">Download Waypoints</button>
+        <div class="container" style="border: solid; border-width:1px;padding-top:30px;">
+            <span>Download Infomation as GPX Waypoint Track (hidden POIs will be excluded!)</span>
+            <form method="POST" action="/gpxtrack/{{object.slug}}/download">
+                {% csrf_token %}
+                <input type="hidden" name="slug" value="{{object.slug}}"/>
+                <select name="waypoint_types" class="form-select-sm" multiple aria-label="Multiple select example">
+                    {% for waypoint_type in waypoint_types %}
+                    <option selected value="{{waypoint_type.pk}}">{{waypoint_type.name }}</option>
+                    {% endfor %}
+                </select>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary">Download Waypoints</button>
+                </div>
+            </form>
         </div>
-    </form>
+    </div>
+    <div class="col-6 col-lg-4">
+        <div class="row" style="padding-bottom: 20px;">
+            <label class="col-sm-4 form-label">OpenStreetMap language:</label>
+            <div class="col-sm-7">
+                <select class="form-select form-select-sm" aria-label="OSM language" id="osm_tile_lang">
+                    <option value="https://tile.openstreetmap.de/{z}/{x}/{y}.png" selected>german</option>
+                    <option value="https://tile.openstreetmap.org/{z}/{x}/{y}.png">english</option>
+                </select>
+            </div>
+        </div>
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            {% for wpt in waypoint_types %}
+                <li class="nav-item" role="presentation">
+                    <input type="checkbox" checked name="wpt_{{wpt.html_id}}" data-id="{{wpt.html_id}}" title="Show/Hide {{wpt.name }} on map" class="nav-link wpt_enable_checkbox" style="float:left">
+                    <button class="nav-link" id="{{ wpt.html_id }}-tab" data-bs-toggle="tab" data-bs-target="#{{ wpt.html_id }}-tab-pane" type="button" role="tab" aria-controls="{{ wpt.html_id }}-tab-pane" aria-selected="true">{{wpt.name}} <img src="{{wpt.marker_image_path}}" /></button>
+                </li>
+            {% endfor %}
+          </ul>
+          <div class="tab-content" id="myTabContent">
+            {% for wpt in object.get_waypoint_types_with_entries %}
+            <div class="tab-pane fade" id="{{wpt.object.html_id }}-tab-pane" role="tabpanel" aria-labelledby="{{wpt.object.html_id }}-tab" tabindex="0">
+                <table class="table table-hover">
+                <tbody>
+                {% for wp in wpt.waypoints %}
+                    <tr>
+                        <td>{% if wp.get_url %}<a href="{{wp.get_url}}" target="_blank">{{wp.name }}{%else %}{{wp.name }}{% endif %}</td>
+                        <td>
+                            <button data-id="{{wp.pk }}" data-status="{{wp.hidden|lower}}" class="waypoint_show_hide btn btn-outline-info">{% if wp.hidden == True %}Show{% else %}Hide{% endif %}</button>
+                        </td>
+                        <td class="col-md-2">
+                            <button class="waypoints_to_map btn btn-dark" data-lat="{{wp.location.x}}" data-lon="{{wp.location.y}}">on map</button>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+                </table>
+            </div>
+            {% endfor %}
+          </div>
+    </div>
 </div>
 
-<ul class="nav nav-tabs" id="myTab" role="tablist">
-    {% for wpt in waypoint_types %}
-        <li class="nav-item" role="presentation">
-            <input type="checkbox" checked name="wpt_{{wpt.html_id}}" data-id="{{wpt.html_id}}" title="Show/Hide {{wpt.name }} on map" class="nav-link wpt_enable_checkbox" style="float:left">
-            <button class="nav-link" id="{{ wpt.html_id }}-tab" data-bs-toggle="tab" data-bs-target="#{{ wpt.html_id }}-tab-pane" type="button" role="tab" aria-controls="{{ wpt.html_id }}-tab-pane" aria-selected="true">{{wpt.name}} <img src="{{wpt.marker_image_path}}" /></button>
-        </li>
-    {% endfor %}
-  </ul>
-  <div class="tab-content" id="myTabContent">
-    {% for wpt in object.get_waypoint_types_with_entries %}
-    <div class="tab-pane fade" id="{{wpt.object.html_id }}-tab-pane" role="tabpanel" aria-labelledby="{{wpt.object.html_id }}-tab" tabindex="0">
-        <table class="table table-hover">
-        <tbody>
-        {% for wp in wpt.waypoints %}
-            <tr>
-                <td>{{ wp.name }} / {{ wp.id }}</td>
-                <td>{% if wp.get_url %}<a href="{{wp.get_url}}" target="_blank">{{wp.get_url }}{% endif %}</td>
-                <td>
-                    <button data-id="{{wp.pk }}" data-status="{{wp.hidden|lower}}" class="waypoint_show_hide btn btn-outline-info">{% if wp.hidden == True %}Show{% else %}Hide{% endif %}</button>
-                </td>
-                <td class="col-md-2">
-                    <button class="waypoints_to_map btn btn-dark" data-lat="{{wp.location.x}}" data-lon="{{wp.location.y}}">on map</button>
-                </td>
-            </tr>
-        {% endfor %}
-        </tbody>
-        </table>
-    </div>
-    {% endfor %}
-  </div>
 <script>
     const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
     var osm_query_feature = false;
@@ -228,5 +228,5 @@
         });
     });
 </script>
-</main>
+
 {% endblock %}

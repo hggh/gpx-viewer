@@ -1,12 +1,14 @@
 # CHANGELOG
 
-### Unreleased
+### 29. November 2023
 
  * add URL to GPX Waypoint file if it's available in OSM
  * find and show supermarket and convenience on map
  * OpenStreetMap Map Query - link with correct zoomlevel on map
  * show/hide itmes on map: nicer position
  * show/hide POIs on map and export
+ * zoom map to POI in list
+ * new layout
 
 ### 24. November 2023
 
