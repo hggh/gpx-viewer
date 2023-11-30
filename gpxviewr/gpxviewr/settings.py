@@ -145,8 +145,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
-# 2 weeks
-SESSION_COOKIE_AGE = 1209600
+# 360 days
+SESSION_COOKIE_AGE = 86400 * 360
 
 
 LOCAL_STORAGE_DIRECTORY = Path.joinpath(BASE_DIR, 'storage-fs')

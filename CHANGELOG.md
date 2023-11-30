@@ -1,5 +1,12 @@
 # CHANGELOG
 
+### UNRELEASED
+
+ * list your uploaded tracks on the Upload Page
+ * nicer waiting spinner
+ * show waypoints while job is query running
+ * autoreload page then job is finished
+
 ### 29. November 2023
 
  * add URL to GPX Waypoint file if it's available in OSM

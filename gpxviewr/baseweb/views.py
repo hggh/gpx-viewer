@@ -32,11 +32,20 @@ class IndexView(CreateView):
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context['waypoint_types'] = GPXWayPointType.objects.all()
+
+        upload_tracks = self.request.session.get("upload_tracks", [])
+
+        context["uploaded_tracks"] = GPXTrack.objects.all().filter(slug__in=upload_tracks)
+
         return context
 
     def get_success_url(self):
 
         gpx_track_query_osm.delay(self.object.pk)
+
+        upload_tracks = self.request.session.get("upload_tracks", [])
+        upload_tracks.append(self.object.slug)
+        self.request.session["upload_tracks"] = upload_tracks
 
         return super().get_success_url()
 
@@ -50,6 +59,16 @@ class GPXTrackDetailView(DetailView):
 
         context['waypoint_types'] = GPXWayPointType.objects.all()
         return context
+
+
+class GPXTrackDetailJobStatusView(DetailView):
+    template_name = 'foo'
+    model = GPXTrack
+
+    def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        self.object = self.get_object()
+
+        return JsonResponse({"job_status": self.object.job_status})
 
 
 class GPXTrackWaypointView(DetailView):

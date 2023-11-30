@@ -25,6 +25,7 @@ from baseweb.views import (
     GPXTrackWaypointView,
     GPXTrackDownloadView,
     GPXTrackWaypointUpdateView,
+    GPXTrackDetailJobStatusView,
     IndexView,
 )
 
@@ -33,6 +34,7 @@ urlpatterns = [
     path('', IndexView.as_view(), name='root'),
     path('gpxtrack/<slug:slug>', GPXTrackDetailView.as_view(), name='gpx-track-detail'),
     path('gpxtrack/<slug:slug>/download', GPXTrackDownloadView.as_view(), name='gpx-track-download-detail'),
+    path('gpxtrack/<slug:slug>/job_status', GPXTrackDetailJobStatusView.as_view(), name='gpx-track-job-status-detail'),
     path('gpxtrack/<slug:slug>/waypoints', GPXTrackWaypointView.as_view(), name='gpx-track-waypoints-detail'),
     path('waypoint/<int:pk>/update', GPXTrackWaypointUpdateView.as_view(), name='waypoint-update'),
     path('admin/', admin.site.urls),

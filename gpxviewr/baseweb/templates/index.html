@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 
+<div class="container">
 <main class="col-12 col-md-9 col-xl-8 py-md-3 pl-md-5 bd-content" role="main">
 <form method="post" id="gpx_track_upload" enctype="multipart/form-data">
     {% csrf_token %}
@@ -68,4 +69,16 @@
     };
 </script>
 </main>
+</div>
+
+{% if uploaded_tracks %}
+<div class="container">
+    <h5>your uploaded GPX tracks:</h5>
+    <ul class="list-group list-group-flush">
+        {% for gpx_track in uploaded_tracks %}
+        <li class="list-group-item"><a href="{% url 'gpx-track-detail' gpx_track.slug %}">{{gpx_track.name }} ({{gpx_track.created }})</a></li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
 {% endblock %}

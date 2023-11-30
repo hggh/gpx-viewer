@@ -3,9 +3,35 @@
 
 <h1 class="bd-title">{{object.name }}</h1>
 
+<script>
+    var gpx_track_status_reload = false;
+</script>
+
 {% if object.job_status == False %}
 <div class="alert alert-warning" role="alert">
-    OSM Query is not done ... please click <a href="">reload</a>
+    <div class="spinner-border text-primary" role="status">
+    </div>
+    OpenStreetMap Query is in progress...
+    <script>
+        gpx_track_status_reload = true;
+        var job_status_interval;
+        var job_status_url = "{% url 'gpx-track-job-status-detail' object.slug %}";
+
+        function check_job_status() {
+            var job_status_request = new XMLHttpRequest();
+            job_status_request.open('GET', job_status_url);
+
+            job_status_request.addEventListener('load', function(event) {
+                var d = JSON.parse(job_status_request.responseText);
+                if (d["job_status"] == true) {
+                    clearInterval(job_status_interval);
+                    location.reload();
+                }
+            });
+            job_status_request.send();
+        }
+        job_status_interval = setInterval(check_job_status, 500);
+    </script>
 </div>
 {% endif %}
 
@@ -72,10 +98,9 @@
 </div>
 
 <script>
-    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-    var osm_query_feature = false;
+
     const map = L.map('map').setView([51.505, 10.09], 3);
-    
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
     const tiles = L.tileLayer('https://tile.openstreetmap.de/{z}/{x}/{y}.png', {
         maxZoom: 19,
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -92,6 +117,7 @@
         }
     });
 
+    var osm_query_feature = false;
     L.Control.QueryOSM = L.Control.extend({
         pressed_query: function(e) {
             if (osm_query_feature == false) {
@@ -132,20 +158,6 @@
     var track_points = {{object.leaflet_polyline}};
     var polyline = L.polyline(track_points, {color: 'red'}).addTo(map);
     map.fitBounds(polyline.getBounds());
-
-    function get_draw_waypoints() {
-        var waypoints_request = new XMLHttpRequest();
-        waypoints_request.open('GET', waypoints_url);
-
-        waypoints_request.addEventListener('load', function(event) {
-            var d = JSON.parse(waypoints_request.responseText);
-            var waypoints_data = d["waypoints"];
-            var waypoint_types_data = d["waypoint_types"];
-            setUpLayerGroups(waypoint_types_data);
-            setUpMarks(waypoints_data);
-        });
-        waypoints_request.send();
-    }
 
     get_draw_waypoints();
 
@@ -227,6 +239,22 @@
             ), 12);
         });
     });
-</script>
 
+    function get_draw_waypoints() {
+        var waypoints_request = new XMLHttpRequest();
+        waypoints_request.open('GET', waypoints_url);
+
+        waypoints_request.addEventListener('load', function(event) {
+            var d = JSON.parse(waypoints_request.responseText);
+            var waypoints_data = d["waypoints"];
+            var waypoint_types_data = d["waypoint_types"];
+            setUpLayerGroups(waypoint_types_data);
+            setUpMarks(waypoints_data);
+        });
+        waypoints_request.send();
+    }
+    if (gpx_track_status_reload == true) {
+        setInterval(get_draw_waypoints, 3000);
+    }
+</script>
 {% endblock %}
