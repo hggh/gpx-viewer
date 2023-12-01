@@ -1,6 +1,6 @@
 # CHANGELOG
 
-### UNRELEASED
+### 1. December 2023
 
  * list your uploaded tracks on the Upload Page
  * nicer waiting spinner
