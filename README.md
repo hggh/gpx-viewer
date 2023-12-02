@@ -6,13 +6,25 @@ Demo: https://gpxviewr.genannt.name/gpxtrack/agaxdfkIoP5msdVKgNxtSjx9qz9yqWPICbz
 
 ## development
 
+#### Python setup
+
+```
+virtualenv -p python3 .venv
+source .venv/bin/activate
+pip3 install -r requirements.txt
+```
+
+#### Postgres + Redis
+```
 docker compose up -d
+```
 
-
-run celery:
-
+#### celery worker
+```
 celery -A gpxviewr worker -l INFO -B
+```
 
-run webserver:
-
+#### development webserver
+```
 ./manage.py runserver
+```
