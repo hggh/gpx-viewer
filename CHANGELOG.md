@@ -1,5 +1,12 @@
 # CHANGELOG
 
+### UNRELEASED
+
+ * working on layout
+ * sort Waypoints in order of the track
+ * add different colors for Tracks / Segments
+ * Leaflet Track line via geojson ajax call (faster)
+
 ### 1. December 2023
 
  * list your uploaded tracks on the Upload Page

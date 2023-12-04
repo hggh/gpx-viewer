@@ -7,25 +7,35 @@
     var gpx_track_status_reload = false;
 </script>
 
-{% if object.job_status == False %}
+{% if object.job_is_finished == False and object.get_job_status != 'error' %}
 <div class="alert alert-warning" role="alert">
     <div class="spinner-border text-primary" role="status">
     </div>
-    OpenStreetMap Query is in progress...
+    <span id="job_status_info_box" style="padding-left:10px;">wating for job status</span>
     <script>
         gpx_track_status_reload = true;
         var job_status_interval;
-        var job_status_url = "{% url 'gpx-track-job-status-detail' object.slug %}";
+        var job_status_url = "/api/gpxfile/{{ object.slug }}/job_status/";
 
         function check_job_status() {
             var job_status_request = new XMLHttpRequest();
             job_status_request.open('GET', job_status_url);
 
             job_status_request.addEventListener('load', function(event) {
+                var job_status_info_box = document.querySelector("#job_status_info_box")
+
                 var d = JSON.parse(job_status_request.responseText);
-                if (d["job_status"] == true) {
+                if (d["finished"] == true || d["job_status_name"] == 'error') {
                     clearInterval(job_status_interval);
                     location.reload();
+                }
+                else {
+                    if (d["job_status_name"] == 'gpx_track_loading') {
+                        job_status_info_box.innerHTML = "GPX Track is processing";
+                    }
+                    else if (d["job_status_name"] == 'osm_query') {
+                        job_status_info_box.innerHTML = "OpenStreetMap Query is in progress...";
+                    }
                 }
             });
             job_status_request.send();
@@ -35,8 +45,27 @@
 </div>
 {% endif %}
 
+{% if object.get_job_status == 'error' %}
+<div class="alert alert-danger" role="alert">
+    Job is in status error - ask on GitHub for help! :-(
+</div>
+{% endif %}
+
+
 <div class="row">
-    <div class="col-sm-6 col-lg-8">
+
+    <ul class="list-group list-group-horizontal">
+        {% for wpt in waypoint_types %}
+            <li class="list-group-item">
+                <input type="checkbox" checked name="wpt_{{wpt.html_id}}" data-id="{{wpt.html_id}}" title="Show/Hide {{wpt.name }} on map" class="nav-link wpt_enable_checkbox" style="">{{wpt.name}}
+            </li>
+        {% endfor %}
+        
+
+    </ul>
+</div>
+<div class="row">
+    <div class="col-sm-7 col-lg-9">
         <div id="map" style="width: 100%; height: 500px;"></div>
 
         <div class="container" style="border: solid; border-width:1px;padding-top:30px;">
@@ -55,7 +84,7 @@
             </form>
         </div>
     </div>
-    <div class="col-6 col-lg-4">
+    <div class="col-5 col-lg-3">
         <div class="row" style="padding-bottom: 20px;">
             <label class="col-sm-4 form-label">OpenStreetMap language:</label>
             <div class="col-sm-7">
@@ -65,17 +94,19 @@
                 </select>
             </div>
         </div>
-        <ul class="nav nav-tabs" id="myTab" role="tablist">
-            {% for wpt in waypoint_types %}
-                <li class="nav-item" role="presentation">
-                    <input type="checkbox" checked name="wpt_{{wpt.html_id}}" data-id="{{wpt.html_id}}" title="Show/Hide {{wpt.name }} on map" class="nav-link wpt_enable_checkbox" style="float:left">
-                    <button class="nav-link" id="{{ wpt.html_id }}-tab" data-bs-toggle="tab" data-bs-target="#{{ wpt.html_id }}-tab-pane" type="button" role="tab" aria-controls="{{ wpt.html_id }}-tab-pane" aria-selected="true">{{wpt.name}} <img src="{{wpt.marker_image_path}}" /></button>
-                </li>
-            {% endfor %}
-          </ul>
-          <div class="tab-content" id="myTabContent">
+
+        <div class="row">
+            <select class="form-select form-select-sm" aria-label="information about POIs" id="information_poi_dropdown">
+                {% for wpt in waypoint_types %}
+                <option id="{{ wpt.html_id }}-tab" value="#{{ wpt.html_id }}-tab-pane" type="button" role="tab" aria-controls="{{ wpt.html_id }}-tab-pane" aria-selected="true">{{wpt.name}} <img src="{{wpt.marker_image_path}}" /></option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="tab-content" id="myTabContent">
             {% for wpt in object.get_waypoint_types_with_entries %}
-            <div class="tab-pane fade" id="{{wpt.object.html_id }}-tab-pane" role="tabpanel" aria-labelledby="{{wpt.object.html_id }}-tab" tabindex="0">
+            <div class="collapse tab-content-hidden" id="{{wpt.object.html_id }}-tab-pane">
+                <br/>
+                <h4>{{ wpt.object.name }}</h4>
                 <table class="table table-hover">
                 <tbody>
                 {% for wp in wpt.waypoints %}
@@ -93,9 +124,40 @@
                 </table>
             </div>
             {% endfor %}
-          </div>
+        </div>
+        <script>
+            document.querySelector("#amenity_toilets-tab-pane").classList.remove('collapse');
+            var information_poi_dropdown = document.querySelector("#information_poi_dropdown");
+            information_poi_dropdown.addEventListener("change", (event) => {
+                document.querySelectorAll(".tab-content-hidden").forEach(box => {
+                    box.classList.add('collapse');
+                });
+                var d = document.querySelector(event.target.value);
+                d.classList.remove('collapse');
+            });
+        </script>
     </div>
 </div>
+<div class="container">
+    <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Track Name</th>
+            <th scope="col"></th>
+            <th scope="col">KM</th>
+          </tr>
+        </thead>
+        <tbody class="table-group-divider">
+            {% for track in object.tracks.all %}
+            <tr>
+                <th scope="row">{{track.name}} {% if track.segments.count > 1 %} (Segments: {{track.segments.count}}){% endif %}</th>
+                <td></td>
+                <td>{{track.get_human_distance}}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>      
 
 <script>
 
@@ -155,9 +217,21 @@
     var waypoints_url = "{% url 'gpx-track-waypoints-detail' object.slug %}";
     var map_layer_groups = {};
 
-    var track_points = {{object.leaflet_polyline}};
-    var polyline = L.polyline(track_points, {color: 'red'}).addTo(map);
-    map.fitBounds(polyline.getBounds());
+    var request_line = new XMLHttpRequest();
+    request_line.open('GET', "/api/gpxfile/{{ object.slug }}/geojson/");
+    request_line.addEventListener('load', function(event) {
+        var d = JSON.parse(request_line.responseText);
+        geojson = L.geoJSON(d, {style: function (feature) {
+            return {
+                color: feature.properties.color,
+                weight: feature.properties.weight,
+                opacity: feature.properties.opacity,
+            };
+        }});
+        geojson.addTo(map);
+        map.fitBounds(geojson.getBounds());
+    });
+    request_line.send();
 
     get_draw_waypoints();
 

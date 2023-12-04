@@ -1,11 +1,11 @@
-Django
-django-extensions
+Django==5.0
+django-extensions==3.2.3
 
 psycopg2
 pyyml
 
-gpx
-overpy
+gpx==0.2.1
+overpy==0.7
 numpy
 pandas
 
@@ -13,3 +13,6 @@ pycodestyle
 
 redis
 celery==5.3.5
+
+geojson==3.1.0
+djangorestframework==3.14.0

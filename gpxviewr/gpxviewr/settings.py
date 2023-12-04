@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.gis',
     'django_extensions',
+    'rest_framework',
     'baseweb',
 ]
 
@@ -127,8 +128,8 @@ CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
 CELERY_BROKER_URL = 'redis://localhost'
 CELERY_BEAT_SCHEDULE = {
-    'gpx_track_delete_after_days': {
-        'task': 'baseweb.tasks.gpx_track_delete_after_days',
+    'gpx_file_delete_after_days': {
+        'task': 'baseweb.tasks.gpx_file_delete_after_days',
         'schedule': crontab(hour=1, minute=1),
     }
 }
@@ -150,6 +151,7 @@ SESSION_COOKIE_AGE = 86400 * 360
 
 
 LOCAL_STORAGE_DIRECTORY = Path.joinpath(BASE_DIR, 'storage-fs')
+LOCAL_GEOJSON_TEMP_DIRECTORY = Path.joinpath(BASE_DIR, 'geojson-temp')
 
 try:
     from .local_settings import *

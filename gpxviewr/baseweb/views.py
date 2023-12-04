@@ -6,6 +6,7 @@ from django.views.generic import TemplateView, CreateView, DetailView, FormView,
 from django.http import FileResponse, HttpRequest, HttpResponse, JsonResponse
 
 from .models import (
+    GPXFile,
     GPXTrack,
     GPXWayPointType,
     GPXTrackWayPoint,
@@ -14,10 +15,10 @@ from .models import (
 
 from .forms import (
     GPXTrackWayPointDownload,
-    GPXTrackUploadForm,
+    GPXFileUploadForm,
 )
 
-from .tasks import gpx_track_query_osm
+from .tasks import gpx_file_load_into_database
 
 
 class RobotsTxtView(TemplateView):
@@ -26,8 +27,8 @@ class RobotsTxtView(TemplateView):
 
 class IndexView(CreateView):
     template_name = 'index.html'
-    model = GPXTrack
-    form_class = GPXTrackUploadForm
+    model = GPXFile
+    form_class = GPXFileUploadForm
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
@@ -35,13 +36,13 @@ class IndexView(CreateView):
 
         upload_tracks = self.request.session.get("upload_tracks", [])
 
-        context["uploaded_tracks"] = GPXTrack.objects.all().filter(slug__in=upload_tracks)
+        context["uploaded_tracks"] = GPXFile.objects.all().filter(slug__in=upload_tracks)
 
         return context
 
     def get_success_url(self):
 
-        gpx_track_query_osm.delay(self.object.pk)
+        gpx_file_load_into_database.delay(self.object.pk)
 
         upload_tracks = self.request.session.get("upload_tracks", [])
         upload_tracks.append(self.object.slug)
@@ -52,7 +53,7 @@ class IndexView(CreateView):
 
 class GPXTrackDetailView(DetailView):
     template_name = 'gpx_track_detail.html'
-    model = GPXTrack
+    model = GPXFile
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
@@ -61,19 +62,9 @@ class GPXTrackDetailView(DetailView):
         return context
 
 
-class GPXTrackDetailJobStatusView(DetailView):
-    template_name = 'foo'
-    model = GPXTrack
-
-    def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
-        self.object = self.get_object()
-
-        return JsonResponse({"job_status": self.object.job_status})
-
-
 class GPXTrackWaypointView(DetailView):
     template_name = 'foo'
-    model = GPXTrack
+    model = GPXFile
 
     def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         self.object = self.get_object()
@@ -107,7 +98,7 @@ class GPXTrackDownloadView(FormView):
 
         waypoint_types = form.cleaned_data.get('waypoint_types', [1, 2, 3])
         slug = form.cleaned_data.get('slug')
-        self.object = GPXTrack.objects.get(slug=slug)
+        self.object = GPXFile.objects.get(slug=slug)
 
         gpx_file = self.object.generate_download_gpx_file(waypoint_types)
 

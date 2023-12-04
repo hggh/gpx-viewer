@@ -15,9 +15,10 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from rest_framework.routers import DefaultRouter
 
 from baseweb.views import (
     RobotsTxtView,
@@ -25,16 +26,22 @@ from baseweb.views import (
     GPXTrackWaypointView,
     GPXTrackDownloadView,
     GPXTrackWaypointUpdateView,
-    GPXTrackDetailJobStatusView,
     IndexView,
 )
 
+from baseweb.viewset import (
+    GPXFileViewSet,
+)
+
+router = DefaultRouter()
+router.register(r'gpxfile', GPXFileViewSet, basename='gpxfile')
+
 urlpatterns = [
+    path('api/', include(router.urls)),
     path('robots.txt', RobotsTxtView.as_view(), name='robots'),
     path('', IndexView.as_view(), name='root'),
     path('gpxtrack/<slug:slug>', GPXTrackDetailView.as_view(), name='gpx-track-detail'),
     path('gpxtrack/<slug:slug>/download', GPXTrackDownloadView.as_view(), name='gpx-track-download-detail'),
-    path('gpxtrack/<slug:slug>/job_status', GPXTrackDetailJobStatusView.as_view(), name='gpx-track-job-status-detail'),
     path('gpxtrack/<slug:slug>/waypoints', GPXTrackWaypointView.as_view(), name='gpx-track-waypoints-detail'),
     path('waypoint/<int:pk>/update', GPXTrackWaypointUpdateView.as_view(), name='waypoint-update'),
     path('admin/', admin.site.urls),
