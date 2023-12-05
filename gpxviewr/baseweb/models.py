@@ -120,7 +120,7 @@ class GPXFile(TimeStampedModel):
 
         return gpx.to_string()
 
-    def geojson_polyline(self, refresh=True):
+    def geojson_polyline(self, refresh=False):
         filename = os.path.join(settings.LOCAL_GEOJSON_TEMP_DIRECTORY, f"{self.slug}.geojson")
 
         if os.path.exists(filename) and refresh is False:
