@@ -1,7 +1,8 @@
 # CHANGELOG
 
-### UNRELEASED
+### 5. December 2023
 
+ * Django 5.0
  * working on layout
  * sort Waypoints in order of the track
  * add different colors for Tracks / Segments
