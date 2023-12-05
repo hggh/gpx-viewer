@@ -147,7 +147,7 @@ class GPXFile(TimeStampedModel):
                 )
 
                 color_int += 1
-                if color_int > len(self.line_colors):
+                if color_int >= len(self.line_colors):
                     color_int = 0
                 del line
 
