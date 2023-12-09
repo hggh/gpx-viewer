@@ -3,6 +3,7 @@ django-extensions==3.2.3
 
 psycopg2
 pyyml
+requests
 
 gpx==0.2.1
 overpy==0.7
@@ -12,7 +13,9 @@ pandas
 pycodestyle
 
 redis
-celery==5.3.5
+celery==5.3.6
 
 geojson==3.1.0
 djangorestframework==3.14.0
+
+gunicorn
