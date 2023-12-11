@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-
+{% load static %}
 <h1 class="bd-title">{{object.name }}</h1>
 
 <script>
@@ -19,7 +19,7 @@
 
         function check_job_status() {
             var job_status_request = new XMLHttpRequest();
-            job_status_request.open('GET', job_status_url);
+            job_status_request.open('POST', job_status_url);
 
             job_status_request.addEventListener('load', function(event) {
                 var job_status_info_box = document.querySelector("#job_status_info_box")
@@ -111,7 +111,12 @@
                 <tbody>
                 {% for wp in wpt.waypoints %}
                     <tr>
-                        <td>{% if wp.get_url %}<a href="{{wp.get_url}}" target="_blank">{{wp.name }}{%else %}{{wp.name }}{% endif %}</td>
+                        <td>
+                            {% if wp.get_url %}<a href="{{wp.get_url}}" target="_blank">{{wp.name }}{%else %}{{wp.name }}{% endif %}
+                            {% if wp.track_to_waypoint %}
+                            <br/><small><a href="/gpxtrack/{{object.slug}}/download_gpx_track_to_waypoint/{{wp.pk}}">Download GPX Track to POI</a></small>
+                            {% endif %}
+                        </td>
                         <td>
                             <button data-id="{{wp.pk }}" data-status="{{wp.hidden|lower}}" class="waypoint_show_hide btn btn-outline-info">{% if wp.hidden == True %}Show{% else %}Hide{% endif %}</button>
                         </td>
@@ -160,7 +165,7 @@
 </div>      
 
 <script>
-
+    const gpx_file_slug = '{{object.slug}}';
     const map = L.map('map').setView([51.505, 10.09], 3);
     const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
     const tiles = L.tileLayer('https://tile.openstreetmap.de/{z}/{x}/{y}.png', {
@@ -207,18 +212,36 @@
     L.control.queryosm = function(opts) {
         return new L.Control.QueryOSM(opts);
     }
-    
     L.control.queryosm({ position: 'topleft' }).addTo(map);
+
+
+    L.Control.QueryGoogle = L.Control.extend({
+        onAdd: function(map) {
+            this.map = map;
+            var img = L.DomUtil.create('img', 'query_google');
+            img.src = '{% static 'bootstrap-icons-1.11.2/google.svg' %}';
+            img.title = "Query Google Maps";
+
+            return img;
+        },
+        onRemove: function(map) {
+        }
+    });
+
+    L.control.querygoogle = function(opts) {
+        return new L.Control.QueryGoogle(opts);
+    }
+    L.control.querygoogle({ position: 'topleft' }).addTo(map);
 
     document.querySelector("#osm_tile_lang").addEventListener("change", (event) => {
         tiles.setUrl(event.target.value);
     });
 
-    var waypoints_url = "{% url 'gpx-track-waypoints-detail' object.slug %}";
+    var waypoints_url = "/api/gpxfile/" + gpx_file_slug + "/waypoints/";
     var map_layer_groups = {};
 
     var request_line = new XMLHttpRequest();
-    request_line.open('GET', "/api/gpxfile/{{ object.slug }}/geojson/");
+    request_line.open('POST', "/api/gpxfile/{{ object.slug }}/geojson/");
     request_line.addEventListener('load', function(event) {
         var d = JSON.parse(request_line.responseText);
         geojson = L.geoJSON(d, {style: function (feature) {
@@ -235,6 +258,26 @@
 
     get_draw_waypoints();
 
+    function show_route_to(waypoint_pk) {
+        url = '/api/gpxfile/' + gpx_file_slug + '/geojson_track_to_waypoint/'
+        var r = new XMLHttpRequest();
+        r.open('POST', url);
+        r.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        r.addEventListener('load', function(event) {
+            if (r.status == 200) {
+                var d = JSON.parse(r.responseText);
+                geojson = L.geoJSON(d, {style: function (feature) {
+                    return {
+                        color: feature.properties.color,
+                        weight: feature.properties.weight,
+                        opacity: feature.properties.opacity,
+                    };
+                }});
+                geojson.addTo(map);
+            }
+        });
+        r.send(JSON.stringify({"waypoint_pk": waypoint_pk}));
+    }
     function setUpLayerGroups(waypoint_types) {
         for (var k in  map_layer_groups) {
             map_layer_groups[k].remove();
@@ -250,17 +293,26 @@
                 continue;
             }
             var m = L.marker([waypoint.lat, waypoint.lon]);
+            m.waypointId = waypoint.id;
             m.setIcon(L.icon({
                 iconUrl: waypoint.waypoint_type.marker_image_path,
                 className: waypoint.class_name,
             }));
-            if (waypoint.name != "" || waypoint.url != null) {
+            if (waypoint.has_gpx_track_to == true) {
+                m.addEventListener("popupopen", (event) => {
+                    show_route_to(event.target.waypointId);
+                });
+            }
+            if (waypoint.name != "" || waypoint.url != null || waypoint.has_gpx_track_to == true) {
                 var content = "";
                 if (waypoint.name != "") {
                     content += "<b>" + waypoint.name + "</b><br/>";
                 }
                 if (waypoint.url != null) {
                     content += "Homepage: <a href='" + waypoint.url + "' target='_blank'>" + waypoint.url + "</a>";
+                }
+                if (waypoint.has_gpx_track_to == true) {
+                    content += "<br/><a href='/gpxtrack/"+gpx_file_slug+"/download_gpx_track_to_waypoint/"+waypoint.id+"'>Download Track to WayPoint</a><br/>";
                 }
                 m.bindPopup(content).openPopup();
             }
@@ -316,7 +368,7 @@
 
     function get_draw_waypoints() {
         var waypoints_request = new XMLHttpRequest();
-        waypoints_request.open('GET', waypoints_url);
+        waypoints_request.open('POST', waypoints_url);
 
         waypoints_request.addEventListener('load', function(event) {
             var d = JSON.parse(waypoints_request.responseText);

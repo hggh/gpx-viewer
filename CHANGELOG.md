@@ -1,5 +1,11 @@
 # CHANGELOG
 
+### 11. December 2023
+
+  * Valhalla Routing Engine
+  * Download GPX Track to POI from nearest point of the track
+  * add POI apartment/guest_house/hostel/hotel/motel
+
 ### 5. December 2023
 
  * Django 5.0

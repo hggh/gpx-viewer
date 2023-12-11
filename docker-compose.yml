@@ -1,4 +1,8 @@
 services:
+  valhalla:
+    image: ghcr.io/valhalla/valhalla:latest
+    ports:
+      - "127.0.0.1:8002:8002"
   redis:
     image: redis:7.2.3
     ports:

@@ -1,13 +1,16 @@
 import logging
 
 from django.utils import timezone
-from baseweb.models import (
-    GPXFile,
-    GPXTrack,
-    GPXWayPointType,
-)
 
 from celery import shared_task
+
+from baseweb.models import (
+    GPXFile,
+    GPXWayPointType,
+    GPXTrackWayPoint,
+    GPXTrackWayPointFromTrack,
+)
+from .valhalla import ValhallaRouting
 
 
 @shared_task()
@@ -46,6 +49,27 @@ def gpx_flile_query_osm(gpx_file_pk):
         print(e)
         gpx_file.job_status = 5
         gpx_file.save()
+
+
+@shared_task
+def gpx_waypoint_find_route_from_track(waypoint_pk):
+    waypoint = GPXTrackWayPoint.objects.get(pk=waypoint_pk)
+
+    r = ValhallaRouting(
+        s_lat=float(waypoint.track_segment_point_nearby.location.x),
+        s_lon=float(waypoint.track_segment_point_nearby.location.y),
+        d_lat=float(waypoint.location.x),
+        d_lon=float(waypoint.location.y)
+    )
+    data = r.query()
+
+    if 'length' in data and 'geojson' in data:
+        t = GPXTrackWayPointFromTrack(
+            waypoint=waypoint,
+            geojson=data.get('geojson'),
+            away_kilometer=data.get('length'),
+        )
+        t.save()
 
 
 @shared_task

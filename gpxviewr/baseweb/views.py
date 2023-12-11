@@ -1,7 +1,9 @@
 from typing import Any
 from django import http
+from django.db import models
 from django.forms.forms import BaseForm
 from django.shortcuts import render
+from django.core.exceptions import ObjectDoesNotExist
 from django.views.generic import TemplateView, CreateView, DetailView, FormView, UpdateView
 from django.http import FileResponse, HttpRequest, HttpResponse, JsonResponse
 
@@ -51,7 +53,7 @@ class IndexView(CreateView):
         return super().get_success_url()
 
 
-class GPXTrackDetailView(DetailView):
+class GPXFileDetailView(DetailView):
     template_name = 'gpx_track_detail.html'
     model = GPXFile
 
@@ -62,25 +64,8 @@ class GPXTrackDetailView(DetailView):
         return context
 
 
-class GPXTrackWaypointView(DetailView):
-    template_name = 'foo'
-    model = GPXFile
-
-    def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
-        self.object = self.get_object()
-
-        waypoints_data = []
-        for w in self.object.waypoints.all():
-            waypoints_data.append(w.get_json_data())
-
-        waypoint_types_data = []
-        for wt in GPXWayPointType.objects.all():
-            waypoint_types_data.append(wt.get_json_data())
-
-        return JsonResponse({"waypoints": waypoints_data, "waypoint_types": waypoint_types_data})
-
-
 class GPXTrackWaypointUpdateView(UpdateView):
+    # FIXME hier auch auf slug prüfen
     model = GPXTrackWayPoint
     template_name = 'foo'
     fields = ['hidden']
@@ -104,5 +89,28 @@ class GPXTrackDownloadView(FormView):
 
         r = FileResponse(gpx_file, as_attachment=True, filename='waypoints.gpx')
         r['Content-Disposition'] = 'attachment; filename={0}'.format("waypoints.gpx")
+
+        return r
+
+
+class GPXWayPointPathFromTrackDownloadView(DetailView):
+    model = GPXTrackWayPoint
+
+    def get_object(self, queryset=None):
+        gpx_file = GPXFile.objects.get(slug=self.kwargs.get('slug', None))
+        object = GPXTrackWayPoint.objects.get(gpx_file=gpx_file, pk=self.kwargs.get('pk', None))
+
+        return object
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+
+        try:
+            self.object.track_to_waypoint
+        except ObjectDoesNotExist:
+            return FileResponse()
+
+        r = FileResponse(self.object.track_to_waypoint.get_gpx_track(), as_attachment=True, filename=f'to {self.object.name}.gpx')
+        r['Content-Disposition'] = 'attachment; filename={0}'.format(f'to {self.object.name}.gpx')
 
         return r

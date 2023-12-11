@@ -22,10 +22,10 @@ from rest_framework.routers import DefaultRouter
 
 from baseweb.views import (
     RobotsTxtView,
-    GPXTrackDetailView,
-    GPXTrackWaypointView,
+    GPXFileDetailView,
     GPXTrackDownloadView,
     GPXTrackWaypointUpdateView,
+    GPXWayPointPathFromTrackDownloadView,
     IndexView,
 )
 
@@ -40,9 +40,9 @@ urlpatterns = [
     path('api/', include(router.urls)),
     path('robots.txt', RobotsTxtView.as_view(), name='robots'),
     path('', IndexView.as_view(), name='root'),
-    path('gpxtrack/<slug:slug>', GPXTrackDetailView.as_view(), name='gpx-track-detail'),
+    path('gpxtrack/<slug:slug>', GPXFileDetailView.as_view(), name='gpx-file-detail'),
     path('gpxtrack/<slug:slug>/download', GPXTrackDownloadView.as_view(), name='gpx-track-download-detail'),
-    path('gpxtrack/<slug:slug>/waypoints', GPXTrackWaypointView.as_view(), name='gpx-track-waypoints-detail'),
+    path('gpxtrack/<slug:slug>/download_gpx_track_to_waypoint/<int:pk>', GPXWayPointPathFromTrackDownloadView.as_view()),
     path('waypoint/<int:pk>/update', GPXTrackWaypointUpdateView.as_view(), name='waypoint-update'),
     path('admin/', admin.site.urls),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

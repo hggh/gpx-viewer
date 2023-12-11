@@ -3,12 +3,14 @@ import secrets
 import time
 import os
 import geojson
+from math import atan2, cos, radians, sin, sqrt
 from datetime import timedelta
 
 from django.utils import timezone
 from django.core.files.storage import FileSystemStorage
 from django.conf import settings
 from django.contrib.gis.db import models
+from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.gis.measure import Distance
 from django.contrib.gis.db.models.functions import Distance as FDistance
 from django.contrib.gis.geos import Point
@@ -22,7 +24,8 @@ import overpy
 
 import numpy
 import pandas
-from gpx import GPX, Waypoint
+from gpx import GPX, Waypoint, Track
+from gpx.track_segment import TrackSegment
 from gpx.waypoint import Link
 
 
@@ -68,7 +71,7 @@ class GPXFile(TimeStampedModel):
         ordering = ['name', '-created',]
 
     def get_absolute_url(self) -> str:
-        return reverse("gpx-track-detail", kwargs={"slug": self.slug})
+        return reverse("gpx-file-detail", kwargs={"slug": self.slug})
 
     def save(self, **kwargs):
         if self.name is None or self.name == '':
@@ -190,6 +193,8 @@ class GPXFile(TimeStampedModel):
                 time.sleep(1)
 
     def query_data_osm(self, points, around_meters, point_type, around_duplicate) -> None:
+        from .tasks import gpx_waypoint_find_route_from_track
+
         track_points = pandas.DataFrame(points, columns=["lat", "lon"])
         track_latlong_flatten = ",".join(track_points.to_numpy().flatten().astype("str"))
 
@@ -207,7 +212,7 @@ class GPXFile(TimeStampedModel):
             wp = GPXTrackWayPoint(
                 location=Point([node.lat, node.lon], srid=4326),
                 waypoint_type=point_type,
-                gpx_track=self,
+                gpx_file=self,
                 tags=node.tags,
             )
             if "name" in node.tags:
@@ -216,20 +221,22 @@ class GPXFile(TimeStampedModel):
             c = GPXTrackWayPoint.objects.all().filter(
                 location__distance_lt=(Point([node.lat, node.lon], srid=4326), Distance(m=around_duplicate)),
                 waypoint_type=point_type,
-                gpx_track=self,
+                gpx_file=self,
             )
             if c.count() == 0:
                 sp = GPXTrackSegmentPoint.objects.filter(segment__in=self.get_all_segments_primary_keys()).annotate(
                     distance=FDistance('location', Point([node.lat, node.lon], srid=4326))
-                ).order_by('distance').first()
+                ).order_by('-distance').last()
                 wp.track_segment_point_nearby = sp
                 wp.save()
+                if wp.is_camping_site() or wp.is_hotel():
+                    gpx_waypoint_find_route_from_track.delay(wp.pk)
 
         for way in result.get_ways():
             wp = GPXTrackWayPoint(
                 location=Point([way.center_lat, way.center_lon], srid=4326),
                 waypoint_type=point_type,
-                gpx_track=self,
+                gpx_file=self,
                 tags=way.tags,
             )
             if "name" in way.tags:
@@ -238,14 +245,16 @@ class GPXFile(TimeStampedModel):
             c = GPXTrackWayPoint.objects.all().filter(
                 location__distance_lt=(Point([way.center_lat, way.center_lon], srid=4326), Distance(m=around_duplicate)),
                 waypoint_type=point_type,
-                gpx_track=self,
+                gpx_file=self,
             )
             if c.count() == 0:
                 sp = GPXTrackSegmentPoint.objects.filter(segment__in=self.get_all_segments_primary_keys()).annotate(
                     distance=FDistance('location', Point([way.center_lat, way.center_lon], srid=4326))
-                ).order_by('distance').first()
+                ).order_by('-distance').last()
                 wp.track_segment_point_nearby = sp
                 wp.save()
+                if wp.is_camping_site() or wp.is_hotel():
+                    gpx_waypoint_find_route_from_track.delay(wp.pk)
 
     def load_file_to_database(self) -> None:
         gpxfile = GPX.from_file(self.file.path)
@@ -280,13 +289,16 @@ class GPXFile(TimeStampedModel):
                 segment_number += 1
 
                 b_points = []
+                point_number = 0
                 for point in segment.trkpts:
                     p = GPXTrackSegmentPoint(
                         segment=s,
                         location=Point([point.lat, point.lon], srid=4326),
                         elevation=point.ele,
+                        number=point_number,
                     )
                     b_points.append(p)
+                    point_number += 1
 
                 GPXTrackSegmentPoint.objects.bulk_create(b_points)
                 del b_points
@@ -325,9 +337,29 @@ class GPXTrackSegment(TimeStampedModel):
 
 
 class GPXTrackSegmentPoint(TimeStampedModel):
+    number = models.BigIntegerField(null=True, db_index=True)
     segment = models.ForeignKey("GPXTrackSegment", on_delete=models.CASCADE, related_name='points')
     location = models.PointField(db_index=True)
     elevation = models.FloatField(null=True, blank=False)
+
+    def __str__(self) -> str:
+        return f"{self.number}"
+
+    class Meta:
+        ordering = ['segment__pk', 'number',]
+
+    def get_previous(self):
+        if self.number == 0:
+            # we are already on the start
+            return None
+
+        return GPXTrackSegmentPoint.objects.filter(segment=self.segment, number=(self.number + 1))
+
+    def get_next(self):
+        try:
+            return GPXTrackSegmentPoint.objects.filter(segment=self.segment, number=(self.number + 1))
+        except ObjectDoesNotExist:
+            return None
 
 
 class GPXFileUserSegmentSplit(TimeStampedModel):
@@ -373,7 +405,7 @@ class GPXWayPointType(models.Model):
 
 
 class GPXTrackWayPoint(TimeStampedModel):
-    gpx_track = models.ForeignKey("GPXFile", on_delete=models.CASCADE, related_name='waypoints')
+    gpx_file = models.ForeignKey("GPXFile", on_delete=models.CASCADE, related_name='waypoints')
     waypoint_type = models.ForeignKey("GPXWayPointType", on_delete=models.CASCADE, related_name='waypoints')
     name = models.CharField(max_length=100, null=False, blank=True)
     tags = models.JSONField(default=dict)
@@ -388,6 +420,8 @@ class GPXTrackWayPoint(TimeStampedModel):
     def get_json_data(self) -> dict:
         # FIXME: als geoJSON!?
         data = {
+            "id": self.pk,
+            "has_gpx_track_to": self.has_gpx_track_to(),
             "lat": self.location.x,
             "lon": self.location.y,
             "class_name": self.get_marker_css_name(),
@@ -400,7 +434,19 @@ class GPXTrackWayPoint(TimeStampedModel):
 
             }
         }
+        if self.has_gpx_track_to():
+            data["track_to_waypoint"] = {
+                "length": self.track_to_waypoint.away_kilometer,
+            }
         return data
+
+    def has_gpx_track_to(self) -> bool:
+        try:
+            if self.track_to_waypoint:
+                return True
+        except ObjectDoesNotExist:
+            pass
+        return False
 
     def get_marker_css_name(self) -> str:
         if self.is_camping_site() is True and self.get_url():
@@ -414,6 +460,59 @@ class GPXTrackWayPoint(TimeStampedModel):
         if self.waypoint_type.osm_value == 'camp_site':
             return True
         return False
+
+    def is_hotel(self) -> bool:
+        if 'hotel' in self.waypoint_type.osm_value:
+            return True
+        return False
+
+
+class GPXTrackWayPointFromTrack(TimeStampedModel):
+    waypoint = models.OneToOneField("GPXTrackWayPoint", on_delete=models.CASCADE, related_name='track_to_waypoint')
+    geojson = models.JSONField(default=dict, null=False, blank=False)
+    away_kilometer = models.FloatField(null=False, blank=False, default=0.0)
+
+    def __str__(self) -> str:
+        return f"{self.away_kilometer}"
+
+    def get_geojson(self) -> dict:
+        fc = geojson.FeatureCollection(features=[])
+        fc.features.append(geojson.Feature(
+            geometry=geojson.LineString(coordinates=self.geojson),
+            properties={
+                'color': '#448137',
+                'weight': 3,
+                'opacity': 0.7,
+            }
+        ))
+
+        return fc
+
+    def get_gpx_track(self) -> str:
+        gpx = GPX()
+        gpx.creator = 'GPX Tools by hggh'
+        if self.waypoint.name != "":
+            name = f"to {self.waypoint.name}"
+        else:
+            name = f"to {self.waypoint.waypoint_type.osm_value}"
+        gpx.name = name
+
+        track = Track()
+        track.name = name
+
+        segment = TrackSegment()
+
+        for latlon in self.geojson:
+            w = Waypoint()
+            w.lat = latlon[1]
+            w.lon = latlon[0]
+
+            segment.points.append(w)
+
+        track.trksegs = [segment]
+        gpx.tracks = [track]
+
+        return gpx.to_string()
 
 
 @receiver(post_delete, sender=GPXFile)

@@ -76,7 +76,7 @@
     <h5>your uploaded GPX tracks:</h5>
     <ul class="list-group list-group-flush">
         {% for gpx_track in uploaded_tracks %}
-        <li class="list-group-item"><a href="{% url 'gpx-track-detail' gpx_track.slug %}">{{gpx_track.name }} ({{gpx_track.created }})</a></li>
+        <li class="list-group-item"><a href="{% url 'gpx-file-detail' gpx_track.slug %}">{{gpx_track.name }} ({{gpx_track.created }})</a></li>
         {% endfor %}
     </ul>
 </div>

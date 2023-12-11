@@ -58,3 +58,15 @@
     around_max: 1000
     around_duplicate: 10000
     marker_filename: marker_supermarkt.png
+- model: baseweb.GPXWayPointType
+  pk: 6
+  fields:
+    name: Hotel/Motel
+    gpx_sym_name: Residence
+    osm_name: tourism
+    osm_value: apartment|guest_house|hostel|hotel|motel
+    osm_query_type: "~"
+    around: 5000
+    around_max: 10000
+    around_duplicate: 3000
+    marker_filename: marker_hotel.png
