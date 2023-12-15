@@ -1,5 +1,9 @@
 # CHANGELOG
 
+### UNRELEASED
+
+  * only accept *.gpx files on file upload
+
 ### 11. December 2023
 
   * Valhalla Routing Engine
