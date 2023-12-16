@@ -9,6 +9,7 @@ from baseweb.models import (
     GPXWayPointType,
     GPXTrackWayPoint,
     GPXTrackWayPointFromTrack,
+    GPXTrackSegmentPoint,
 )
 from .valhalla import ValhallaRouting
 
@@ -55,13 +56,34 @@ def gpx_flile_query_osm(gpx_file_pk):
 def gpx_waypoint_find_route_from_track(waypoint_pk):
     waypoint = GPXTrackWayPoint.objects.get(pk=waypoint_pk)
 
-    r = ValhallaRouting(
-        s_lat=float(waypoint.track_segment_point_nearby.location.x),
-        s_lon=float(waypoint.track_segment_point_nearby.location.y),
-        d_lat=float(waypoint.location.x),
-        d_lon=float(waypoint.location.y)
+    track_point = waypoint.track_segment_point_nearby
+
+    track_segments = waypoint.track_segment_point_nearby.segment.track.segments.all()
+
+    targets = []
+
+    track_points_q = GPXTrackSegmentPoint.objects.filter(
+        segment__in=track_segments,
+        number__gte=(track_point.number - 100),
+        number__lte=(track_point.number + 100),
     )
-    data = r.query()
+    for point in track_points_q:
+        targets.append({
+            'lat': float(point.location.x),
+            'lon': float(point.location.y)
+        })
+
+    r = ValhallaRouting(
+        s_lat=float(waypoint.location.x),
+        s_lon=float(waypoint.location.y),
+    )
+    point = r.query_shortest_point_by_street(targets=targets)
+
+    r = ValhallaRouting(
+        s_lat=point.get('lat'),
+        s_lon=point.get('lon'),
+    )
+    data = r.query(d_lat=waypoint.location.x, d_lon=waypoint.location.y)
 
     if 'length' in data and 'geojson' in data:
         t = GPXTrackWayPointFromTrack(

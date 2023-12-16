@@ -18,13 +18,58 @@ class ValhallaRouting():
         'Mountain',
     ]
 
-    def __init__(self, s_lat: float, s_lon: float, d_lat: float, d_lon: float) -> None:
+    def __init__(self, s_lat: float, s_lon: float) -> None:
         self.s_lat = s_lat
         self.s_lon = s_lon
-        self.d_lat = d_lat
-        self.d_lon = d_lon
 
-    def query(self, bicycle_type='Road', r_timeout=2) -> dict:
+    def query_shortest_point_by_street(self, targets: list, bicycle_type='Road', r_timeout=2) -> dict:
+        if bicycle_type not in self.bicycle_types:
+            raise Exception(f"{bicycle_type} is not in the list of allowed bicycle_types from Vahalla")
+
+        query = {
+            'sources': [
+                {
+                    'lat': self.s_lat,
+                    'lon': self.s_lon,
+                },
+            ],
+            'targets': targets,
+            'verbose': True,
+            'costing': 'bicycle',
+            'units': 'kilometers',
+            'costing_options': {
+                'bicycle': {
+                    'bicycle_type': bicycle_type,
+                    'use_hills': 0.5,
+                },
+            },
+            'format': 'json',
+        }
+
+        try:
+            r = requests.get(settings.VALHALLA_ROUTING_API_HOST + 'sources_to_targets?json=' + json.dumps(query), timeout=r_timeout)
+        except requests.exceptions.Timeout:
+            logger.warning(f"Query '{query}' did not finish within {r_timeout}")
+            return {}
+
+        route = {}
+
+        if r.status_code == 200:
+            routing_info = r.json()
+            sources_to_targets = routing_info.get('sources_to_targets', [])[0]
+
+            sources_to_targets = sorted(sources_to_targets, key=lambda s: s['distance'])
+
+            shortest_index = sources_to_targets[0]['to_index']
+            targets = routing_info.get('targets', [])
+
+            point = targets[shortest_index]
+
+            return point
+
+        return {}
+
+    def query(self, d_lon: float, d_lat: float, bicycle_type='Road', r_timeout=2) -> dict:
         if bicycle_type not in self.bicycle_types:
             raise Exception(f"{bicycle_type} is not in the list of allowed bicycle_types from Vahalla")
 
@@ -35,8 +80,8 @@ class ValhallaRouting():
                     'lon': self.s_lon,
                 },
                 {
-                    'lat': self.d_lat,
-                    'lon': self.d_lon,
+                    'lat': d_lat,
+                    'lon': d_lon,
                 },
             ],
             'costing': 'bicycle',
@@ -51,7 +96,7 @@ class ValhallaRouting():
         }
 
         try:
-            r = requests.get(settings.VALHALLA_ROUTING_API_HOST + '?json=' + json.dumps(query), timeout=r_timeout)
+            r = requests.get(settings.VALHALLA_ROUTING_API_HOST + 'route?json=' + json.dumps(query), timeout=r_timeout)
         except requests.exceptions.Timeout:
             logger.warning(f"Query '{query}' did not finish within {r_timeout}")
             return {}

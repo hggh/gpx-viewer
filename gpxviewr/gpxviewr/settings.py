@@ -134,7 +134,7 @@ CELERY_BEAT_SCHEDULE = {
     }
 }
 
-VALHALLA_ROUTING_API_HOST = 'http://localhost:8002/route'
+VALHALLA_ROUTING_API_HOST = 'http://localhost:8002/'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
