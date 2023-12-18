@@ -1,8 +1,13 @@
 # CHANGELOG
 
-### UNRELEASED
+### 18. December 2023
 
   * only accept *.gpx files on file upload
+  * after finding the air-line distance nearest track point from the POI
+    we query Valhalla Routing Engine with the 100 points before and after the air-line point
+    after we have the "best" point for street routing, we calculate the route and safe the
+    geojson.
+  * query for biketype for Valhalla Routing - currently not used.
 
 ### 11. December 2023
 

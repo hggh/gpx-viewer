@@ -6,6 +6,7 @@ from django.db.models.base import Model
 from django.forms.utils import ErrorList
 
 from .models import GPXFile, GPXWayPointType, generate_default_delete_after_date
+from .valhalla import ValhallaRouting
 
 
 def waypoint_types_choices():
@@ -20,6 +21,7 @@ class GPXFileUploadForm(forms.ModelForm):
     wpt_options = forms.JSONField()
     file = forms.FileField()
     delete_after = forms.DateField(initial=generate_default_delete_after_date)
+    bicycle_type = forms.ChoiceField(choices=ValhallaRouting.get_bicycle_types, widget=forms.Select(attrs={'class': 'form-select'}))
 
     class Meta:
         model = GPXFile

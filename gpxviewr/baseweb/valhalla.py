@@ -18,6 +18,13 @@ class ValhallaRouting():
         'Mountain',
     ]
 
+    @staticmethod
+    def get_bicycle_types() -> list:
+        btypes = []
+        for b in ValhallaRouting.bicycle_types:
+            btypes.append((b, b))
+        return btypes
+
     def __init__(self, s_lat: float, s_lon: float) -> None:
         self.s_lat = s_lat
         self.s_lon = s_lon
