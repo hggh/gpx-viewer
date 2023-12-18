@@ -8,6 +8,7 @@
     after we have the "best" point for street routing, we calculate the route and safe the
     geojson.
   * query for biketype for Valhalla Routing - currently not used.
+  * set map height to 600px
 
 ### 11. December 2023
 
