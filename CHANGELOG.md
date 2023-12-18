@@ -1,6 +1,6 @@
 # CHANGELOG
 
-### 18. December 2023
+### unreleased
 
   * only accept *.gpx files on file upload
   * after finding the air-line distance nearest track point from the POI
