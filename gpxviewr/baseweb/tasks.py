@@ -58,12 +58,10 @@ def gpx_waypoint_find_route_from_track(waypoint_pk):
 
     track_point = waypoint.track_segment_point_nearby
 
-    track_segments = waypoint.track_segment_point_nearby.segment.track.segments.all()
-
     targets = []
 
     track_points_q = GPXTrackSegmentPoint.objects.filter(
-        segment__in=track_segments,
+        segment=track_point.segment,
         number__gte=(track_point.number - 100),
         number__lte=(track_point.number + 100),
     )
