@@ -77,11 +77,18 @@ def gpx_waypoint_find_route_from_track(waypoint_pk):
     )
     point = r.query_shortest_point_by_street(targets=targets)
 
+    if 'lat' not in point:
+        print(f"Waypoint {waypoint_pk} with {targets} did not find a path?")
+
     r = ValhallaRouting(
-        s_lat=point.get('lat'),
-        s_lon=point.get('lon'),
+        s_lat=point.get('lat', float(track_point.location.x)),
+        s_lon=point.get('lon', float(track_point.location.y)),
     )
-    data = r.query(d_lat=waypoint.location.x, d_lon=waypoint.location.y)
+
+    data = r.query(
+        d_lat=float(waypoint.location.x),
+        d_lon=float(waypoint.location.y),
+    )
 
     if 'length' in data and 'geojson' in data:
         t = GPXTrackWayPointFromTrack(

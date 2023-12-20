@@ -73,6 +73,11 @@ class ValhallaRouting():
             point = targets[shortest_index]
 
             return point
+        else:
+            print("sources_to_targets Requests failed code {} with json={}".format(
+                r.status_code,
+                json.dumps(query),
+            ))
 
         return {}
 
