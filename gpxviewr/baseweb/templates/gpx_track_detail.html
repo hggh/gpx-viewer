@@ -114,7 +114,7 @@
                         <td>
                             {% if wp.get_url %}<a href="{{wp.get_url}}" target="_blank">{{wp.name }}{%else %}{{wp.name }}{% endif %}
                             {% if wp.track_to_waypoint %}
-                            <br/><small><a href="/gpxtrack/{{object.slug}}/download_gpx_track_to_waypoint/{{wp.pk}}">Download GPX Track to POI</a></small>
+                            <br/><small><a href="/gpxtrack/{{object.slug}}/download_gpx_track_to_waypoint/{{wp.pk}}">Download GPX Track to POI ({{wp.track_to_waypoint.away_kilometer}} km)</a></small>
                             {% endif %}
                         </td>
                         <td>
@@ -312,7 +312,8 @@
                     content += "Homepage: <a href='" + waypoint.url + "' target='_blank'>" + waypoint.url + "</a>";
                 }
                 if (waypoint.has_gpx_track_to == true) {
-                    content += "<br/><a href='/gpxtrack/"+gpx_file_slug+"/download_gpx_track_to_waypoint/"+waypoint.id+"'>Download Track to WayPoint</a><br/>";
+                    ln = waypoint.track_to_waypoint.length;
+                    content += "<br/><a href='/gpxtrack/"+gpx_file_slug+"/download_gpx_track_to_waypoint/"+waypoint.id+"'>Download Track to WayPoint ("+ln+" km)</a><br/>";
                 }
                 m.bindPopup(content).openPopup();
             }

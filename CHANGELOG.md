@@ -1,6 +1,6 @@
 # CHANGELOG
 
-### unreleased
+### 20. December 2023
 
   * only accept *.gpx files on file upload
   * after finding the air-line distance nearest track point from the POI
@@ -9,6 +9,7 @@
     geojson.
   * query for biketype for Valhalla Routing - currently not used.
   * set map height to 600px
+  * show distance from track to POI in km
 
 ### 11. December 2023
 
