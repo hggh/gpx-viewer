@@ -1,5 +1,9 @@
 # CHANGELOG
 
+### UNRELEASED
+
+  * updated robots.txt
+
 ### 20. December 2023
 
   * only accept *.gpx files on file upload
