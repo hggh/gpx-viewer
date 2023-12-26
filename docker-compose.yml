@@ -1,8 +1,13 @@
 services:
   valhalla:
     image: ghcr.io/valhalla/valhalla:latest
+    command: /usr/local/bin/valhalla_service /data/valhalla.json 2
     ports:
       - "127.0.0.1:8002:8002"
+    volumes:
+      - type: bind
+        source: ./valhalla-data
+        target: /data
   redis:
     image: redis:7.2.3
     ports:

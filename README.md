@@ -28,3 +28,10 @@ celery -A gpxviewr worker -l INFO -B
 ```
 ./manage.py runserver
 ```
+
+#### Valhalla Routing Server
+
+The valhalla routing server needs the Valhalla tiles inside the directory `valhalla-data`.
+
+You can generate the routing information (tiles) with Valhalla.
+See: https://valhalla.github.io/valhalla/building/#running-valhalla-server-on-unix

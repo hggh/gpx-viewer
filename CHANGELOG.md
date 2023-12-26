@@ -3,6 +3,7 @@
 ### UNRELEASED
 
   * updated robots.txt
+  * add Valhalla Infos and docker container inside docker-compose file
 
 ### 20. December 2023
 

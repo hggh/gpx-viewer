@@ -2,6 +2,8 @@ gpxviewr/storage-fs
 gpxviewr/geojson-temp
 gpxviewr/gpxviewr/local_settings.py
 
+valhalla-data
+
 # Django #
 *.log
 *.pot
