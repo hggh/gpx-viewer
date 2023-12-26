@@ -1,9 +1,11 @@
 # CHANGELOG
 
-### UNRELEASED
+### 26. December 2023
 
   * updated robots.txt
   * add Valhalla Infos and docker container inside docker-compose file
+  * away kilometer as int
+  * bounce Marker if "on map" is clicked
 
 ### 20. December 2023
 

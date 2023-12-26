@@ -114,14 +114,14 @@
                         <td>
                             {% if wp.get_url %}<a href="{{wp.get_url}}" target="_blank">{{wp.name }}{%else %}{{wp.name }}{% endif %}
                             {% if wp.track_to_waypoint %}
-                            <br/><small><a href="/gpxtrack/{{object.slug}}/download_gpx_track_to_waypoint/{{wp.pk}}">Download GPX Track to POI ({{wp.track_to_waypoint.away_kilometer}} km)</a></small>
+                            <br/><small><a href="/gpxtrack/{{object.slug}}/download_gpx_track_to_waypoint/{{wp.pk}}">Download GPX Track to POI ({{wp.track_to_waypoint.get_away_kilometer}} km)</a></small>
                             {% endif %}
                         </td>
                         <td>
                             <button data-id="{{wp.pk }}" data-status="{{wp.hidden|lower}}" class="waypoint_show_hide btn btn-outline-info">{% if wp.hidden == True %}Show{% else %}Hide{% endif %}</button>
                         </td>
                         <td class="col-md-2">
-                            <button class="waypoints_to_map btn btn-dark" data-lat="{{wp.location.x}}" data-lon="{{wp.location.y}}">on map</button>
+                            <button class="waypoints_to_map btn btn-dark" data-id="{{wp.id}}" data-lat="{{wp.location.x}}" data-lon="{{wp.location.y}}">on map</button>
                         </td>
                     </tr>
                 {% endfor %}
@@ -165,6 +165,7 @@
 </div>      
 
 <script>
+    var map_waypoints = [];
     const gpx_file_slug = '{{object.slug}}';
     const map = L.map('map').setView([51.505, 10.09], 3);
     const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
@@ -288,13 +289,16 @@
         }
     }
     function setUpMarks(waypoints) {
+        map_waypoints = [];
         for (const waypoint of waypoints) {
             if (waypoint.hidden == true) {
                 continue;
             }
             var m = L.marker([waypoint.lat, waypoint.lon]);
+            map_waypoints[waypoint.id] = m;
             m.waypointId = waypoint.id;
             m.setIcon(L.icon({
+                iconSize: [16, 16],
                 iconUrl: waypoint.waypoint_type.marker_image_path,
                 className: waypoint.class_name,
             }));
@@ -364,6 +368,7 @@
                 event.target.dataset.lat,
                 event.target.dataset.lon
             ), 12);
+            map_waypoints[event.target.dataset.id].bounce(4);
         });
     });
 

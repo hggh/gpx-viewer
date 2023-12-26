@@ -436,7 +436,7 @@ class GPXTrackWayPoint(TimeStampedModel):
         }
         if self.has_gpx_track_to():
             data["track_to_waypoint"] = {
-                "length": self.track_to_waypoint.away_kilometer,
+                "length": self.track_to_waypoint.get_away_kilometer(),
             }
         return data
 
@@ -474,6 +474,12 @@ class GPXTrackWayPointFromTrack(TimeStampedModel):
 
     def __str__(self) -> str:
         return f"{self.away_kilometer}"
+
+    def get_away_kilometer(self) -> int:
+        if self.away_kilometer > 1:
+            return int(self.away_kilometer)
+        else:
+            return 1
 
     def get_geojson(self) -> dict:
         fc = geojson.FeatureCollection(features=[])
