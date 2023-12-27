@@ -339,6 +339,9 @@
                 }
                 m.bindPopup(content).openPopup();
             }
+            else {
+                m.bindPopup('').openPopup();
+            }
             m.addTo(map_layer_groups[waypoint.waypoint_type.html_id]);
         }
     }
