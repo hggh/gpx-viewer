@@ -12,10 +12,6 @@ logger = logging.getLogger(__name__)
 class ValhallaRouting():
     bicycle_types = [
         'Road',
-        'Hybrid',
-        'City',
-        'Cross',
-        'Mountain',
     ]
 
     @staticmethod

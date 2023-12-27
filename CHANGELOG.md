@@ -3,6 +3,8 @@
 ### 27. December 2023
 
   * show all tag infos from OSM
+  * only allow Road type bike for Valahalle Routing Engine
+  * add note on start page
 
 ### 26. December 2023
 
