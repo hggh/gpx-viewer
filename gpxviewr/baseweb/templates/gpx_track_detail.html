@@ -68,6 +68,16 @@
     <div class="col-sm-7 col-lg-9">
         <div id="map" style="width: 100%; height: 600px;"></div>
 
+        <div class="container" style="padding-top:20px; padding-bottom:20px;">
+            {% for waypoint in object.waypoints.all %}
+            <div class="collapse" id="waypoint_tags_info_{{waypoint.id}}">
+                <h5>{{waypoint.name}}</h5>
+                {% for name, value in waypoint.tags.items %}
+                <b>{{name}}:</b> {{value}}<br/>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
         <div class="container" style="border: solid; border-width:1px;padding-top:30px;">
             <span>Download Infomation as GPX Waypoint Track (hidden POIs will be excluded!)</span>
             <form method="POST" action="/gpxtrack/{{object.slug}}/download">
@@ -307,6 +317,14 @@
                     show_route_to(event.target.waypointId);
                 });
             }
+            m.addEventListener("popupopen", (event) => {
+                var w = document.querySelector("#waypoint_tags_info_" + waypoint.id);
+                w.classList.remove('collapse');
+            });
+            m.addEventListener("popupclose", (event) => {
+                var w = document.querySelector("#waypoint_tags_info_" + waypoint.id);
+                w.classList.add('collapse');
+            });
             if (waypoint.name != "" || waypoint.url != null || waypoint.has_gpx_track_to == true) {
                 var content = "";
                 if (waypoint.name != "") {

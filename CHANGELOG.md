@@ -1,5 +1,9 @@
 # CHANGELOG
 
+### 27. December 2023
+
+  * show all tag infos from OSM
+
 ### 26. December 2023
 
   * updated robots.txt
