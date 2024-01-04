@@ -175,6 +175,9 @@
 </div>      
 
 <script>
+    var osm_query_feature = false;
+    var google_query_feature = false;
+
     var map_waypoints = [];
     const gpx_file_slug = '{{object.slug}}';
     const map = L.map('map').setView([51.505, 10.09], 3);
@@ -193,9 +196,16 @@
                 "_blank"
             );
         }
+        if(google_query_feature) {
+            google_query_feature = false;
+            document.getElementById('map').style.cursor = '';
+            window.open(
+                "https://www.google.com/maps/@" + e.latlng.lat + "," + e.latlng.lng + ",17z?entry=ttu",
+                "_blank"
+            );
+        }
     });
 
-    var osm_query_feature = false;
     L.Control.QueryOSM = L.Control.extend({
         pressed_query: function(e) {
             if (osm_query_feature == false) {
@@ -227,12 +237,23 @@
 
 
     L.Control.QueryGoogle = L.Control.extend({
+        pressed_query: function(e) {
+            if (google_query_feature == false) {
+                document.getElementById('map').style.cursor = 'crosshair';
+            }
+            else {
+                document.getElementById('map').style.cursor = '';
+            }
+            google_query_feature = !google_query_feature;
+            e.stopPropagation();
+        },
         onAdd: function(map) {
             this.map = map;
             var img = L.DomUtil.create('img', 'query_google');
             img.src = '{% static 'bootstrap-icons-1.11.2/google.svg' %}';
             img.title = "Query Google Maps";
 
+            L.DomEvent.on(img, 'click', this.pressed_query, this);
             return img;
         },
         onRemove: function(map) {
