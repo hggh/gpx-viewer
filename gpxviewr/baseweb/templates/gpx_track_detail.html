@@ -168,6 +168,21 @@
                 <th scope="row">{{track.name}} {% if track.segments.count > 1 %} (Segments: {{track.segments.count}}){% endif %}</th>
                 <td></td>
                 <td>{{track.get_human_distance}}</td>
+                <td>
+                    {% if track.get_total_ascent %}
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-up-right" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M14 2.5a.5.5 0 0 0-.5-.5h-6a.5.5 0 0 0 0 1h4.793L2.146 13.146a.5.5 0 0 0 .708.708L13 3.707V8.5a.5.5 0 0 0 1 0z"/>
+                        </svg>
+                        {{ track.get_total_ascent }} m
+                    {% endif %}
+                    {% if track.get_total_descent %}
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-down-right" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M14 13.5a.5.5 0 0 1-.5.5h-6a.5.5 0 0 1 0-1h4.793L2.146 2.854a.5.5 0 1 1 .708-.708L13 12.293V7.5a.5.5 0 0 1 1 0z"/>
+                        </svg>
+                        {{ track.get_total_descent }} m
+                    {% endif %}
+                </td>
+
             </tr>
             {% endfor %}
         </tbody>
@@ -179,6 +194,7 @@
     var google_query_feature = false;
 
     var map_waypoints = [];
+    var edit_markers = [];
     const gpx_file_slug = '{{object.slug}}';
     const map = L.map('map').setView([51.505, 10.09], 3);
     const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
@@ -186,6 +202,7 @@
         maxZoom: 19,
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(map);
+    var edit_markers_layer = L.layerGroup().addTo(map);
 
     map.on('click', function(e) {
         if (osm_query_feature) {
@@ -204,6 +221,25 @@
                 "_blank"
             );
         }
+    });
+
+    function edit_markers_view() {
+        edit_markers_layer.clearLayers();
+        if (map.getZoom() > 14) {
+            b = map.getBounds();
+            for (m of edit_markers) {
+                if (b.contains(m.getLatLng())) {
+                    m.addTo(edit_markers_layer);
+                }
+            }
+        }
+    }
+
+    map.on('moveend', function(e) {
+        edit_markers_view();
+    });
+    map.on('zoomend', function(e) {
+        edit_markers_view();
     });
 
     L.Control.QueryOSM = L.Control.extend({
@@ -272,22 +308,45 @@
     var waypoints_url = "/api/gpxfile/" + gpx_file_slug + "/waypoints/";
     var map_layer_groups = {};
 
-    var request_line = new XMLHttpRequest();
-    request_line.open('POST', "/api/gpxfile/{{ object.slug }}/geojson/");
-    request_line.addEventListener('load', function(event) {
-        var d = JSON.parse(request_line.responseText);
-        geojson = L.geoJSON(d, {style: function (feature) {
-            return {
-                color: feature.properties.color,
-                weight: feature.properties.weight,
-                opacity: feature.properties.opacity,
-            };
-        }});
-        geojson.addTo(map);
-        map.fitBounds(geojson.getBounds());
-    });
-    request_line.send();
-
+    function fetch_geojson() {
+        var request_line = new XMLHttpRequest();
+        request_line.open('POST', "/api/gpxfile/{{ object.slug }}/geojson/");
+        request_line.addEventListener('load', function(event) {
+            if (request_line.status != 200) {
+                setTimeout(fetch_geojson, 1500);
+                return;
+            }
+            var d = JSON.parse(request_line.responseText);
+            geojson = L.geoJSON(d, {
+                style: function (feature) {
+                    return {
+                        color: feature.properties.color,
+                        weight: feature.properties.weight,
+                        opacity: feature.properties.opacity,
+                    };
+                },
+                onEachFeature: function(feature, layer) {
+                    feature.geometry.coordinates.forEach(function (longlat, i) {
+                        if ((i % 4) != 0 ) {
+                            return;
+                        }
+                        var m = L.marker([longlat[1], longlat[0]])
+                        m.setIcon(L.icon({
+                            iconUrl: '/static/PolyLine.png',
+                            iconSize: [11, 11]
+                        }));
+                        m.segment_pk = feature.properties.segment_pk;
+                        edit_markers.push(m);
+                    });
+                }
+            }
+            );
+            geojson.addTo(map);
+            map.fitBounds(geojson.getBounds());
+        });
+        request_line.send();
+    }
+    fetch_geojson();
     get_draw_waypoints();
 
     function show_route_to(waypoint_pk) {

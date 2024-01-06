@@ -16,6 +16,7 @@ from django.contrib.gis.db.models.functions import Distance as FDistance
 from django.contrib.gis.geos import Point
 from django.urls import reverse
 from django.db.models.signals import post_delete
+from django.db.models import Sum
 from django.dispatch import receiver
 
 from django_extensions.db.models import TimeStampedModel
@@ -129,16 +130,17 @@ class GPXFile(TimeStampedModel):
         if os.path.exists(filename) and refresh is False:
             return geojson.loads(Path(filename).read_text())
 
-        color_int = 0
+        if self.job_status < 3:
+            return None
 
-        gpxfile = GPX.from_file(self.file.path)
+        color_int = 0
         fc = geojson.FeatureCollection(features=[])
-        for track in gpxfile.tracks:
-            for segment in track.trksegs:
+        for track in self.tracks.all():
+            for segment in track.segments.all():
                 line = geojson.LineString()
 
-                for point in segment.trkpts:
-                    line.coordinates.append([float(point.lon), float(point.lat)])
+                for point in segment.points.all():
+                    line.coordinates.append([float(point.location.y), float(point.location.x)])
 
                 fc.features.append(geojson.Feature(
                     geometry=line,
@@ -146,6 +148,7 @@ class GPXFile(TimeStampedModel):
                         'color': self.line_colors[color_int],
                         'weight': 3,
                         'opacity': 0.7,
+                        'segment_pk': segment.pk,
                     })
                 )
 
@@ -287,21 +290,41 @@ class GPXFile(TimeStampedModel):
                 )
                 s.save()
                 segment_number += 1
+                segment_total_ascent = 0
+                segment_total_descent = 0
 
                 b_points = []
                 point_number = 0
+                priv_point = None
                 for point in segment.trkpts:
+                    elevation_diff_to_previous = None
+                    if priv_point is not None:
+                        if priv_point.elevation is not None and point.ele is not None:
+                            elevation_diff_to_previous = priv_point.elevation - point.ele
+
                     p = GPXTrackSegmentPoint(
                         segment=s,
                         location=Point([point.lat, point.lon], srid=4326),
                         elevation=point.ele,
                         number=point_number,
+                        elevation_diff_to_previous=elevation_diff_to_previous,
                     )
                     b_points.append(p)
+                    priv_point = p
                     point_number += 1
+
+                    if elevation_diff_to_previous is not None:
+                        if elevation_diff_to_previous > 0:
+                            segment_total_descent += elevation_diff_to_previous
+                        else:
+                            segment_total_ascent += elevation_diff_to_previous
 
                 GPXTrackSegmentPoint.objects.bulk_create(b_points)
                 del b_points
+
+                s.total_ascent = abs(segment_total_ascent)
+                s.total_descent = abs(segment_total_descent)
+                s.save(update_fields=['total_ascent', 'total_descent'])
 
 
 class GPXTrack(TimeStampedModel):
@@ -319,11 +342,29 @@ class GPXTrack(TimeStampedModel):
         d = int(self.distance / 1000)
         return f"{d} km"
 
+    def get_total_ascent(self) -> int:
+        d = self.segments.all().aggregate(ascent=Sum('total_ascent'))
+
+        if d.get('ascent', None):
+            return int(d.get('ascent', None))
+
+        return None
+
+    def get_total_descent(self) -> int:
+        d = self.segments.all().aggregate(descent=Sum('total_descent'))
+
+        if d.get('descent', None):
+            return int(d.get('descent', None))
+
+        return None
+
 
 class GPXTrackSegment(TimeStampedModel):
     number = models.IntegerField(null=False, blank=False, default=0)
     track = models.ForeignKey("GPXTrack", on_delete=models.CASCADE, related_name='segments')
     distance = models.FloatField()
+    total_ascent = models.FloatField(null=True, blank=False)
+    total_descent = models.FloatField(null=True, blank=False)
 
     def __str__(self) -> str:
         return f"GPX Track {self.track.name} Segment {self.number}"
@@ -341,6 +382,7 @@ class GPXTrackSegmentPoint(TimeStampedModel):
     segment = models.ForeignKey("GPXTrackSegment", on_delete=models.CASCADE, related_name='points')
     location = models.PointField(db_index=True)
     elevation = models.FloatField(null=True, blank=False)
+    elevation_diff_to_previous = models.FloatField(null=True, blank=False)
 
     def __str__(self) -> str:
         return f"{self.number}"

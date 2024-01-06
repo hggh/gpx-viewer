@@ -25,7 +25,12 @@ class GPXFileViewSet(viewsets.ViewSet):
     def geojson(self, request, pk=None):
         gpx_file = GPXFile.objects.get(slug=pk)
 
-        return Response(gpx_file.geojson_polyline())
+        data = gpx_file.geojson_polyline()
+
+        if data is None:
+            return Response({}, status=404)
+
+        return Response(data)
 
     @action(detail=True, methods=['POST',])
     def geojson_track_to_waypoint(self, request, pk=None):
