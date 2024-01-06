@@ -55,7 +55,7 @@
 <div class="row">
 
     <ul class="list-group list-group-horizontal">
-        {% for wpt in waypoint_types %}
+        {% for wpt in object.get_waypoint_types %}
             <li class="list-group-item">
                 <input type="checkbox" checked name="wpt_{{wpt.html_id}}" data-id="{{wpt.html_id}}" title="Show/Hide {{wpt.name }} on map" class="nav-link wpt_enable_checkbox" style="">{{wpt.name}}
             </li>
@@ -78,13 +78,85 @@
             </div>
             {% endfor %}
         </div>
+        <div class="container" style="padding-top:30px;">
+            <h3>Track Splits</h3>
+            <table class="table">
+                <thead>
+                  <tr>
+                    <th scope="col"></th>
+                    <th scope="col"></th>
+                    <th scope="col">KM</th>
+                    <th scope="col"></th>
+                  </tr>
+                </thead>
+                <tbody class="table-group-divider">
+                    {% for split in object.user_segments.all %}
+                    <tr>
+                        <th scope="row">{{split.name}}</th>
+                        <td></td>
+                        <td>{{split.get_human_distance }}</td>
+                        <td>
+                            {% if split.get_total_ascent %}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-up-right" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M14 2.5a.5.5 0 0 0-.5-.5h-6a.5.5 0 0 0 0 1h4.793L2.146 13.146a.5.5 0 0 0 .708.708L13 3.707V8.5a.5.5 0 0 0 1 0z"/>
+                                </svg>
+                                {{ split.get_total_ascent }} m
+                            {% endif %}
+                            {% if split.get_total_descent %}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-down-right" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M14 13.5a.5.5 0 0 1-.5.5h-6a.5.5 0 0 1 0-1h4.793L2.146 2.854a.5.5 0 1 1 .708-.708L13 12.293V7.5a.5.5 0 0 1 1 0z"/>
+                                </svg>
+                                {{ split.get_total_descent }} m
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {%endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="container" style="padding-top:30px;">
+            <table class="table">
+                <thead>
+                  <tr>
+                    <th scope="col">Track Name</th>
+                    <th scope="col"></th>
+                    <th scope="col">KM</th>
+                    <th scope="col"></th>
+                  </tr>
+                </thead>
+                <tbody class="table-group-divider">
+                    {% for track in object.tracks.all %}
+                    <tr>
+                        <th scope="row">{{track.name}} {% if track.segments.count > 1 %} (Segments: {{track.segments.count}}){% endif %}</th>
+                        <td></td>
+                        <td>{{track.get_human_distance}}</td>
+                        <td>
+                            {% if track.get_total_ascent %}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-up-right" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M14 2.5a.5.5 0 0 0-.5-.5h-6a.5.5 0 0 0 0 1h4.793L2.146 13.146a.5.5 0 0 0 .708.708L13 3.707V8.5a.5.5 0 0 0 1 0z"/>
+                                </svg>
+                                {{ track.get_total_ascent }} m
+                            {% endif %}
+                            {% if track.get_total_descent %}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-down-right" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M14 13.5a.5.5 0 0 1-.5.5h-6a.5.5 0 0 1 0-1h4.793L2.146 2.854a.5.5 0 1 1 .708-.708L13 12.293V7.5a.5.5 0 0 1 1 0z"/>
+                                </svg>
+                                {{ track.get_total_descent }} m
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
         <div class="container" style="border: solid; border-width:1px;padding-top:30px;">
             <span>Download Infomation as GPX Waypoint Track (hidden POIs will be excluded!)</span>
             <form method="POST" action="/gpxtrack/{{object.slug}}/download">
                 {% csrf_token %}
                 <input type="hidden" name="slug" value="{{object.slug}}"/>
                 <select name="waypoint_types" class="form-select-sm" multiple aria-label="Multiple select example">
-                    {% for waypoint_type in waypoint_types %}
+                    {% for waypoint_type in object.get_waypoint_types %}
                     <option selected value="{{waypoint_type.pk}}">{{waypoint_type.name }}</option>
                     {% endfor %}
                 </select>
@@ -107,7 +179,8 @@
 
         <div class="row">
             <select class="form-select form-select-sm" aria-label="information about POIs" id="information_poi_dropdown">
-                {% for wpt in waypoint_types %}
+                <option id="foo">select....</option>
+                {% for wpt in object.get_waypoint_types %}
                 <option id="{{ wpt.html_id }}-tab" value="#{{ wpt.html_id }}-tab-pane" type="button" role="tab" aria-controls="{{ wpt.html_id }}-tab-pane" aria-selected="true">{{wpt.name}} <img src="{{wpt.marker_image_path}}" /></option>
                 {% endfor %}
             </select>
@@ -153,41 +226,6 @@
         </script>
     </div>
 </div>
-<div class="container">
-    <table class="table">
-        <thead>
-          <tr>
-            <th scope="col">Track Name</th>
-            <th scope="col"></th>
-            <th scope="col">KM</th>
-          </tr>
-        </thead>
-        <tbody class="table-group-divider">
-            {% for track in object.tracks.all %}
-            <tr>
-                <th scope="row">{{track.name}} {% if track.segments.count > 1 %} (Segments: {{track.segments.count}}){% endif %}</th>
-                <td></td>
-                <td>{{track.get_human_distance}}</td>
-                <td>
-                    {% if track.get_total_ascent %}
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-up-right" viewBox="0 0 16 16">
-                        <path fill-rule="evenodd" d="M14 2.5a.5.5 0 0 0-.5-.5h-6a.5.5 0 0 0 0 1h4.793L2.146 13.146a.5.5 0 0 0 .708.708L13 3.707V8.5a.5.5 0 0 0 1 0z"/>
-                        </svg>
-                        {{ track.get_total_ascent }} m
-                    {% endif %}
-                    {% if track.get_total_descent %}
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-down-right" viewBox="0 0 16 16">
-                        <path fill-rule="evenodd" d="M14 13.5a.5.5 0 0 1-.5.5h-6a.5.5 0 0 1 0-1h4.793L2.146 2.854a.5.5 0 1 1 .708-.708L13 12.293V7.5a.5.5 0 0 1 1 0z"/>
-                        </svg>
-                        {{ track.get_total_descent }} m
-                    {% endif %}
-                </td>
-
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>      
 
 <script>
     var osm_query_feature = false;
@@ -195,6 +233,18 @@
 
     var map_waypoints = [];
     var edit_markers = [];
+    var edit_markers_submit = {
+        start: {
+            segment_pk: null,
+            lat: null,
+            lon: null,
+        },
+        end: {
+            segment_pk: null,
+            lat: null,
+            lon: null,
+        }
+    };
     const gpx_file_slug = '{{object.slug}}';
     const map = L.map('map').setView([51.505, 10.09], 3);
     const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
@@ -203,6 +253,7 @@
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(map);
     var edit_markers_layer = L.layerGroup().addTo(map);
+    var user_segment_splits_layer = L.layerGroup().addTo(map);
 
     map.on('click', function(e) {
         if (osm_query_feature) {
@@ -308,6 +359,39 @@
     var waypoints_url = "/api/gpxfile/" + gpx_file_slug + "/waypoints/";
     var map_layer_groups = {};
 
+    function edit_marker_submit_data(data) {
+        var r = new XMLHttpRequest();
+        r.open('POST', "/api/gpxfile/{{ object.slug }}/user_segment_split/");
+        r.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        r.addEventListener('load', function(event) {
+            //location.reload();
+        });
+        r.send(JSON.stringify(data));
+    }
+
+    function edit_marker_as_start(e) {
+        var segment_pk = parseInt(e.dataset.segmentpk);
+        var lat = parseFloat(e.dataset.lat);
+        var lon = parseFloat(e.dataset.lon);
+
+        edit_markers_submit.start.segment_pk = segment_pk;
+        edit_markers_submit.start.lat = lat;
+        edit_markers_submit.start.lon = lon;
+    }
+    function edit_marker_as_end(e) {
+        var segment_pk = parseInt(e.dataset.segmentpk);
+        var lat = parseFloat(e.dataset.lat);
+        var lon = parseFloat(e.dataset.lon);
+
+        edit_markers_submit.end.segment_pk = segment_pk;
+        edit_markers_submit.end.lat = lat;
+        edit_markers_submit.end.lon = lon;
+
+        if (edit_markers_submit.start.lat != null) {
+            edit_marker_submit_data(edit_markers_submit);
+        }
+    }
+
     function fetch_geojson() {
         var request_line = new XMLHttpRequest();
         request_line.open('POST', "/api/gpxfile/{{ object.slug }}/geojson/");
@@ -331,11 +415,13 @@
                             return;
                         }
                         var m = L.marker([longlat[1], longlat[0]])
+                        m.segment_pk = feature.properties.segment_pk;
                         m.setIcon(L.icon({
                             iconUrl: '/static/PolyLine.png',
-                            iconSize: [11, 11]
+                            iconSize: [16, 16],
+                            className: 'maker_edit_polyline',
                         }));
-                        m.segment_pk = feature.properties.segment_pk;
+                        m.bindPopup('<button type="button" data-segmentpk="'+m.segment_pk+'" data-lat="'+longlat[1]+'" data-lon="'+longlat[0]+'" onclick="edit_marker_as_start(this)" class="btn btn-success">as Start</button> <button type="button" data-segmentpk="'+ m.segment_pk + '" data-lat="'+longlat[1]+'" data-lon="'+longlat[0]+'" onclick="edit_marker_as_end(this)" class="btn btn-primary">as End</button>').openPopup();
                         edit_markers.push(m);
                     });
                 }
@@ -349,8 +435,42 @@
     fetch_geojson();
     get_draw_waypoints();
 
+    function show_user_segment_splits() {
+        user_segment_splits_layer.clearLayers();
+        url = '/api/gpxfile/' + gpx_file_slug + '/user_segment_splits/';
+        var r = new XMLHttpRequest();
+        r.open('POST', url);
+
+        r.addEventListener('load', function(event) {
+            var d = JSON.parse(r.responseText);
+            var user_segment_splits = d["user_segment_splits"];
+
+            user_segment_splits.forEach(function(s) {
+                var start = L.marker([s.start.lat, s.start.lon], {
+                    icon: L.icon({
+                        iconUrl: '/static/marker_start.svg',
+                        iconSize: [20, 32],
+                    })
+                });
+                start.bindPopup("Start: " + s.name);
+                start.addTo(map);
+
+                var end = L.marker([s.end.lat, s.end.lon], {
+                    icon: L.icon({
+                        iconUrl: '/static/marker_end.svg',
+                        iconSize: [20, 32],
+                    })
+                });
+                end.bindPopup("End: " + s.name);
+                end.addTo(user_segment_splits_layer);
+            });
+        });
+        r.send();
+    }
+    show_user_segment_splits();
+
     function show_route_to(waypoint_pk) {
-        url = '/api/gpxfile/' + gpx_file_slug + '/geojson_track_to_waypoint/'
+        url = '/api/gpxfile/' + gpx_file_slug + '/geojson_track_to_waypoint/';
         var r = new XMLHttpRequest();
         r.open('POST', url);
         r.setRequestHeader("Content-Type", "application/json;charset=UTF-8");

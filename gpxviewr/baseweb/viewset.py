@@ -8,6 +8,7 @@ from .models import (
     GPXFile,
     GPXWayPointType,
     GPXTrackWayPoint,
+    GPXFileUserSegmentSplit,
 )
 
 
@@ -50,6 +51,20 @@ class GPXFileViewSet(viewsets.ViewSet):
             return Response(waypoint.track_to_waypoint.get_geojson())
         except ObjectDoesNotExist:
             return Response({}, status=404)
+
+    @action(detail=True, methods=['POST',])
+    def user_segment_splits(self, request, pk=None):
+        gpx_file = GPXFile.objects.get(slug=pk)
+
+        return Response({"user_segment_splits": gpx_file.get_user_segment_splits()})
+
+    @action(detail=True, methods=['POST',])
+    def user_segment_split(self, request, pk=None):
+        gpx_file = GPXFile.objects.get(slug=pk)
+
+        segment = GPXFileUserSegmentSplit.add_segment(gpx_file=gpx_file, start=request.data.get('start'), end=request.data.get('end'))
+
+        return Response({})
 
     @action(detail=True, methods=['POST',])
     def waypoints(self, request, pk=None):

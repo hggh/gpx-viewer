@@ -3,7 +3,7 @@ import secrets
 import time
 import os
 import geojson
-from math import atan2, cos, radians, sin, sqrt
+from geopy import distance as geopy_distance
 from datetime import timedelta
 
 from django.utils import timezone
@@ -91,6 +91,16 @@ class GPXFile(TimeStampedModel):
     def get_all_segments_primary_keys(self):
         return GPXTrackSegment.objects.all().filter(track__in=self.tracks.all().values_list('pk'))
 
+    def get_waypoint_types(self) -> list:
+        data = []
+        for wtp in GPXWayPointType.objects.all():
+            o = self.wpt_options.get(wtp.name, {})
+
+            if o.get('enabled', False) is True:
+                data.append(wtp)
+
+        return data
+
     def get_waypoint_types_with_entries(self):
         wtps = []
         for wtp in GPXWayPointType.objects.all():
@@ -123,6 +133,25 @@ class GPXFile(TimeStampedModel):
         gpx.waypoints = waypoints
 
         return gpx.to_string()
+
+    def get_user_segment_splits(self) -> list:
+        data = []
+
+        for s in self.user_segments.all():
+            segment = {
+                "name": s.name,
+                "start": {
+                    "lat": float(s.point_start.location.x),
+                    "lon": float(s.point_start.location.y),
+                },
+                "end": {
+                    "lat": float(s.point_end.location.x),
+                    "lon": float(s.point_end.location.y),
+                }
+            }
+            data.append(segment)
+
+        return data
 
     def geojson_polyline(self, refresh=False):
         filename = os.path.join(settings.LOCAL_GEOJSON_TEMP_DIRECTORY, f"{self.slug}.geojson")
@@ -410,11 +439,92 @@ class GPXFileUserSegmentSplit(TimeStampedModel):
     point_start = models.ForeignKey("GPXTrackSegmentPoint", on_delete=models.CASCADE, related_name='user_splits_start')
     point_end = models.ForeignKey("GPXTrackSegmentPoint", on_delete=models.CASCADE, related_name='user_splits_end')
 
+    distance = models.FloatField(null=True, blank=False)
+    total_ascent = models.FloatField(null=True, blank=False)
+    total_descent = models.FloatField(null=True, blank=False)
+
     def __str__(self) -> str:
-        return f""
+        return f"{self.name}"
 
     class Meta:
         ordering = ['point_start__pk', 'id',]
+
+    def get_human_distance(self) -> str:
+        if self.distance:
+            d = int(self.distance / 1000)
+        else:
+            d = 0
+        return f"{d} km"
+
+    def get_total_ascent(self) -> int | None:
+        if self.total_ascent:
+            return int(self.total_ascent)
+
+        return None
+
+    def get_total_descent(self) -> int | None:
+        if self.total_descent:
+            return int(self.total_descent)
+
+        return None
+
+    @staticmethod
+    def add_segment(gpx_file, start, end):
+        if start.get('segment_pk', None) != end.get('segment_pk', None):
+            raise Exception("segment_pk of end vs start !=")
+
+        point_start = GPXTrackSegmentPoint.objects.filter(
+            segment__id=start.get('segment_pk', None),
+            segment__track__gpx_file=gpx_file,
+            location=Point([start.get('lat', 0), start.get('lon', 0)], srid=4326),
+        ).first()
+
+        point_end = GPXTrackSegmentPoint.objects.filter(
+            segment__id=end.get('segment_pk', None),
+            segment__track__gpx_file=gpx_file,
+            location=Point([end.get('lat', 0), end.get('lon', 0)], srid=4326),
+        ).first()
+
+        points = GPXTrackSegmentPoint.objects.filter(
+            segment__id=start.get('segment_pk', None),
+            number__gte=point_start.number,
+            number__lte=point_end.number,
+        )
+        segment_total_ascent = 0
+        segment_total_descent = 0
+        total_distance = 0
+        priv_point = None
+
+        for p in points:
+            elevation_diff_to_previous = None
+
+            if priv_point is not None:
+                if priv_point.elevation is not None and p.elevation is not None:
+                    elevation_diff_to_previous = priv_point.elevation - p.elevation
+
+            if priv_point is not None:
+                total_distance += geopy_distance.distance(
+                    (priv_point.location.x, priv_point.location.y),
+                    (p.location.x, p.location.y)
+                ).m
+            priv_point = p
+
+            if elevation_diff_to_previous is not None:
+                if elevation_diff_to_previous > 0:
+                    segment_total_descent += elevation_diff_to_previous
+                else:
+                    segment_total_ascent += elevation_diff_to_previous
+
+        segment = GPXFileUserSegmentSplit(
+            gpx_file=gpx_file,
+            name="Tag xx",
+            point_start=point_start,
+            point_end=point_end,
+            total_ascent=abs(segment_total_ascent),
+            total_descent=abs(segment_total_descent),
+            distance=total_distance,
+        )
+        segment.save()
 
 
 class GPXWayPointType(models.Model):

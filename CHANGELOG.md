@@ -1,12 +1,14 @@
 # CHANGELOG
 
-###
+### UNRELEASED
+
   * fix typo index.html
   * Update to Django 5.0.1
   * Query Google Maps (Link to Google Maps, for StreetView, ...)
   * generate GEOJson Line from database not from GPX File to have DB IDs within
   * add elevation (from GPXTrack file) uphill, downhill
   * add Markers for the points of the line to enable splitting and co (show only current bounding box, on zoom)
+  * basic Splitten feature, needs UI work
 
 ### 27. December 2023
 
