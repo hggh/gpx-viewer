@@ -60,8 +60,6 @@
                 <input type="checkbox" checked name="wpt_{{wpt.html_id}}" data-id="{{wpt.html_id}}" title="Show/Hide {{wpt.name }} on map" class="nav-link wpt_enable_checkbox" style="">{{wpt.name}}
             </li>
         {% endfor %}
-        
-
     </ul>
 </div>
 <div class="row">
@@ -78,14 +76,51 @@
             </div>
             {% endfor %}
         </div>
-        <div class="container" style="padding-top:30px;">
+        <div id="track_splitting_form" class="container collapse" style="padding-top:10px;">
+            <h4>add new Track Split</h4>
+            <div class="row mb-3">
+                <div class="col-sm-10">
+                zoom into the map to see the points of the track. Click on a point as set the point as start or end.
+                </div>
+            </div>
+            <div class="row mb-3">
+                <label for="track_splitting_form_name" class="col-sm-2 col-form-label">Name</label>
+                <div class="col-sm-10">
+                    <input type="text" id="track_splitting_form_name" value="Tag 1"/>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <label for="track_splitting_form_start" class="col-sm-2 col-form-label">Starting point</label>
+                <div class="col-sm-10">
+                    <input type="text" id="track_splitting_form_start" value=""/>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <label for="track_splitting_form_end" class="col-sm-2 col-form-label">Starting end</label>
+                <div class="col-sm-10">
+                    <input type="text" id="track_splitting_form_end" value=""/>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <button type="submit" id="track_splitting_form_submit" class="btn btn-primary">Add new Split</button>
+            </div>
+            <div id="track_splitting_form_error" class="alert alert-danger collapse" role="alert">
+            </div>
+        </div>
+        <div class="container" style="padding-top:10px;">
             <h3>Track Splits</h3>
+            <div style="float:right">
+                <button type="button" id="track_splitting_add" class="btn btn-secondary btn-sm" title="Split the Track for a day">
+                <img src="/static/bootstrap-icons-1.11.2/plus-circle.svg"/> Splitting
+                </button>
+            </div>
             <table class="table">
                 <thead>
                   <tr>
                     <th scope="col"></th>
                     <th scope="col"></th>
                     <th scope="col">KM</th>
+                    <th scope="col"></th>
                     <th scope="col"></th>
                   </tr>
                 </thead>
@@ -108,6 +143,11 @@
                                 </svg>
                                 {{ split.get_total_descent }} m
                             {% endif %}
+                        </td>
+                        <td>
+                            <button type="button" onclick="user_segment_split_delete(this, {{split.pk}})" class="btn btn-secondary btn-sm" title="delete the split">
+                            <img src="/static/bootstrap-icons-1.11.2/x-square.svg"/> Delete
+                            </button>
                         </td>
                     </tr>
                     {%endfor %}
@@ -179,7 +219,7 @@
 
         <div class="row">
             <select class="form-select form-select-sm" aria-label="information about POIs" id="information_poi_dropdown">
-                <option id="foo">select....</option>
+                <option id="foo">select... POI</option>
                 {% for wpt in object.get_waypoint_types %}
                 <option id="{{ wpt.html_id }}-tab" value="#{{ wpt.html_id }}-tab-pane" type="button" role="tab" aria-controls="{{ wpt.html_id }}-tab-pane" aria-selected="true">{{wpt.name}} <img src="{{wpt.marker_image_path}}" /></option>
                 {% endfor %}
@@ -234,6 +274,7 @@
     var map_waypoints = [];
     var edit_markers = [];
     var edit_markers_submit = {
+        name: null,
         start: {
             segment_pk: null,
             lat: null,
@@ -274,8 +315,25 @@
         }
     });
 
+    function user_segment_split_delete(button, user_segment_pk) {
+        var r = new XMLHttpRequest();
+        r.open('POST', "/api/gpxfile/{{ object.slug }}/user_segment_split_delete/");
+        r.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        r.addEventListener('load', function(event) {
+            location.reload();
+        });
+        r.send(JSON.stringify({'user_segment_pk': user_segment_pk}));
+    }
+
     function edit_markers_view() {
         edit_markers_layer.clearLayers();
+
+        // if splitting form is invisible do not show the track points
+        var track_splitting_form = document.querySelector("#track_splitting_form");
+        if (track_splitting_form.classList.contains('collapse')) {
+            return;
+        }
+        
         if (map.getZoom() > 14) {
             b = map.getBounds();
             for (m of edit_markers) {
@@ -360,14 +418,34 @@
     var map_layer_groups = {};
 
     function edit_marker_submit_data(data) {
+        data.name = document.querySelector("#track_splitting_form_name").value;
+
         var r = new XMLHttpRequest();
         r.open('POST', "/api/gpxfile/{{ object.slug }}/user_segment_split/");
         r.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
         r.addEventListener('load', function(event) {
-            //location.reload();
+            var d = JSON.parse(r.responseText);
+
+            if (d.status == 'ok') {
+                location.reload();
+            }
+            else {
+                var box = document.querySelector("#track_splitting_form_error");
+                box.classList.remove('collapse');
+                box.textContent = d.text;
+            }
         });
         r.send(JSON.stringify(data));
     }
+
+    document.querySelector("#track_splitting_form_submit").addEventListener('click', function(event) {
+        if (edit_markers_submit.start.lat == null || edit_markers_submit.end.lat == null) {
+            return;
+        }
+        document.querySelector("#track_splitting_form_start").value = "";
+        document.querySelector("#track_splitting_form_end").value = "";
+        edit_marker_submit_data(edit_markers_submit);
+    });
 
     function edit_marker_as_start(e) {
         var segment_pk = parseInt(e.dataset.segmentpk);
@@ -377,6 +455,8 @@
         edit_markers_submit.start.segment_pk = segment_pk;
         edit_markers_submit.start.lat = lat;
         edit_markers_submit.start.lon = lon;
+
+        document.querySelector("#track_splitting_form_start").value = lat + "/" + lon;
     }
     function edit_marker_as_end(e) {
         var segment_pk = parseInt(e.dataset.segmentpk);
@@ -387,10 +467,15 @@
         edit_markers_submit.end.lat = lat;
         edit_markers_submit.end.lon = lon;
 
-        if (edit_markers_submit.start.lat != null) {
-            edit_marker_submit_data(edit_markers_submit);
-        }
+        document.querySelector("#track_splitting_form_end").value = lat + "/" + lon;
     }
+
+    var track_splitting_add = document.querySelector("#track_splitting_add");
+    var track_splitting_form = document.querySelector("#track_splitting_form");
+    track_splitting_add.addEventListener("click", (event) => {
+        track_splitting_form.classList.toggle('collapse');
+        edit_markers_view();
+    });
 
     function fetch_geojson() {
         var request_line = new XMLHttpRequest();

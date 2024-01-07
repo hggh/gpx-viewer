@@ -469,7 +469,7 @@ class GPXFileUserSegmentSplit(TimeStampedModel):
         return None
 
     @staticmethod
-    def add_segment(gpx_file, start, end):
+    def add_segment(gpx_file, start, end, name):
         if start.get('segment_pk', None) != end.get('segment_pk', None):
             raise Exception("segment_pk of end vs start !=")
 
@@ -484,6 +484,18 @@ class GPXFileUserSegmentSplit(TimeStampedModel):
             segment__track__gpx_file=gpx_file,
             location=Point([end.get('lat', 0), end.get('lon', 0)], srid=4326),
         ).first()
+
+        if point_start is None:
+            return {'status': 'error', 'text': 'Start Point not found?!?'}
+
+        if point_end is None:
+            return {'status': 'error', 'text': 'End Point not found?!?'}
+
+        if point_start.segment.pk != point_end.segment.pk:
+            return {'status': 'error', 'text': 'Track is on two different GPX Segments'}
+
+        if point_start.number > point_end.number:
+            return {'status': 'error', 'text': 'Start Point is after the End Point'}
 
         points = GPXTrackSegmentPoint.objects.filter(
             segment__id=start.get('segment_pk', None),
@@ -517,7 +529,7 @@ class GPXFileUserSegmentSplit(TimeStampedModel):
 
         segment = GPXFileUserSegmentSplit(
             gpx_file=gpx_file,
-            name="Tag xx",
+            name=name,
             point_start=point_start,
             point_end=point_end,
             total_ascent=abs(segment_total_ascent),
@@ -525,6 +537,8 @@ class GPXFileUserSegmentSplit(TimeStampedModel):
             distance=total_distance,
         )
         segment.save()
+
+        return {'status': 'ok'}
 
 
 class GPXWayPointType(models.Model):

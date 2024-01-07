@@ -62,7 +62,23 @@ class GPXFileViewSet(viewsets.ViewSet):
     def user_segment_split(self, request, pk=None):
         gpx_file = GPXFile.objects.get(slug=pk)
 
-        segment = GPXFileUserSegmentSplit.add_segment(gpx_file=gpx_file, start=request.data.get('start'), end=request.data.get('end'))
+        status = GPXFileUserSegmentSplit.add_segment(
+            gpx_file=gpx_file,
+            start=request.data.get('start'),
+            end=request.data.get('end'),
+            name=request.data.get('name', ''),
+        )
+
+        return Response(status)
+
+    @action(detail=True, methods=['POST',])
+    def user_segment_split_delete(self, request, pk=None):
+        gpx_file = GPXFile.objects.get(slug=pk)
+
+        GPXFileUserSegmentSplit.objects.filter(
+            gpx_file=gpx_file,
+            pk=request.data.get('user_segment_pk')
+        ).delete()
 
         return Response({})
 
