@@ -1,6 +1,6 @@
 # CHANGELOG
 
-### UNRELEASED
+### 08. January 2024
 
   * fix typo index.html
   * Update to Django 5.0.1
