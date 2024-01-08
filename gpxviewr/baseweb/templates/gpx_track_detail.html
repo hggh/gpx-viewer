@@ -604,11 +604,15 @@
             }
             m.addEventListener("popupopen", (event) => {
                 var w = document.querySelector("#waypoint_tags_info_" + waypoint.id);
-                w.classList.remove('collapse');
+                if (w) {
+                    w.classList.remove('collapse');
+                }
             });
             m.addEventListener("popupclose", (event) => {
                 var w = document.querySelector("#waypoint_tags_info_" + waypoint.id);
-                w.classList.add('collapse');
+                if (w) {
+                    w.classList.add('collapse');
+                }
             });
             if (waypoint.name != "" || waypoint.url != null || waypoint.has_gpx_track_to == true) {
                 var content = "";

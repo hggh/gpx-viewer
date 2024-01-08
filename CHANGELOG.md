@@ -1,5 +1,9 @@
 # CHANGELOG
 
+### UNRELEASED
+
+  * fix popupop if html id is yet missing
+
 ### 08. January 2024
 
   * fix typo index.html
