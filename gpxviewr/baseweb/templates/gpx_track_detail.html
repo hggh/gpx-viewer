@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 {% load static %}
+<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
 <h1 class="bd-title">{{object.name }}</h1>
 
 <script>
@@ -53,7 +54,6 @@
 
 
 <div class="row">
-
     <ul class="list-group list-group-horizontal">
         {% for wpt in object.get_waypoint_types %}
             <li class="list-group-item">
@@ -76,6 +76,25 @@
             </div>
             {% endfor %}
         </div>
+
+        <div class="container">
+            <button type="button" id="track_show_elevation_graph_button" class="btn btn-secondary btn-sm" title="Show elevation graph">
+                <img src="{% static '/bootstrap-icons-1.11.2/graph-up.svg' %}">
+            </button>
+        </div>
+
+        <div class="container collapse" id="track_show_elevation_graph">
+            {% for track in object.tracks.all %}
+                <h3>{{track.name }}d</h3>
+                {% for segment in track.segments.all %}
+                <div id="track_graph_segment_{{segment.pk}}" style="float:left;">
+                </div>
+                {% endfor %}
+            {% endfor %}
+            <div style="clear:both">
+            </div>
+        </div>
+
         <div id="track_splitting_form" class="container collapse" style="padding-top:10px;">
             <h4>add new Track Split</h4>
             <div class="row mb-3">
@@ -477,6 +496,12 @@
         edit_markers_view();
     });
 
+    var track_show_elevation_graph_button = document.querySelector("#track_show_elevation_graph_button");
+    var track_show_elevation_graph = document.querySelector("#track_show_elevation_graph");
+    track_show_elevation_graph_button.addEventListener("click", (event) => {
+        track_show_elevation_graph.classList.toggle('collapse');
+    });
+
     function fetch_geojson() {
         var request_line = new XMLHttpRequest();
         request_line.open('POST', "/api/gpxfile/{{ object.slug }}/geojson/");
@@ -698,5 +723,140 @@
     if (gpx_track_status_reload == true) {
         setInterval(get_draw_waypoints, 3000);
     }
+
+    class ElevationGraph {
+        constructor(gpx_file_slug, segment_pk, map) {
+            this.gpx_file_slug = gpx_file_slug;
+            this.segment_pk = segment_pk;
+            this.data = [];
+            this.map = map;
+
+            this.margin = {
+                top: 10,
+                bottom: 30,
+                right: 30,
+                left: 50,
+            };
+            this.width = 460 - this.margin.left - this.margin.right;
+            this.height = 200 - this.margin.top - this.margin.bottom;
+
+            this.svg = d3.select(this.get_container_name()).append("svg")
+                .attr("width", this.width + this.margin.left + this.margin.right)
+                .attr("height", this.height + this.margin.top + this.margin.bottom)
+                .append("g")
+                .attr("transform",`translate(${this.margin.left},${this.margin.top})`);
+
+            this.background = this.svg.append("g").attr("class", "group1");
+            this.foreground = this.svg.append("g").attr("class", "group2");
+
+            this._marker = L.circleMarker([0, 0]).addTo(this.map);
+
+            this.get_data();
+        }
+
+        get_url() {
+            return "/api/tracksegment/" + this.segment_pk + "/d3js/?gpx_file_slug=" + this.gpx_file_slug;
+        }
+
+        get_container_name() {
+            return "#track_graph_segment_" + this.segment_pk;
+        }
+
+        graph() {
+            var instance = this;
+            this.x = d3.scaleLinear();
+            this.y = d3.scaleLinear();
+
+            this.xAxisLine = this.foreground.append("g").append("rect")
+                .attr("class", "dotted")
+                .attr("stroke-with", "1px")
+                .attr("width", ".5px")
+                .attr("height", this.height);
+
+            this.mouse_text = this.foreground.append("g")
+                .append("text")
+                .style("opacity", 0)
+                .attr("text-anchor", "right");
+
+            function pm_mouseover(event) {
+                var [xpos, ypos] = d3.pointer(event);
+                instance.xAxisLine.attr("x",xpos);
+
+                var mouse_pointer_elevation = instance.y.invert(ypos);
+                var mouse_pointer_distance = instance.x.invert(xpos);
+
+                var mouse_text_xpos = xpos + 10;
+                if (xpos > (instance.width/2)) {
+                    mouse_text_xpos = xpos - 120;
+                }
+
+                var i = d3.bisector((d) => d.distance).right(instance.data, (mouse_pointer_distance * 1000));
+
+                instance.mouse_text
+                    .html(Math.round(mouse_pointer_distance) + " km / " + Math.round(instance.data[i].elevation) + "m")
+                    .style("opacity", 1)
+                    .attr("y", "40")
+                    .attr("x", mouse_text_xpos);
+
+                instance._marker.setLatLng([instance.data[i].lat, instance.data[i].lon]);
+            }
+
+            const listeningRect = this.foreground
+                .append("rect")
+                .attr("class", "listening-rect")
+                .attr("width", this.width)
+                .attr("height", this.height)
+                .on("mousemove", pm_mouseover);
+
+            this.x.domain(d3.extent(this.data, d => d.distance / 1000))
+                .range([ 0, this.width ]);
+
+            this.background.append("g")
+                .attr("transform", `translate(0,${this.height})`)
+                .call(d3.axisBottom(this.x));
+
+            this.y.domain([0, d3.max(this.data, d => +d.elevation)])
+                .range([ this.height, 0 ]);
+
+            this.background.append("g")
+                  .call(d3.axisLeft(this.y))
+                  .call(g => g.append("text")
+                  .attr("x", -this.margin.left)
+                  .attr("y", 10)
+                  .attr("fill", "currentColor")
+                  .attr("text-anchor", "start")
+                  .text("m"));
+
+            this.background.append("path")
+                .datum(this.data)
+                .attr("fill", "#cce5df")
+                .attr("stroke", "#69b3a2")
+                .attr("stroke-width", 1.5)
+                .attr("d", d3.area()
+                    .x(d => this.x(d.distance / 1000))
+                    .y0(this.y(0))
+                    .y1(d => this.y(d.elevation))
+                )
+        }
+
+        get_data() {
+            var r = new XMLHttpRequest();
+            r.open('GET', this.get_url());
+            var instance = this;
+            r.addEventListener('load', function(event) {
+                instance.data = JSON.parse(r.responseText);
+                console.log(instance.data);
+
+                instance.graph();
+            });
+            r.send()
+        }
+    }
+    {% for track in object.tracks.all %}
+        {% for segment in track.segments.all %}
+        var f = new ElevationGraph("{{track.gpx_file.slug}}", {{segment.pk}}, map);
+        {% endfor %}
+    {% endfor %}
+
 </script>
 {% endblock %}

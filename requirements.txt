@@ -17,6 +17,7 @@ celery==5.3.6
 
 geojson==3.1.0
 djangorestframework==3.14.0
+django-cors-headers==4.3.1
 
 geopy
 

@@ -3,6 +3,8 @@
 ### UNRELEASED
 
   * fix popupop if html id is yet missing
+  * add django-cors-headers
+  * elevation Graph with D3js
 
 ### 08. January 2024
 

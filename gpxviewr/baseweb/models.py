@@ -3,6 +3,7 @@ import secrets
 import time
 import os
 import geojson
+import json
 from geopy import distance as geopy_distance
 from datetime import timedelta
 
@@ -15,7 +16,7 @@ from django.contrib.gis.measure import Distance
 from django.contrib.gis.db.models.functions import Distance as FDistance
 from django.contrib.gis.geos import Point
 from django.urls import reverse
-from django.db.models.signals import post_delete
+from django.db.models.signals import post_delete, pre_delete
 from django.db.models import Sum
 from django.dispatch import receiver
 
@@ -405,6 +406,41 @@ class GPXTrackSegment(TimeStampedModel):
         d = int(self.distance / 1000)
         return f"{d} km"
 
+    def get_d3js(self, refresh=False) -> list:
+        filename = os.path.join(settings.LOCAL_GEOJSON_TEMP_DIRECTORY, f"gpx_track_segment_d3js_{self.pk}.json")
+
+        if os.path.exists(filename) and refresh is False:
+            return json.loads(Path(filename).read_text())
+
+        if self.track.gpx_file.job_status < 3:
+            return None
+
+        data = []
+        total_distance = 0
+
+        for point in self.points.all():
+            point_priv = point.get_previous()
+
+            if point_priv is None:
+                m = 0
+            else:
+                m = geopy_distance.distance(
+                    (point_priv.location.x, point_priv.location.y),
+                    (point.location.x, point.location.y)
+                ).m
+            total_distance += m
+
+            if point.elevation is not None:
+                data.append({
+                    'distance': total_distance,
+                    'lat': point.location.x,
+                    'lon': point.location.y,
+                    'elevation': point.elevation,
+                })
+
+        Path(filename).write_text(json.dumps(data))
+        return data
+
 
 class GPXTrackSegmentPoint(TimeStampedModel):
     number = models.BigIntegerField(null=True, db_index=True)
@@ -424,11 +460,11 @@ class GPXTrackSegmentPoint(TimeStampedModel):
             # we are already on the start
             return None
 
-        return GPXTrackSegmentPoint.objects.filter(segment=self.segment, number=(self.number + 1))
+        return GPXTrackSegmentPoint.objects.get(segment=self.segment, number=(self.number - 1))
 
     def get_next(self):
         try:
-            return GPXTrackSegmentPoint.objects.filter(segment=self.segment, number=(self.number + 1))
+            return GPXTrackSegmentPoint.objects.get(segment=self.segment, number=(self.number + 1))
         except ObjectDoesNotExist:
             return None
 
@@ -696,3 +732,18 @@ def gpx_file_delete_file(sender, instance, *args, **kwargs) -> None:
     geojson = os.path.join(settings.LOCAL_GEOJSON_TEMP_DIRECTORY, f"{instance.slug}.geojson")
     if os.path.exists(geojson):
         os.remove(geojson)
+
+
+@receiver(pre_delete, sender=GPXFile)
+def gpx_file_pre_delete(sender, instance, *args, **kwargs) -> None:
+    for track in instance.tracks.all():
+        for segment in track.segments.all():
+            segment.delete()
+
+
+@receiver(post_delete, sender=GPXTrackSegment)
+def gpx_track_segment_delete_file(sender, instance, *args, **kwargs) -> None:
+    filename = os.path.join(settings.LOCAL_GEOJSON_TEMP_DIRECTORY, f"gpx_track_segment_d3js_{instance.pk}.json")
+
+    if os.path.exists(filename):
+        os.remove(filename)

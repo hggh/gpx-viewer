@@ -6,10 +6,27 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from .models import (
     GPXFile,
+    GPXTrackSegment,
     GPXWayPointType,
     GPXTrackWayPoint,
     GPXFileUserSegmentSplit,
 )
+
+
+class GPXTrackSegmentViewSet(viewsets.ViewSet):
+    @action(detail=True, methods=['GET',])
+    def d3js(self, request, pk=None):
+        gpx_file_slug = request.GET.get('gpx_file_slug', None)
+        gpx_file = GPXFile.objects.get(slug=gpx_file_slug)
+
+        segment = GPXTrackSegment.objects.get(pk=pk, track__gpx_file=gpx_file)
+
+        data = segment.get_d3js()
+
+        if data is None:
+            return Response({}, status=404)
+
+        return Response(data)
 
 
 class GPXFileViewSet(viewsets.ViewSet):
