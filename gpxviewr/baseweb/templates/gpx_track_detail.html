@@ -750,6 +750,7 @@
             this.foreground = this.svg.append("g").attr("class", "group2");
 
             this._marker = L.circleMarker([0, 0]).addTo(this.map);
+            this._marker.setRadius(5);
 
             this.get_data();
         }
@@ -762,8 +763,31 @@
             return "#track_graph_segment_" + this.segment_pk;
         }
 
+        pm_mouseover(event) {
+            var [xpos, ypos] = d3.pointer(event);
+            this.xAxisLine.attr("x",xpos);
+
+            var mouse_pointer_elevation = this.y.invert(ypos);
+            var mouse_pointer_distance = this.x.invert(xpos);
+
+            var mouse_text_xpos = xpos + 10;
+            if (xpos > (this.width/2)) {
+                mouse_text_xpos = xpos - 120;
+            }
+
+            var i = d3.bisector((d) => d.distance).right(this.data, (mouse_pointer_distance * 1000));
+
+            this.mouse_text
+                .text(Math.round(mouse_pointer_distance) + " km / " + Math.round(this.data[i].elevation) + "m")
+                .style("opacity", 1)
+                .attr("class", "mouse-text")
+                .attr("y", "40")
+                .attr("x", mouse_text_xpos);
+
+            this._marker.setLatLng([this.data[i].lat, this.data[i].lon]);
+        }
+
         graph() {
-            var instance = this;
             this.x = d3.scaleLinear();
             this.y = d3.scaleLinear();
 
@@ -778,35 +802,12 @@
                 .style("opacity", 0)
                 .attr("text-anchor", "right");
 
-            function pm_mouseover(event) {
-                var [xpos, ypos] = d3.pointer(event);
-                instance.xAxisLine.attr("x",xpos);
-
-                var mouse_pointer_elevation = instance.y.invert(ypos);
-                var mouse_pointer_distance = instance.x.invert(xpos);
-
-                var mouse_text_xpos = xpos + 10;
-                if (xpos > (instance.width/2)) {
-                    mouse_text_xpos = xpos - 120;
-                }
-
-                var i = d3.bisector((d) => d.distance).right(instance.data, (mouse_pointer_distance * 1000));
-
-                instance.mouse_text
-                    .html(Math.round(mouse_pointer_distance) + " km / " + Math.round(instance.data[i].elevation) + "m")
-                    .style("opacity", 1)
-                    .attr("y", "40")
-                    .attr("x", mouse_text_xpos);
-
-                instance._marker.setLatLng([instance.data[i].lat, instance.data[i].lon]);
-            }
-
             const listeningRect = this.foreground
                 .append("rect")
                 .attr("class", "listening-rect")
                 .attr("width", this.width)
                 .attr("height", this.height)
-                .on("mousemove", pm_mouseover);
+                .on("mousemove", this.pm_mouseover.bind(this));
 
             this.x.domain(d3.extent(this.data, d => d.distance / 1000))
                 .range([ 0, this.width ]);
@@ -845,7 +846,6 @@
             var instance = this;
             r.addEventListener('load', function(event) {
                 instance.data = JSON.parse(r.responseText);
-                console.log(instance.data);
 
                 instance.graph();
             });
