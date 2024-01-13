@@ -1,6 +1,6 @@
 # CHANGELOG
 
-### UNRELEASED
+### 13. January 2024
 
   * fix popupop if html id is yet missing
   * add django-cors-headers
