@@ -839,17 +839,12 @@
                     .y1(d => this.y(d.elevation))
                 )
         }
-
         get_data() {
-            var r = new XMLHttpRequest();
-            r.open('GET', this.get_url());
             var instance = this;
-            r.addEventListener('load', function(event) {
-                instance.data = JSON.parse(r.responseText);
-
+            d3.json(this.get_url()).then(function (data){
+                instance.data = data;
                 instance.graph();
             });
-            r.send()
         }
     }
     {% for track in object.tracks.all %}
