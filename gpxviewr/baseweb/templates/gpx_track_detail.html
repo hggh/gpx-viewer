@@ -785,8 +785,8 @@
             this.background = this.svg.append("g").attr("class", "group1");
             this.foreground = this.svg.append("g").attr("class", "group2");
 
-            this._marker = L.circleMarker([0, 0]).addTo(this.map);
-            this._marker.setRadius(5);
+            this._marker = L.circleMarker([0, 0], {'color': '#ff0000'}).addTo(this.map);
+            this._marker.setRadius(7);
 
             this.get_data();
         }

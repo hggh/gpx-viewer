@@ -6,6 +6,7 @@
   * add django-cors-headers
   * elevation Graph with D3js
   * bounce marker if mouseover table / element
+  * Marker = rot
 
 ### 08. January 2024
 
