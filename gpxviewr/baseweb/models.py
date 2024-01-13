@@ -141,6 +141,7 @@ class GPXFile(TimeStampedModel):
         for s in self.user_segments.all():
             segment = {
                 "name": s.name,
+                "id": s.pk,
                 "start": {
                     "lat": float(s.point_start.location.x),
                     "lon": float(s.point_start.location.y),

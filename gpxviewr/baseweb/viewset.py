@@ -73,7 +73,7 @@ class GPXFileViewSet(viewsets.ViewSet):
     def user_segment_splits(self, request, pk=None):
         gpx_file = GPXFile.objects.get(slug=pk)
 
-        return Response({"user_segment_splits": gpx_file.get_user_segment_splits()})
+        return Response(gpx_file.get_user_segment_splits())
 
     @action(detail=True, methods=['POST',])
     def user_segment_split(self, request, pk=None):

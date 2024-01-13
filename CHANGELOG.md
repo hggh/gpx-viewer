@@ -5,6 +5,7 @@
   * fix popupop if html id is yet missing
   * add django-cors-headers
   * elevation Graph with D3js
+  * bounce marker if mouseover table / element
 
 ### 08. January 2024
 

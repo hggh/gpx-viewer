@@ -145,7 +145,7 @@
                 </thead>
                 <tbody class="table-group-divider">
                     {% for split in object.user_segments.all %}
-                    <tr>
+                    <tr class="user-track-splits" data-id="{{split.pk}}">
                         <th scope="row">{{split.name}}</th>
                         <td></td>
                         <td>{{split.get_human_distance }}</td>
@@ -313,7 +313,6 @@
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(map);
     var edit_markers_layer = L.layerGroup().addTo(map);
-    var user_segment_splits_layer = L.layerGroup().addTo(map);
 
     map.on('click', function(e) {
         if (osm_query_feature) {
@@ -545,40 +544,6 @@
     fetch_geojson();
     get_draw_waypoints();
 
-    function show_user_segment_splits() {
-        user_segment_splits_layer.clearLayers();
-        url = '/api/gpxfile/' + gpx_file_slug + '/user_segment_splits/';
-        var r = new XMLHttpRequest();
-        r.open('POST', url);
-
-        r.addEventListener('load', function(event) {
-            var d = JSON.parse(r.responseText);
-            var user_segment_splits = d["user_segment_splits"];
-
-            user_segment_splits.forEach(function(s) {
-                var start = L.marker([s.start.lat, s.start.lon], {
-                    icon: L.icon({
-                        iconUrl: '/static/marker_start.svg',
-                        iconSize: [20, 32],
-                    })
-                });
-                start.bindPopup("Start: " + s.name);
-                start.addTo(map);
-
-                var end = L.marker([s.end.lat, s.end.lon], {
-                    icon: L.icon({
-                        iconUrl: '/static/marker_end.svg',
-                        iconSize: [20, 32],
-                    })
-                });
-                end.bindPopup("End: " + s.name);
-                end.addTo(user_segment_splits_layer);
-            });
-        });
-        r.send();
-    }
-    show_user_segment_splits();
-
     function show_route_to(waypoint_pk) {
         url = '/api/gpxfile/' + gpx_file_slug + '/geojson_track_to_waypoint/';
         var r = new XMLHttpRequest();
@@ -723,6 +688,77 @@
     if (gpx_track_status_reload == true) {
         setInterval(get_draw_waypoints, 3000);
     }
+
+    class UserSegmentSplit {
+        constructor(gpx_file_slug, map) {
+            this.gpx_file_slug = gpx_file_slug;
+            this.map = map;
+            this.data = [];
+            this._markers = [];
+            this._layer = L.layerGroup().addTo(this.map);
+
+            this.init();
+            this.get_data();
+        }
+
+        init() {
+            document.querySelectorAll(".user-track-splits").forEach(box => {
+                box.addEventListener("mouseover", (event) => {
+                    var id = event.target.parentNode.dataset.id;
+
+                    if (id) {
+                        this._markers[id + "_start"].bounce(1);
+                        this._markers[id + "_end"].bounce(1);
+                    }
+                });
+            });
+        }
+        get_url() {
+            return "/api/gpxfile/" + this.gpx_file_slug + "/user_segment_splits/";
+        }
+        draw_markers() {
+            this._layer.clearLayers();
+
+            this.data.forEach(s => {
+                var start = L.marker([s.start.lat, s.start.lon], {
+                    icon: L.icon({
+                        iconUrl: '/static/marker_start.svg',
+                        iconSize: [20, 32],
+                    })
+                });
+                start.bindPopup("Start: " + s.name);
+                start.addTo(this._layer);
+
+                var end = L.marker([s.end.lat, s.end.lon], {
+                    icon: L.icon({
+                        iconUrl: '/static/marker_end.svg',
+                        iconSize: [20, 32],
+                    })
+                });
+                end.bindPopup("End: " + s.name);
+                end.addTo(this._layer);
+
+                this._markers[s.id + "_start"] = start;
+                this._markers[s.id + "_end"] = end;
+            });
+        }
+
+        get_data() {
+            var instance = this;
+            var r = new XMLHttpRequest();
+            r.open('POST', this.get_url());
+
+            r.addEventListener('load', function(event) {
+                instance.data = JSON.parse(r.responseText);
+                console.log(instance.data);
+
+                instance.draw_markers();
+            });
+            r.send()
+        }
+    }
+
+    user_segment_split = new UserSegmentSplit(gpx_file_slug, map);
 
     class ElevationGraph {
         constructor(gpx_file_slug, segment_pk, map) {
