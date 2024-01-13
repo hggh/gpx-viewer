@@ -85,7 +85,7 @@
 
         <div class="container collapse" id="track_show_elevation_graph">
             {% for track in object.tracks.all %}
-                <h3>{{track.name }}d</h3>
+                <h3>{{track.name }}</h3>
                 {% for segment in track.segments.all %}
                 <div id="track_graph_segment_{{segment.pk}}" style="float:left;">
                 </div>
