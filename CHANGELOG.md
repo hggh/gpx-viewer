@@ -1,5 +1,10 @@
 # CHANGELOG
 
+### 14. January 2024
+
+  * allow Download Track split
+  * pregenerate Elevation Graph data (perhaps later do it in the Browser?)
+
 ### 13. January 2024
 
   * fix popupop if html id is yet missing

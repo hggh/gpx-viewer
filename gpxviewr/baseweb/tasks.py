@@ -100,6 +100,15 @@ def gpx_waypoint_find_route_from_track(waypoint_pk):
 
 
 @shared_task
+def pregenerate_d3js_data(gpx_file_pk) -> None:
+    gpx_file = GPXFile.objects.get(pk=gpx_file_pk)
+
+    for track in gpx_file.tracks.all():
+        for segment in track.segments.all():
+            segment.get_d3js()
+
+
+@shared_task
 def gpx_file_load_into_database(gpx_file_pk):
     gpx_file = GPXFile.objects.get(pk=gpx_file_pk)
     gpx_file.job_status = 2
@@ -107,6 +116,7 @@ def gpx_file_load_into_database(gpx_file_pk):
 
     gpx_file.load_file_to_database()
 
+    pregenerate_d3js_data.delay(gpx_file_pk)
     gpx_flile_query_osm.delay(gpx_file_pk)
 
 

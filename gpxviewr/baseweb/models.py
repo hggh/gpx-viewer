@@ -413,13 +413,15 @@ class GPXTrackSegment(TimeStampedModel):
         if os.path.exists(filename) and refresh is False:
             return json.loads(Path(filename).read_text())
 
-        if self.track.gpx_file.job_status < 3:
-            return None
-
         data = []
         total_distance = 0
 
-        for point in self.points.all():
+        points = self.points.all()
+
+        if points.count() == 0:
+            return None
+
+        for point in points:
             point_priv = point.get_previous()
 
             if point_priv is None:
@@ -504,6 +506,34 @@ class GPXFileUserSegmentSplit(TimeStampedModel):
             return int(self.total_descent)
 
         return None
+
+    def generate_gpx(self) -> str:
+        points = GPXTrackSegmentPoint.objects.filter(
+            segment__id=self.point_start.segment.pk,
+            number__gte=self.point_start.number,
+            number__lte=self.point_end.number,
+        )
+
+        gpx = GPX()
+        gpx.creator = 'GPX Tools by hggh'
+        gpx.name = self.name
+
+        track = Track()
+        track.name = self.name
+        segment = TrackSegment()
+
+        for point in points:
+            w = Waypoint()
+            w.lat = point.location.x
+            w.lon = point.location.y
+            w.ele = point.elevation
+
+            segment.points.append(w)
+
+        track.trksegs = [segment]
+        gpx.tracks = [track]
+
+        return gpx.to_string()
 
     @staticmethod
     def add_segment(gpx_file, start, end, name):

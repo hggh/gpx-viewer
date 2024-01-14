@@ -12,6 +12,7 @@ from .models import (
     GPXTrack,
     GPXWayPointType,
     GPXTrackWayPoint,
+    GPXFileUserSegmentSplit,
     generate_default_delete_after_date,
 )
 
@@ -89,6 +90,24 @@ class GPXTrackDownloadView(FormView):
 
         r = FileResponse(gpx_file, as_attachment=True, filename='waypoints.gpx')
         r['Content-Disposition'] = 'attachment; filename={0}'.format("waypoints.gpx")
+
+        return r
+
+
+class GPXFileUserSegmentSplitDownloadView(DetailView):
+    model = GPXFileUserSegmentSplit
+
+    def get_object(self, queryset=None):
+        gpx_file = GPXFile.objects.get(slug=self.kwargs.get('slug', None))
+        object = GPXFileUserSegmentSplit.objects.get(gpx_file=gpx_file, pk=self.kwargs.get('pk', None))
+
+        return object
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+
+        r = FileResponse(self.object.generate_gpx(), as_attachment=True, filename=f'{self.object.name}.gpx')
+        r['Content-Disposition'] = 'attachment; filename={0}'.format(f'{self.object.name}.gpx')
 
         return r
 
