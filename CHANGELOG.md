@@ -4,6 +4,7 @@
 
   * allow Download Track split
   * pregenerate Elevation Graph data (perhaps later do it in the Browser?)
+  * add og Meta information
 
 ### 13. January 2024
 

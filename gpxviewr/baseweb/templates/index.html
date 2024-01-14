@@ -1,4 +1,10 @@
 {% extends "base.html" %}
+{% block opengraph %}
+<meta property="og:title" content="GPXViewr"/>
+<meta name="description" property="og:description" content="GPX Track Viewer with POI search based on OpenStreetMap"/>
+<meta property="og:type" content="website"/>
+<meta property="og:image" content="https://gpxviewr.genannt.name/static/preview.png"/>
+{% endblock %}
 {% block content %}
 
 <div class="container">
