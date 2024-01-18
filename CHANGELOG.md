@@ -1,5 +1,8 @@
 # CHANGELOG
 
+### 18. January 2024
+  * use tag contact:website and website tag for getting url from OSM data
+
 ### 14. January 2024
 
   * allow Download Track split

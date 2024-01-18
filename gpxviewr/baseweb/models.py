@@ -687,6 +687,9 @@ class GPXTrackWayPoint(TimeStampedModel):
         return 'marker_default'
 
     def get_url(self) -> str:
+        if self.tags.get('contact:website', None):
+            return self.tags.get('contact:website')
+
         return self.tags.get('website', None)
 
     def is_camping_site(self) -> bool:
