@@ -218,13 +218,14 @@ class GPXFile(TimeStampedModel):
                         points = []
                         curr = 0
 
-                self.query_data_osm(
-                    points=points,
-                    around_meters=around_meters,
-                    point_type=point_type,
-                    around_duplicate=around_duplicate,
-                )
-                time.sleep(1)
+                if len(points)> 0:
+                    self.query_data_osm(
+                        points=points,
+                        around_meters=around_meters,
+                        point_type=point_type,
+                        around_duplicate=around_duplicate,
+                    )
+                    time.sleep(1)
 
     def query_data_osm(self, points, around_meters, point_type, around_duplicate) -> None:
         from .tasks import gpx_waypoint_find_route_from_track

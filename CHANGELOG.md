@@ -1,6 +1,11 @@
 # CHANGELOG
 
+### 22. January 2024
+
+  * if empty trkseg or too few points inside a trkseg - no query is possible - do not query
+
 ### 18. January 2024
+
   * use tag contact:website and website tag for getting url from OSM data
 
 ### 14. January 2024
