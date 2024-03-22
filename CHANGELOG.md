@@ -1,5 +1,11 @@
 # CHANGELOG
 
+### UNRELEASED
+
+  * remove Track Split feature - UI is not very good
+  * add almostOver Leaflet Plugin to have a better hover
+  * better D3.js Graph with hover support on map and elevation graph
+
 ### 22. January 2024
 
   * if empty trkseg or too few points inside a trkseg - no query is possible - do not query

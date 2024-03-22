@@ -83,13 +83,7 @@
             {% endfor %}
         </div>
 
-        <div class="container">
-            <button type="button" id="track_show_elevation_graph_button" class="btn btn-secondary btn-sm" title="Show elevation graph">
-                <img src="{% static '/bootstrap-icons-1.11.2/graph-up.svg' %}">
-            </button>
-        </div>
-
-        <div class="container collapse" id="track_show_elevation_graph">
+        <div class="container" id="track_show_elevation_graph">
             {% for track in object.tracks.all %}
                 <h3>{{track.name }}</h3>
                 {% for segment in track.segments.all %}
@@ -99,91 +93,6 @@
             {% endfor %}
             <div style="clear:both">
             </div>
-        </div>
-
-        <div id="track_splitting_form" class="container collapse" style="padding-top:10px;">
-            <h4>add new Track Split</h4>
-            <div class="row mb-3">
-                <div class="col-sm-10">
-                zoom into the map to see the points of the track. Click on a point as set the point as start or end.
-                </div>
-            </div>
-            <div class="row mb-3">
-                <label for="track_splitting_form_name" class="col-sm-2 col-form-label">Name</label>
-                <div class="col-sm-10">
-                    <input type="text" id="track_splitting_form_name" value="Tag 1"/>
-                </div>
-            </div>
-            <div class="row mb-3">
-                <label for="track_splitting_form_start" class="col-sm-2 col-form-label">Starting point</label>
-                <div class="col-sm-10">
-                    <input type="text" id="track_splitting_form_start" value=""/>
-                </div>
-            </div>
-            <div class="row mb-3">
-                <label for="track_splitting_form_end" class="col-sm-2 col-form-label">Starting end</label>
-                <div class="col-sm-10">
-                    <input type="text" id="track_splitting_form_end" value=""/>
-                </div>
-            </div>
-            <div class="row mb-3">
-                <button type="submit" id="track_splitting_form_submit" class="btn btn-primary">Add new Split</button>
-            </div>
-            <div id="track_splitting_form_error" class="alert alert-danger collapse" role="alert">
-            </div>
-        </div>
-        <div class="container" style="padding-top:10px;">
-            <h3>Track Splits</h3>
-            <div style="float:right">
-                <button type="button" id="track_splitting_add" class="btn btn-secondary btn-sm" title="Split the Track for a day">
-                <img src="/static/bootstrap-icons-1.11.2/plus-circle.svg"/> Splitting
-                </button>
-            </div>
-            <table class="table">
-                <thead>
-                  <tr>
-                    <th scope="col"></th>
-                    <th scope="col"></th>
-                    <th scope="col">KM</th>
-                    <th scope="col"></th>
-                    <th scope="col"></th>
-                  </tr>
-                </thead>
-                <tbody class="table-group-divider">
-                    {% for split in object.user_segments.all %}
-                    <tr class="user-track-splits" data-id="{{split.pk}}">
-                        <th scope="row">{{split.name}}</th>
-                        <td></td>
-                        <td>{{split.get_human_distance }}</td>
-                        <td>
-                            {% if split.get_total_ascent %}
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-up-right" viewBox="0 0 16 16">
-                                <path fill-rule="evenodd" d="M14 2.5a.5.5 0 0 0-.5-.5h-6a.5.5 0 0 0 0 1h4.793L2.146 13.146a.5.5 0 0 0 .708.708L13 3.707V8.5a.5.5 0 0 0 1 0z"/>
-                                </svg>
-                                {{ split.get_total_ascent }} m
-                            {% endif %}
-                            {% if split.get_total_descent %}
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-down-right" viewBox="0 0 16 16">
-                                <path fill-rule="evenodd" d="M14 13.5a.5.5 0 0 1-.5.5h-6a.5.5 0 0 1 0-1h4.793L2.146 2.854a.5.5 0 1 1 .708-.708L13 12.293V7.5a.5.5 0 0 1 1 0z"/>
-                                </svg>
-                                {{ split.get_total_descent }} m
-                            {% endif %}
-                        </td>
-                        <td>
-                            <button type="button" onclick="user_segment_split_delete(this, {{split.pk}})" class="btn btn-secondary btn-sm" title="delete the split">
-                            <img src="/static/bootstrap-icons-1.11.2/x-square.svg"/> Delete
-                            </button>
-
-                            <a href="/gpxtrack/{{object.slug}}/user_segment_split_download/{{split.pk}}">
-                                <button type="button" class="btn btn-secondary btn-sm" title="Download Track">
-                                    Download GPX Track
-                                </button>
-                            </a>
-                        </td>
-                    </tr>
-                    {%endfor %}
-                </tbody>
-            </table>
         </div>
 
         <div class="container" style="padding-top:30px;">
@@ -303,20 +212,6 @@
     var google_query_feature = false;
 
     var map_waypoints = [];
-    var edit_markers = [];
-    var edit_markers_submit = {
-        name: null,
-        start: {
-            segment_pk: null,
-            lat: null,
-            lon: null,
-        },
-        end: {
-            segment_pk: null,
-            lat: null,
-            lon: null,
-        }
-    };
     const gpx_file_slug = '{{object.slug}}';
     const map = L.map('map').setView([51.505, 10.09], 3);
     const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
@@ -324,7 +219,6 @@
         maxZoom: 19,
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(map);
-    var edit_markers_layer = L.layerGroup().addTo(map);
 
     map.on('click', function(e) {
         if (osm_query_feature) {
@@ -354,32 +248,6 @@
         });
         r.send(JSON.stringify({'user_segment_pk': user_segment_pk}));
     }
-
-    function edit_markers_view() {
-        edit_markers_layer.clearLayers();
-
-        // if splitting form is invisible do not show the track points
-        var track_splitting_form = document.querySelector("#track_splitting_form");
-        if (track_splitting_form.classList.contains('collapse')) {
-            return;
-        }
-        
-        if (map.getZoom() > 14) {
-            b = map.getBounds();
-            for (m of edit_markers) {
-                if (b.contains(m.getLatLng())) {
-                    m.addTo(edit_markers_layer);
-                }
-            }
-        }
-    }
-
-    map.on('moveend', function(e) {
-        edit_markers_view();
-    });
-    map.on('zoomend', function(e) {
-        edit_markers_view();
-    });
 
     L.Control.QueryOSM = L.Control.extend({
         pressed_query: function(e) {
@@ -447,113 +315,6 @@
     var waypoints_url = "/api/gpxfile/" + gpx_file_slug + "/waypoints/";
     var map_layer_groups = {};
 
-    function edit_marker_submit_data(data) {
-        data.name = document.querySelector("#track_splitting_form_name").value;
-
-        var r = new XMLHttpRequest();
-        r.open('POST', "/api/gpxfile/{{ object.slug }}/user_segment_split/");
-        r.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-        r.addEventListener('load', function(event) {
-            var d = JSON.parse(r.responseText);
-
-            if (d.status == 'ok') {
-                location.reload();
-            }
-            else {
-                var box = document.querySelector("#track_splitting_form_error");
-                box.classList.remove('collapse');
-                box.textContent = d.text;
-            }
-        });
-        r.send(JSON.stringify(data));
-    }
-
-    document.querySelector("#track_splitting_form_submit").addEventListener('click', function(event) {
-        if (edit_markers_submit.start.lat == null || edit_markers_submit.end.lat == null) {
-            return;
-        }
-        document.querySelector("#track_splitting_form_start").value = "";
-        document.querySelector("#track_splitting_form_end").value = "";
-        edit_marker_submit_data(edit_markers_submit);
-    });
-
-    function edit_marker_as_start(e) {
-        var segment_pk = parseInt(e.dataset.segmentpk);
-        var lat = parseFloat(e.dataset.lat);
-        var lon = parseFloat(e.dataset.lon);
-
-        edit_markers_submit.start.segment_pk = segment_pk;
-        edit_markers_submit.start.lat = lat;
-        edit_markers_submit.start.lon = lon;
-
-        document.querySelector("#track_splitting_form_start").value = lat + "/" + lon;
-    }
-    function edit_marker_as_end(e) {
-        var segment_pk = parseInt(e.dataset.segmentpk);
-        var lat = parseFloat(e.dataset.lat);
-        var lon = parseFloat(e.dataset.lon);
-
-        edit_markers_submit.end.segment_pk = segment_pk;
-        edit_markers_submit.end.lat = lat;
-        edit_markers_submit.end.lon = lon;
-
-        document.querySelector("#track_splitting_form_end").value = lat + "/" + lon;
-    }
-
-    var track_splitting_add = document.querySelector("#track_splitting_add");
-    var track_splitting_form = document.querySelector("#track_splitting_form");
-    track_splitting_add.addEventListener("click", (event) => {
-        track_splitting_form.classList.toggle('collapse');
-        edit_markers_view();
-    });
-
-    var track_show_elevation_graph_button = document.querySelector("#track_show_elevation_graph_button");
-    var track_show_elevation_graph = document.querySelector("#track_show_elevation_graph");
-    track_show_elevation_graph_button.addEventListener("click", (event) => {
-        track_show_elevation_graph.classList.toggle('collapse');
-    });
-
-    function fetch_geojson() {
-        var request_line = new XMLHttpRequest();
-        request_line.open('POST', "/api/gpxfile/{{ object.slug }}/geojson/");
-        request_line.addEventListener('load', function(event) {
-            if (request_line.status != 200) {
-                setTimeout(fetch_geojson, 1500);
-                return;
-            }
-            var d = JSON.parse(request_line.responseText);
-            geojson = L.geoJSON(d, {
-                style: function (feature) {
-                    return {
-                        color: feature.properties.color,
-                        weight: feature.properties.weight,
-                        opacity: feature.properties.opacity,
-                    };
-                },
-                onEachFeature: function(feature, layer) {
-                    feature.geometry.coordinates.forEach(function (longlat, i) {
-                        if ((i % 4) != 0 ) {
-                            return;
-                        }
-                        var m = L.marker([longlat[1], longlat[0]])
-                        m.segment_pk = feature.properties.segment_pk;
-                        m.setIcon(L.icon({
-                            iconUrl: '/static/PolyLine.png',
-                            iconSize: [16, 16],
-                            className: 'maker_edit_polyline',
-                        }));
-                        m.bindPopup('<button type="button" data-segmentpk="'+m.segment_pk+'" data-lat="'+longlat[1]+'" data-lon="'+longlat[0]+'" onclick="edit_marker_as_start(this)" class="btn btn-success">as Start</button> <button type="button" data-segmentpk="'+ m.segment_pk + '" data-lat="'+longlat[1]+'" data-lon="'+longlat[0]+'" onclick="edit_marker_as_end(this)" class="btn btn-primary">as End</button>').openPopup();
-                        edit_markers.push(m);
-                    });
-                }
-            }
-            );
-            geojson.addTo(map);
-            map.fitBounds(geojson.getBounds());
-        });
-        request_line.send();
-    }
-    fetch_geojson();
     get_draw_waypoints();
 
     function show_route_to(waypoint_pk) {
@@ -701,83 +462,12 @@
         setInterval(get_draw_waypoints, 3000);
     }
 
-    class UserSegmentSplit {
-        constructor(gpx_file_slug, map) {
-            this.gpx_file_slug = gpx_file_slug;
-            this.map = map;
-            this.data = [];
-            this._markers = [];
-            this._layer = L.layerGroup().addTo(this.map);
-
-            this.init();
-            this.get_data();
-        }
-
-        init() {
-            document.querySelectorAll(".user-track-splits").forEach(box => {
-                box.addEventListener("mouseover", (event) => {
-                    var id = event.target.parentNode.dataset.id;
-
-                    if (id) {
-                        this._markers[id + "_start"].bounce(1);
-                        this._markers[id + "_end"].bounce(1);
-                    }
-                });
-            });
-        }
-        get_url() {
-            return "/api/gpxfile/" + this.gpx_file_slug + "/user_segment_splits/";
-        }
-        draw_markers() {
-            this._layer.clearLayers();
-
-            this.data.forEach(s => {
-                var start = L.marker([s.start.lat, s.start.lon], {
-                    icon: L.icon({
-                        iconUrl: '/static/marker_start.svg',
-                        iconSize: [20, 32],
-                    })
-                });
-                start.bindPopup("Start: " + s.name);
-                start.addTo(this._layer);
-
-                var end = L.marker([s.end.lat, s.end.lon], {
-                    icon: L.icon({
-                        iconUrl: '/static/marker_end.svg',
-                        iconSize: [20, 32],
-                    })
-                });
-                end.bindPopup("End: " + s.name);
-                end.addTo(this._layer);
-
-                this._markers[s.id + "_start"] = start;
-                this._markers[s.id + "_end"] = end;
-            });
-        }
-
-        get_data() {
-            var instance = this;
-            var r = new XMLHttpRequest();
-            r.open('POST', this.get_url());
-
-            r.addEventListener('load', function(event) {
-                instance.data = JSON.parse(r.responseText);
-                console.log(instance.data);
-
-                instance.draw_markers();
-            });
-            r.send()
-        }
-    }
-
-    user_segment_split = new UserSegmentSplit(gpx_file_slug, map);
-
-    class ElevationGraph {
-        constructor(gpx_file_slug, segment_pk, map) {
+    class TrackSegment {
+        constructor(gpx_file_slug, segment_pk, map, segment) {
             this.gpx_file_slug = gpx_file_slug;
             this.segment_pk = segment_pk;
-            this.data = [];
             this.map = map;
+            this.segment = segment;
 
             this.margin = {
                 top: 10,
@@ -800,11 +490,54 @@
             this._marker = L.circleMarker([0, 0], {'color': '#ff0000'}).addTo(this.map);
             this._marker.setRadius(7);
 
-            this.get_data();
+            this.graph();
+            this.draw_line();
         }
 
-        get_url() {
-            return "/api/tracksegment/" + this.segment_pk + "/d3js/?gpx_file_slug=" + this.gpx_file_slug;
+        async draw_line() {
+            var data = [];
+            this.segment.points.forEach((point) => {
+                data.push([point.lat, point.lon]);
+            });
+
+            this.line = L.polyline(data, {'color': this.segment.color, 'opacity': 0.7}).addTo(this.map);
+            this.map.almostOver.addLayer(this.line);
+
+            this.map.addEventListener("almost:move", (event) => {
+
+                this._marker.setLatLng(event.latlng);
+
+                var result = Infinity;
+                var p = null;
+                this.segment.points.forEach((point) => {
+                    var distance = event.latlng.distanceTo([point.lat, point.lon]);
+
+                    if (distance < result) {
+                        result = distance;
+                        p = point;
+                    }
+                });
+                var xpos = this.x(p.distance / 1000);
+
+                this.draw_tooltip(xpos, p);
+            });
+            this.map.fitBounds(this.line.getBounds());
+        }
+
+        draw_tooltip(xpos, point) {
+            this.xAxisLine.attr("x", xpos);
+
+            var mouse_text_xpos = xpos + 10;
+            if (xpos > (this.width / 2)) {
+                mouse_text_xpos = xpos - 120;
+            }
+
+            this.mouse_text
+                .text(Math.round(point.distance / 1000) + " km / " + Math.round(point.elevation) + "m")
+                .style("opacity", 1)
+                .attr("class", "mouse-text")
+                .attr("y", "40")
+                .attr("x", mouse_text_xpos);
         }
 
         get_container_name() {
@@ -813,29 +546,17 @@
 
         pm_mouseover(event) {
             var [xpos, ypos] = d3.pointer(event);
-            this.xAxisLine.attr("x",xpos);
+            this.xAxisLine.attr("x", xpos);
 
-            var mouse_pointer_elevation = this.y.invert(ypos);
             var mouse_pointer_distance = this.x.invert(xpos);
+            var i = d3.bisector((d) => d.distance).right(this.segment.points, (mouse_pointer_distance * 1000));
 
-            var mouse_text_xpos = xpos + 10;
-            if (xpos > (this.width/2)) {
-                mouse_text_xpos = xpos - 120;
-            }
+            this.draw_tooltip(xpos, this.segment.points[i]);
 
-            var i = d3.bisector((d) => d.distance).right(this.data, (mouse_pointer_distance * 1000));
-
-            this.mouse_text
-                .text(Math.round(mouse_pointer_distance) + " km / " + Math.round(this.data[i].elevation) + "m")
-                .style("opacity", 1)
-                .attr("class", "mouse-text")
-                .attr("y", "40")
-                .attr("x", mouse_text_xpos);
-
-            this._marker.setLatLng([this.data[i].lat, this.data[i].lon]);
+            this._marker.setLatLng([this.segment.points[i].lat, this.segment.points[i].lon]);
         }
 
-        graph() {
+        async graph() {
             this.x = d3.scaleLinear();
             this.y = d3.scaleLinear();
 
@@ -857,14 +578,14 @@
                 .attr("height", this.height)
                 .on("mousemove", this.pm_mouseover.bind(this));
 
-            this.x.domain(d3.extent(this.data, d => d.distance / 1000))
+            this.x.domain(d3.extent(this.segment.points, d => d.distance / 1000))
                 .range([ 0, this.width ]);
 
             this.background.append("g")
                 .attr("transform", `translate(0,${this.height})`)
                 .call(d3.axisBottom(this.x));
 
-            this.y.domain([0, d3.max(this.data, d => +d.elevation)])
+            this.y.domain([0, d3.max(this.segment.points, d => +d.elevation)])
                 .range([ this.height, 0 ]);
 
             this.background.append("g")
@@ -877,7 +598,7 @@
                   .text("m"));
 
             this.background.append("path")
-                .datum(this.data)
+                .datum(this.segment.points)
                 .attr("fill", "#cce5df")
                 .attr("stroke", "#69b3a2")
                 .attr("stroke-width", 1.5)
@@ -887,19 +608,14 @@
                     .y1(d => this.y(d.elevation))
                 )
         }
-        get_data() {
-            var instance = this;
-            d3.json(this.get_url()).then(function (data){
-                instance.data = data;
-                instance.graph();
-            });
-        }
     }
-    {% for track in object.tracks.all %}
-        {% for segment in track.segments.all %}
-        var f = new ElevationGraph("{{track.gpx_file.slug}}", {{segment.pk}}, map);
-        {% endfor %}
-    {% endfor %}
 
+    d3.json('/api/gpxfile/' + gpx_file_slug + '/json').then(function (data) {
+        data.forEach(track => {
+            track.segments.forEach(segment => {
+                var f = new TrackSegment(gpx_file_slug, segment.segment_id, map, segment);
+            });
+        });
+    });
 </script>
 {% endblock %}

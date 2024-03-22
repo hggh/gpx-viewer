@@ -155,43 +155,6 @@ class GPXFile(TimeStampedModel):
 
         return data
 
-    def geojson_polyline(self, refresh=False):
-        filename = os.path.join(settings.LOCAL_GEOJSON_TEMP_DIRECTORY, f"{self.slug}.geojson")
-
-        if os.path.exists(filename) and refresh is False:
-            return geojson.loads(Path(filename).read_text())
-
-        if self.job_status < 3:
-            return None
-
-        color_int = 0
-        fc = geojson.FeatureCollection(features=[])
-        for track in self.tracks.all():
-            for segment in track.segments.all():
-                line = geojson.LineString()
-
-                for point in segment.points.all():
-                    line.coordinates.append([float(point.location.y), float(point.location.x)])
-
-                fc.features.append(geojson.Feature(
-                    geometry=line,
-                    properties={
-                        'color': self.line_colors[color_int],
-                        'weight': 3,
-                        'opacity': 0.7,
-                        'segment_pk': segment.pk,
-                    })
-                )
-
-                color_int += 1
-                if color_int >= len(self.line_colors):
-                    color_int = 0
-                del line
-
-        Path(filename).write_text(geojson.dumps(fc))
-
-        return fc
-
     def generate_waypoints(self, point_type, around_meters=None, around_duplicate=0) -> None:
         if around_meters is None:
             around_meters = point_type.around
@@ -218,7 +181,7 @@ class GPXFile(TimeStampedModel):
                         points = []
                         curr = 0
 
-                if len(points)> 0:
+                if len(points) > 0:
                     self.query_data_osm(
                         points=points,
                         around_meters=around_meters,
@@ -291,7 +254,17 @@ class GPXFile(TimeStampedModel):
                 if wp.is_camping_site() or wp.is_hotel():
                     gpx_waypoint_find_route_from_track.delay(wp.pk)
 
+    def get_gpx_json_filename(self) -> str:
+        return os.path.join(settings.LOCAL_GEOJSON_TEMP_DIRECTORY, f"gpx_file_info_{self.pk}.json")
+
+    def get_json_data(self):
+        if os.path.exists(self.get_gpx_json_filename()):
+            return json.loads(Path(self.get_gpx_json_filename()).read_text())
+
+        return None
+
     def load_file_to_database(self) -> None:
+        json_data = []
         gpxfile = GPX.from_file(self.file.path)
 
         if gpxfile.name is not None and gpxfile.name != '':
@@ -299,13 +272,25 @@ class GPXFile(TimeStampedModel):
             self.save()
 
         track_number = 1
-        segment_number = 0
         for track in gpxfile.tracks:
             if track.name is not None and track.name != '':
                 name = track.name
             else:
                 name = "Track {}".format(track_number)
             track_number += 1
+
+            track_has_segments_with_points = False
+            if len(track.trksegs) > 0:
+                for segment in track.trksegs:
+                    if len(segment.trkpts) > 0:
+                        track_has_segments_with_points = True
+                        continue
+
+            if track_has_segments_with_points is False:
+                print("{} seems to have to points in any segment".format(
+                    self.file.path,
+                ))
+                continue
 
             gpx_track = GPXTrack(
                 gpx_file=self,
@@ -314,7 +299,21 @@ class GPXFile(TimeStampedModel):
             )
             gpx_track.save()
 
+            track_data = {
+                'name': name,
+                'slug': self.slug,
+                'track_id': gpx_track.pk,
+                'distance': track.distance,
+                'segments': [],
+            }
+
+            segment_number = 0
+            color_int = 0
             for segment in track.trksegs:
+                if len(segment.trkpts) == 0:
+                    print("{}: Segment {} has no points".format(self.file.path, segment_number))
+                    continue
+
                 s = GPXTrackSegment(
                     number=segment_number,
                     track=gpx_track,
@@ -325,14 +324,32 @@ class GPXFile(TimeStampedModel):
                 segment_total_ascent = 0
                 segment_total_descent = 0
 
+                segment_data = {
+                    'number': s.number,
+                    'segment_id': s.pk,
+                    'distance': segment.distance,
+                    'color': self.line_colors[color_int],
+                    'points': [],
+                }
+
+                color_int += 1
+                if color_int >= len(self.line_colors):
+                    color_int = 0
+
                 b_points = []
                 point_number = 0
                 priv_point = None
+                total_distance = 0
                 for point in segment.trkpts:
                     elevation_diff_to_previous = None
                     if priv_point is not None:
                         if priv_point.elevation is not None and point.ele is not None:
                             elevation_diff_to_previous = priv_point.elevation - point.ele
+
+                        m = geopy_distance.distance((priv_point.location.x, priv_point.location.y), (point.lat, point.lon)).m
+                    else:
+                        m = 0
+                    total_distance += m
 
                     p = GPXTrackSegmentPoint(
                         segment=s,
@@ -345,6 +362,14 @@ class GPXFile(TimeStampedModel):
                     priv_point = p
                     point_number += 1
 
+                    segment_data['points'].append({
+                        'lat': float(point.lat),
+                        'lon': float(point.lon),
+                        'distance': total_distance,
+                        'elevation': float(point.ele),
+                        'point_number': p.number,
+                    })
+
                     if elevation_diff_to_previous is not None:
                         if elevation_diff_to_previous > 0:
                             segment_total_descent += elevation_diff_to_previous
@@ -353,10 +378,15 @@ class GPXFile(TimeStampedModel):
 
                 GPXTrackSegmentPoint.objects.bulk_create(b_points)
                 del b_points
+                track_data['segments'].append(segment_data)
 
                 s.total_ascent = abs(segment_total_ascent)
                 s.total_descent = abs(segment_total_descent)
                 s.save(update_fields=['total_ascent', 'total_descent'])
+
+            json_data.append(track_data)
+
+        Path(self.get_gpx_json_filename()).write_text(json.dumps(json_data))
 
 
 class GPXTrack(TimeStampedModel):
@@ -407,43 +437,6 @@ class GPXTrackSegment(TimeStampedModel):
     def get_human_distance(self) -> str:
         d = int(self.distance / 1000)
         return f"{d} km"
-
-    def get_d3js(self, refresh=False) -> list:
-        filename = os.path.join(settings.LOCAL_GEOJSON_TEMP_DIRECTORY, f"gpx_track_segment_d3js_{self.pk}.json")
-
-        if os.path.exists(filename) and refresh is False:
-            return json.loads(Path(filename).read_text())
-
-        data = []
-        total_distance = 0
-
-        points = self.points.all()
-
-        if points.count() == 0:
-            return None
-
-        for point in points:
-            point_priv = point.get_previous()
-
-            if point_priv is None:
-                m = 0
-            else:
-                m = geopy_distance.distance(
-                    (point_priv.location.x, point_priv.location.y),
-                    (point.location.x, point.location.y)
-                ).m
-            total_distance += m
-
-            if point.elevation is not None:
-                data.append({
-                    'distance': total_distance,
-                    'lat': point.location.x,
-                    'lon': point.location.y,
-                    'elevation': point.elevation,
-                })
-
-        Path(filename).write_text(json.dumps(data))
-        return data
 
 
 class GPXTrackSegmentPoint(TimeStampedModel):
@@ -768,17 +761,12 @@ def gpx_file_delete_file(sender, instance, *args, **kwargs) -> None:
     if os.path.exists(geojson):
         os.remove(geojson)
 
+    if os.path.exists(instance.get_gpx_json_filename()):
+        os.remove(instance.get_gpx_json_filename())
+
 
 @receiver(pre_delete, sender=GPXFile)
 def gpx_file_pre_delete(sender, instance, *args, **kwargs) -> None:
     for track in instance.tracks.all():
         for segment in track.segments.all():
             segment.delete()
-
-
-@receiver(post_delete, sender=GPXTrackSegment)
-def gpx_track_segment_delete_file(sender, instance, *args, **kwargs) -> None:
-    filename = os.path.join(settings.LOCAL_GEOJSON_TEMP_DIRECTORY, f"gpx_track_segment_d3js_{instance.pk}.json")
-
-    if os.path.exists(filename):
-        os.remove(filename)

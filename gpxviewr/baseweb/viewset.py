@@ -6,27 +6,10 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from .models import (
     GPXFile,
-    GPXTrackSegment,
     GPXWayPointType,
     GPXTrackWayPoint,
     GPXFileUserSegmentSplit,
 )
-
-
-class GPXTrackSegmentViewSet(viewsets.ViewSet):
-    @action(detail=True, methods=['GET',])
-    def d3js(self, request, pk=None):
-        gpx_file_slug = request.GET.get('gpx_file_slug', None)
-        gpx_file = GPXFile.objects.get(slug=gpx_file_slug)
-
-        segment = GPXTrackSegment.objects.get(pk=pk, track__gpx_file=gpx_file)
-
-        data = segment.get_d3js()
-
-        if data is None:
-            return Response({}, status=404)
-
-        return Response(data)
 
 
 class GPXFileViewSet(viewsets.ViewSet):
@@ -39,16 +22,15 @@ class GPXFileViewSet(viewsets.ViewSet):
             'finished': gpx_file.job_is_finished(),
         })
 
-    @action(detail=True, methods=['POST',])
-    def geojson(self, request, pk=None):
+    @action(detail=True, methods=['GET',])
+    def json(self, request, pk=None):
         gpx_file = GPXFile.objects.get(slug=pk)
 
-        data = gpx_file.geojson_polyline()
-
-        if data is None:
+        json = gpx_file.get_json_data()
+        if json is None:
             return Response({}, status=404)
 
-        return Response(data)
+        return Response(json)
 
     @action(detail=True, methods=['POST',])
     def geojson_track_to_waypoint(self, request, pk=None):
