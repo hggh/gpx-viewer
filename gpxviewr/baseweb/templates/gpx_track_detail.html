@@ -504,9 +504,6 @@
             this.map.almostOver.addLayer(this.line);
 
             this.map.addEventListener("almost:move", (event) => {
-
-                this._marker.setLatLng(event.latlng);
-
                 var result = Infinity;
                 var p = null;
                 this.segment.points.forEach((point) => {
@@ -520,6 +517,7 @@
                 var xpos = this.x(p.distance / 1000);
 
                 this.draw_tooltip(xpos, p);
+                this._marker.setLatLng(p);
             });
             this.map.fitBounds(this.line.getBounds());
         }

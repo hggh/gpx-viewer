@@ -6,6 +6,7 @@
   * add almostOver Leaflet Plugin to have a better hover
   * better D3.js Graph with hover support on map and elevation graph
   * Django Upgrade to 5.0.3
+  * place marker on track lat/lon
 
 ### 22. January 2024
 
