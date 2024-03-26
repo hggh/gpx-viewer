@@ -362,11 +362,16 @@ class GPXFile(TimeStampedModel):
                     priv_point = p
                     point_number += 1
 
+                    if point.ele:
+                        ele = float(point.ele)
+                    else:
+                        ele = 0
+
                     segment_data['points'].append({
                         'lat': float(point.lat),
                         'lon': float(point.lon),
                         'distance': total_distance,
-                        'elevation': float(point.ele),
+                        'elevation': ele,
                         'point_number': p.number,
                     })
 

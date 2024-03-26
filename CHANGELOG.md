@@ -11,6 +11,7 @@
   * move elevation graph to map
   * move list of POIs to a overlay offcanvas
   * move download of POIs to a overlay offcanvas
+  * if ele is None set it to 0
 
 ### 22. January 2024
 
