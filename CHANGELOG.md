@@ -1,6 +1,6 @@
 # CHANGELOG
 
-### UNRELEASED
+### 26. March 2024
 
   * remove Track Split feature - UI is not very good
   * add almostOver Leaflet Plugin to have a better hover
