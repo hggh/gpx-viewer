@@ -5,17 +5,116 @@
 <meta property="og:type" content="website"/>
 <meta property="og:image" content="https://gpxviewr.genannt.name/static/preview.png"/>
 {% endblock %}
+
+{% block sidebarleft %}
+<div class="list-group border-0 rounded-0 text-sm-start min-vh-100 border-end" >
+    <div class="list-group-item border-end-0 d-inline-block">
+        <label for="osm_tile_lang">map language:</label>
+        <select class="form-select form-select-sm" aria-label="OSM language" id="osm_tile_lang">
+            <option value="https://tile.openstreetmap.de/{z}/{x}/{y}.png" selected>german</option>
+            <option value="https://tile.openstreetmap.org/{z}/{x}/{y}.png">english</option>
+        </select>
+    </div>
+
+    <div class="list-group-item border-end-0 d-inline-block">
+        <span>Download Infomation as GPX Waypoint Track (hidden POIs will be excluded!)</span>
+            <form method="POST" action="/gpxtrack/{{object.slug}}/download">
+                {% csrf_token %}
+                <input type="hidden" name="slug" value="{{object.slug}}"/>
+                <select name="waypoint_types" class="form-select-sm" multiple aria-label="Multiple select example">
+                    {% for waypoint_type in object.get_waypoint_types %}
+                    <option selected value="{{waypoint_type.pk}}">{{waypoint_type.name }}</option>
+                    {% endfor %}
+                </select>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary">Download Waypoints</button>
+                </div>
+            </form>
+    </div>
+
+    <div class="list-group-item border-end-0 d-inline-block">
+        <h5>show/hide POIs on map</h5>
+        <ul class="list-group">
+            {% for wpt in object.get_waypoint_types %}
+                <li class="list-group-item">
+                    <input type="checkbox" checked name="wpt_{{wpt.html_id}}" data-id="{{wpt.html_id}}" title="Show/Hide {{wpt.name }} on map" class="nav-link wpt_enable_checkbox" style="">{{wpt.name}}
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock%}
+
+{% block sidebarright %}
+<div class="row">
+    <select class="form-select form-select-sm" aria-label="information about POIs" id="information_poi_dropdown">
+        <option id="foo">select... POI</option>
+        {% for wpt in object.get_waypoint_types %}
+        <option id="{{ wpt.html_id }}-tab" value="#{{ wpt.html_id }}-tab-pane" type="button" role="tab" aria-controls="{{ wpt.html_id }}-tab-pane" aria-selected="true">{{wpt.name}} <img src="{{wpt.marker_image_path}}" /></option>
+        {% endfor %}
+    </select>
+</div>
+<div class="tab-content" id="myTabContent">
+    {% for wpt in object.get_waypoint_types_with_entries %}
+    <div class="collapse tab-content-hidden" id="{{wpt.object.html_id }}-tab-pane">
+        <br/>
+        <h4>{{ wpt.object.name }}</h4>
+        <table class="table table-hover">
+        <tbody>
+        {% for wp in wpt.waypoints %}
+            <tr>
+                <td>
+                    {% if wp.get_url %}<a href="{{wp.get_url}}" target="_blank">{{wp.name }}{%else %}{{wp.name }}{% endif %}
+                    {% if wp.track_to_waypoint %}
+                    <br/><small><a href="/gpxtrack/{{object.slug}}/download_gpx_track_to_waypoint/{{wp.pk}}">Download GPX Track to POI ({{wp.track_to_waypoint.get_away_kilometer}} km)</a></small>
+                    {% endif %}
+                </td>
+                <td>
+                    <button data-id="{{wp.pk }}" data-status="{{wp.hidden|lower}}" class="waypoint_show_hide btn btn-outline-info">{% if wp.hidden == True %}Show{% else %}Hide{% endif %}</button>
+                </td>
+                <td class="col-md-2">
+                    <button class="waypoints_to_map btn btn-dark" data-id="{{wp.id}}" data-lat="{{wp.location.x}}" data-lon="{{wp.location.y}}">on map</button>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+        </table>
+    </div>
+    {% endfor %}
+</div>
+<script>
+    document.querySelector("#amenity_toilets-tab-pane").classList.remove('collapse');
+    var information_poi_dropdown = document.querySelector("#information_poi_dropdown");
+    information_poi_dropdown.addEventListener("change", (event) => {
+        document.querySelectorAll(".tab-content-hidden").forEach(box => {
+            box.classList.add('collapse');
+        });
+        var d = document.querySelector(event.target.value);
+        d.classList.remove('collapse');
+    });
+</script>
+{% endblock%}
+
 {% block content %}
 {% load static %}
 <script src="{% static '/js/d3-7.8.5.js' %}"></script>
-<h1 class="bd-title">{{object.name }}</h1>
-
 <script>
     var gpx_track_status_reload = false;
 </script>
 
-{% if object.job_is_finished == False and object.get_job_status != 'error' %}
-<div class="alert alert-warning" role="alert">
+<main class="col ps-md-2 pt-2">
+    <div class="page-header pt-3">
+        <h2>{{object.name }}</h2>
+    </div>
+
+    {% if object.get_job_status == 'error' %}
+    <div class="alert alert-danger" role="alert">
+        Job is in status error - ask on GitHub for help! :-(
+    </div>
+    {% endif %}
+
+    {% if object.job_is_finished == False and object.get_job_status != 'error' %}
+    <div class="alert alert-warning" role="alert">
     <div class="spinner-border text-primary" role="status">
     </div>
     <span id="job_status_info_box" style="padding-left:10px;">wating for job status</span>
@@ -49,69 +148,43 @@
         }
         job_status_interval = setInterval(check_job_status, 500);
     </script>
-</div>
-{% endif %}
+    </div>
+    {% endif %}
 
-{% if object.get_job_status == 'error' %}
-<div class="alert alert-danger" role="alert">
-    Job is in status error - ask on GitHub for help! :-(
-</div>
-{% endif %}
+    <div id="map" style="width: 100%; height: 600px;"></div>
 
-
-<div class="row">
-    <ul class="list-group list-group-horizontal">
-        {% for wpt in object.get_waypoint_types %}
-            <li class="list-group-item">
-                <input type="checkbox" checked name="wpt_{{wpt.html_id}}" data-id="{{wpt.html_id}}" title="Show/Hide {{wpt.name }} on map" class="nav-link wpt_enable_checkbox" style="">{{wpt.name}}
-            </li>
-        {% endfor %}
-    </ul>
-</div>
-<div class="row">
-    <div class="col-sm-7 col-lg-9">
-        <div id="map" style="width: 100%; height: 600px;"></div>
-
-        <div class="container" style="padding-top:20px; padding-bottom:20px;">
-            {% for waypoint in object.waypoints.all %}
-            <div class="collapse" id="waypoint_tags_info_{{waypoint.id}}">
-                <h5>{{waypoint.name}}</h5>
-                {% for name, value in waypoint.tags.items %}
-                <b>{{name}}:</b> {{value}}<br/>
-                {% endfor %}
-            </div>
-            {% endfor %}
-        </div>
-
-        <div class="container" id="track_show_elevation_graph">
-            {% for track in object.tracks.all %}
-                <h3>{{track.name }}</h3>
-                {% for segment in track.segments.all %}
-                <div id="track_graph_segment_{{segment.pk}}" style="float:left;">
+    <div class="row">
+        <div class="col-sm-7 col-lg-9">
+            <div class="container" style="padding-top:20px; padding-bottom:20px;">
+                {% for waypoint in object.waypoints.all %}
+                <div class="collapse" id="waypoint_tags_info_{{waypoint.id}}">
+                    <h5>{{waypoint.name}}</h5>
+                    {% for name, value in waypoint.tags.items %}
+                    <b>{{name}}:</b> {{value}}<br/>
+                    {% endfor %}
                 </div>
                 {% endfor %}
-            {% endfor %}
-            <div style="clear:both">
             </div>
         </div>
+    </div>
 
-        <div class="container" style="padding-top:30px;">
-            <table class="table">
-                <thead>
-                  <tr>
+    <div class="container" style="padding-top:30px;">
+        <table class="table">
+            <thead>
+                <tr>
                     <th scope="col">Track Name</th>
                     <th scope="col"></th>
                     <th scope="col">KM</th>
                     <th scope="col"></th>
-                  </tr>
-                </thead>
-                <tbody class="table-group-divider">
-                    {% for track in object.tracks.all %}
-                    <tr>
-                        <th scope="row">{{track.name}} {% if track.segments.count > 1 %} (Segments: {{track.segments.count}}){% endif %}</th>
-                        <td></td>
-                        <td>{{track.get_human_distance}}</td>
-                        <td>
+                </tr>
+            </thead>
+            <tbody class="table-group-divider">
+                {% for track in object.tracks.all %}
+                <tr>
+                    <th scope="row">{{track.name}} {% if track.segments.count > 1 %} (Segments: {{track.segments.count}}){% endif %}</th>
+                    <td></td>
+                    <td>{{track.get_human_distance}}</td>
+                    <td>
                             {% if track.get_total_ascent %}
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-up-right" viewBox="0 0 16 16">
                                 <path fill-rule="evenodd" d="M14 2.5a.5.5 0 0 0-.5-.5h-6a.5.5 0 0 0 0 1h4.793L2.146 13.146a.5.5 0 0 0 .708.708L13 3.707V8.5a.5.5 0 0 0 1 0z"/>
@@ -124,88 +197,13 @@
                                 </svg>
                                 {{ track.get_total_descent }} m
                             {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        <div class="container" style="border: solid; border-width:1px;padding-top:30px;">
-            <span>Download Infomation as GPX Waypoint Track (hidden POIs will be excluded!)</span>
-            <form method="POST" action="/gpxtrack/{{object.slug}}/download">
-                {% csrf_token %}
-                <input type="hidden" name="slug" value="{{object.slug}}"/>
-                <select name="waypoint_types" class="form-select-sm" multiple aria-label="Multiple select example">
-                    {% for waypoint_type in object.get_waypoint_types %}
-                    <option selected value="{{waypoint_type.pk}}">{{waypoint_type.name }}</option>
-                    {% endfor %}
-                </select>
-                <div class="col-12">
-                    <button type="submit" class="btn btn-primary">Download Waypoints</button>
-                </div>
-            </form>
-        </div>
-    </div>
-    <div class="col-5 col-lg-3">
-        <div class="row" style="padding-bottom: 20px;">
-            <label class="col-sm-4 form-label">OpenStreetMap language:</label>
-            <div class="col-sm-7">
-                <select class="form-select form-select-sm" aria-label="OSM language" id="osm_tile_lang">
-                    <option value="https://tile.openstreetmap.de/{z}/{x}/{y}.png" selected>german</option>
-                    <option value="https://tile.openstreetmap.org/{z}/{x}/{y}.png">english</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="row">
-            <select class="form-select form-select-sm" aria-label="information about POIs" id="information_poi_dropdown">
-                <option id="foo">select... POI</option>
-                {% for wpt in object.get_waypoint_types %}
-                <option id="{{ wpt.html_id }}-tab" value="#{{ wpt.html_id }}-tab-pane" type="button" role="tab" aria-controls="{{ wpt.html_id }}-tab-pane" aria-selected="true">{{wpt.name}} <img src="{{wpt.marker_image_path}}" /></option>
+                    </td>
+                </tr>
                 {% endfor %}
-            </select>
-        </div>
-        <div class="tab-content" id="myTabContent">
-            {% for wpt in object.get_waypoint_types_with_entries %}
-            <div class="collapse tab-content-hidden" id="{{wpt.object.html_id }}-tab-pane">
-                <br/>
-                <h4>{{ wpt.object.name }}</h4>
-                <table class="table table-hover">
-                <tbody>
-                {% for wp in wpt.waypoints %}
-                    <tr>
-                        <td>
-                            {% if wp.get_url %}<a href="{{wp.get_url}}" target="_blank">{{wp.name }}{%else %}{{wp.name }}{% endif %}
-                            {% if wp.track_to_waypoint %}
-                            <br/><small><a href="/gpxtrack/{{object.slug}}/download_gpx_track_to_waypoint/{{wp.pk}}">Download GPX Track to POI ({{wp.track_to_waypoint.get_away_kilometer}} km)</a></small>
-                            {% endif %}
-                        </td>
-                        <td>
-                            <button data-id="{{wp.pk }}" data-status="{{wp.hidden|lower}}" class="waypoint_show_hide btn btn-outline-info">{% if wp.hidden == True %}Show{% else %}Hide{% endif %}</button>
-                        </td>
-                        <td class="col-md-2">
-                            <button class="waypoints_to_map btn btn-dark" data-id="{{wp.id}}" data-lat="{{wp.location.x}}" data-lon="{{wp.location.y}}">on map</button>
-                        </td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-                </table>
-            </div>
-            {% endfor %}
-        </div>
-        <script>
-            document.querySelector("#amenity_toilets-tab-pane").classList.remove('collapse');
-            var information_poi_dropdown = document.querySelector("#information_poi_dropdown");
-            information_poi_dropdown.addEventListener("change", (event) => {
-                document.querySelectorAll(".tab-content-hidden").forEach(box => {
-                    box.classList.add('collapse');
-                });
-                var d = document.querySelector(event.target.value);
-                d.classList.remove('collapse');
-            });
-        </script>
+            </tbody>
+        </table>
     </div>
-</div>
+</main>
 
 <script>
     var osm_query_feature = false;
@@ -262,7 +260,7 @@
         },
         onAdd: function(map) {
             this.map = map;
-            var img = L.DomUtil.create('img', 'foobar');
+            var img = L.DomUtil.create('img');
             img.src = '/static/patch-question.png';
             img.title = "Query OpenStreetmap Object";
 
@@ -276,7 +274,7 @@
     L.control.queryosm = function(opts) {
         return new L.Control.QueryOSM(opts);
     }
-    L.control.queryosm({ position: 'topleft' }).addTo(map);
+    L.control.queryosm({ position: 'bottomleft' }).addTo(map);
 
 
     L.Control.QueryGoogle = L.Control.extend({
@@ -292,7 +290,7 @@
         },
         onAdd: function(map) {
             this.map = map;
-            var img = L.DomUtil.create('img', 'query_google');
+            var img = L.DomUtil.create('img');
             img.src = '{% static 'bootstrap-icons-1.11.2/google.svg' %}';
             img.title = "Query Google Maps";
 
@@ -306,7 +304,7 @@
     L.control.querygoogle = function(opts) {
         return new L.Control.QueryGoogle(opts);
     }
-    L.control.querygoogle({ position: 'topleft' }).addTo(map);
+    L.control.querygoogle({ position: 'bottomleft' }).addTo(map);
 
     document.querySelector("#osm_tile_lang").addEventListener("change", (event) => {
         tiles.setUrl(event.target.value);
@@ -478,6 +476,25 @@
             this.width = 460 - this.margin.left - this.margin.right;
             this.height = 200 - this.margin.top - this.margin.bottom;
 
+            this.Container = L.Control.extend({
+                options: {
+                    position: "topright",
+                    width: this.width,
+                    height: this.height,
+                },
+                onAdd: function(map) {
+                    this.map = map;
+                    var div = L.DomUtil.create('div');
+                    div.id = "graph_" + this.options.segment_pk;
+
+                    return div;
+                }
+            });
+            this.container = function(opts) {
+                return new this.Container(opts);
+            }
+            this.container({ position: 'topright', segment_pk: this.segment_pk }).addTo(this.map);
+
             this.svg = d3.select(this.get_container_name()).append("svg")
                 .attr("width", this.width + this.margin.left + this.margin.right)
                 .attr("height", this.height + this.margin.top + this.margin.bottom)
@@ -539,7 +556,7 @@
         }
 
         get_container_name() {
-            return "#track_graph_segment_" + this.segment_pk;
+            return "#graph_" + this.segment_pk;
         }
 
         pm_mouseover(event) {
@@ -574,7 +591,8 @@
                 .attr("class", "listening-rect")
                 .attr("width", this.width)
                 .attr("height", this.height)
-                .on("mousemove", this.pm_mouseover.bind(this));
+
+            listeningRect.on("mousemove", this.pm_mouseover.bind(this));
 
             this.x.domain(d3.extent(this.segment.points, d => d.distance / 1000))
                 .range([ 0, this.width ]);
