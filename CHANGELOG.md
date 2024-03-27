@@ -1,5 +1,10 @@
 # CHANGELOG
 
+### UNRELEASED
+
+  * place POI button on the right
+  * remove integrity after update of bootstrap
+
 ### 26. March 2024
 
   * remove Track Split feature - UI is not very good
