@@ -247,6 +247,55 @@
         r.send(JSON.stringify({'user_segment_pk': user_segment_pk}));
     }
 
+    L.Control.ElevationContainer = L.Control.extend({
+        options: {
+            position: "topright",
+            width: 500,
+            height: 240,
+        },
+        onAdd: function(map) {
+            this.map = map;
+            var div = L.DomUtil.create('div');
+            div.id = "map_elevation";
+
+            var tab = document.createElement("div");
+            tab.className = "tab-content";
+            tab.id = "map_elevation_tabs";
+
+            var ul = document.createElement("ul");
+            ul.className = "pagination";
+            var li1 = document.createElement("li");
+            li1.className = "page-item";
+            var pre = document.createElement("a");
+            pre.className = "page-link";
+            pre.id = "elevation_tab_previous";
+            pre.innerHTML = '<span aria-hidden="true">&laquo;</span>';
+            li1.appendChild(pre);
+            ul.appendChild(li1);
+
+            var li1 = document.createElement("li");
+            li1.className = "page-item";
+            var pre = document.createElement("a");
+            pre.className = "page-link";
+            pre.id = "elevation_tab_next";
+            pre.innerHTML = '<span aria-hidden="true">&raquo;</span>';
+            li1.appendChild(pre);
+            ul.appendChild(li1);
+
+            div.appendChild(ul);
+
+            div.appendChild(tab);
+
+            return div;
+        }
+    });
+
+    L.Control.elevation = function(opts) {
+        return new L.Control.ElevationContainer(opts);
+    }
+    L.Control.elevation().addTo(map);
+
+
     L.Control.QueryOSM = L.Control.extend({
         pressed_query: function(e) {
             if (osm_query_feature == false) {
@@ -460,12 +509,47 @@
         setInterval(get_draw_waypoints, 3000);
     }
 
+    document.querySelector("#elevation_tab_next").addEventListener("click", (event) => {
+        var tab = document.querySelector("#map_elevation_tabs");
+        var tabs = tab.querySelectorAll(".tab-pane");
+        for (var i = 0, length = tabs.length; i < length; i++) {
+            if (tabs[i].classList.contains('active')) {
+                tabs[i].classList.remove('active');
+                if (i == tabs.length - 1) {
+                    tabs[0].classList.add('active');
+                }
+                else {
+                    tabs[i + 1].classList.add('active');
+                }
+                break;
+            }
+        }
+    });
+
+    document.querySelector("#elevation_tab_previous").addEventListener("click", (event) => {
+        var tab = document.querySelector("#map_elevation_tabs");
+        var tabs = tab.querySelectorAll(".tab-pane");
+        for (var i = 0, length = tabs.length; i < length; i++) {
+            if (tabs[i].classList.contains('active')) {
+                tabs[i].classList.remove('active');
+                if (i == 0) {
+                    tabs[length - 1 ].classList.add('active');
+                }
+                else {
+                    tabs[i - 1].classList.add('active');
+                }
+                break;
+            }
+        }
+    });
+
     class TrackSegment {
-        constructor(gpx_file_slug, segment_pk, map, segment) {
+        constructor(gpx_file_slug, segment_pk, map, segment, track_name, active_tab) {
             this.gpx_file_slug = gpx_file_slug;
             this.segment_pk = segment_pk;
             this.map = map;
             this.segment = segment;
+            this.tab_element_name = "map_elevation_tabs";
 
             this.margin = {
                 top: 10,
@@ -475,25 +559,30 @@
             };
             this.width = 460 - this.margin.left - this.margin.right;
             this.height = 200 - this.margin.top - this.margin.bottom;
+            
+            this.tab_element = document.createElement("div");
+            this.tab_element.id = "graph_tab_" + this.segment_pk;
 
-            this.Container = L.Control.extend({
-                options: {
-                    position: "topright",
-                    width: this.width,
-                    height: this.height,
-                },
-                onAdd: function(map) {
-                    this.map = map;
-                    var div = L.DomUtil.create('div');
-                    div.id = "graph_" + this.options.segment_pk;
 
-                    return div;
-                }
-            });
-            this.container = function(opts) {
-                return new this.Container(opts);
+            if (active_tab) {
+                this.tab_element.className = "tab-pane active";
             }
-            this.container({ position: 'topright', segment_pk: this.segment_pk }).addTo(this.map);
+            else {
+                this.tab_element.className = "tab-pane";
+            }
+            this.tab_element.role = "tabpanel";
+            this.tab_element.tabindex = "0";
+
+            var text = document.createElement("h5");
+            text.innerHTML = track_name;
+            this.tab_element.appendChild(text);
+
+            var graph_tab = document.createElement("div");
+            graph_tab.id = "graph_" + this.segment_pk;
+            this.tab_element.appendChild(graph_tab);
+
+            var box = L.DomUtil.get(this.tab_element_name);
+            box.appendChild(this.tab_element);
 
             this.svg = d3.select(this.get_container_name()).append("svg")
                 .attr("width", this.width + this.margin.left + this.margin.right)
@@ -627,9 +716,11 @@
     }
 
     d3.json('/api/gpxfile/' + gpx_file_slug + '/json').then(function (data) {
+        var active_tab = true;
         data.forEach(track => {
             track.segments.forEach(segment => {
-                var f = new TrackSegment(gpx_file_slug, segment.segment_id, map, segment);
+                var f = new TrackSegment(gpx_file_slug, segment.segment_id, map, segment, track.name, active_tab);
+                active_tab = false;
             });
         });
     });
