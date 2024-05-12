@@ -1,9 +1,12 @@
 # CHANGELOG
 
-### UNRELEASED
+### 12. May 2024
 
   * place POI button on the right
   * remove integrity after update of bootstrap
+  * update Demo Track handling via settings
+  * add split track feature nicer way - delete is broken yet
+  * nicer elevation graph
 
 ### 26. March 2024
 

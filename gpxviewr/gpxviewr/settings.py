@@ -28,6 +28,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+DEMO_TRACK_SLUG = ''
 
 # Application definition
 

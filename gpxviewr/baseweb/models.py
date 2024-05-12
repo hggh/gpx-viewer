@@ -135,18 +135,28 @@ class GPXFile(TimeStampedModel):
 
         return gpx.to_string()
 
-    def get_user_segment_splits(self) -> list:
+    def get_user_segment_splits(self, segment_pk=None) -> list:
         data = []
 
-        for s in self.user_segments.all():
+        if segment_pk is not None:
+            segments = self.user_segments.all().filter(point_start__segment__id=segment_pk)
+        else:
+            segments = self.user_segments.all()
+
+        data = []
+
+        for s in segments:
             segment = {
                 "name": s.name,
                 "id": s.pk,
+                "segment_pk": s.point_start.segment.id,
                 "start": {
+                    "number": s.point_start.number,
                     "lat": float(s.point_start.location.x),
                     "lon": float(s.point_start.location.y),
                 },
                 "end": {
+                    "number": s.point_end.number,
                     "lat": float(s.point_end.location.x),
                     "lon": float(s.point_end.location.y),
                 }
@@ -535,76 +545,107 @@ class GPXFileUserSegmentSplit(TimeStampedModel):
         return gpx.to_string()
 
     @staticmethod
-    def add_segment(gpx_file, start, end, name):
-        if start.get('segment_pk', None) != end.get('segment_pk', None):
-            raise Exception("segment_pk of end vs start !=")
-
-        point_start = GPXTrackSegmentPoint.objects.filter(
-            segment__id=start.get('segment_pk', None),
+    def add_segment(gpx_file, segment_pk, point_number):
+        point = GPXTrackSegmentPoint.objects.get(
+            segment__id=segment_pk,
             segment__track__gpx_file=gpx_file,
-            location=Point([start.get('lat', 0), start.get('lon', 0)], srid=4326),
-        ).first()
-
-        point_end = GPXTrackSegmentPoint.objects.filter(
-            segment__id=end.get('segment_pk', None),
-            segment__track__gpx_file=gpx_file,
-            location=Point([end.get('lat', 0), end.get('lon', 0)], srid=4326),
-        ).first()
-
-        if point_start is None:
-            return {'status': 'error', 'text': 'Start Point not found?!?'}
-
-        if point_end is None:
-            return {'status': 'error', 'text': 'End Point not found?!?'}
-
-        if point_start.segment.pk != point_end.segment.pk:
-            return {'status': 'error', 'text': 'Track is on two different GPX Segments'}
-
-        if point_start.number > point_end.number:
-            return {'status': 'error', 'text': 'Start Point is after the End Point'}
-
-        points = GPXTrackSegmentPoint.objects.filter(
-            segment__id=start.get('segment_pk', None),
-            number__gte=point_start.number,
-            number__lte=point_end.number,
+            number=point_number,
         )
-        segment_total_ascent = 0
-        segment_total_descent = 0
-        total_distance = 0
-        priv_point = None
+        update_splits = []
 
-        for p in points:
-            elevation_diff_to_previous = None
-
-            if priv_point is not None:
-                if priv_point.elevation is not None and p.elevation is not None:
-                    elevation_diff_to_previous = priv_point.elevation - p.elevation
-
-            if priv_point is not None:
-                total_distance += geopy_distance.distance(
-                    (priv_point.location.x, priv_point.location.y),
-                    (p.location.x, p.location.y)
-                ).m
-            priv_point = p
-
-            if elevation_diff_to_previous is not None:
-                if elevation_diff_to_previous > 0:
-                    segment_total_descent += elevation_diff_to_previous
-                else:
-                    segment_total_ascent += elevation_diff_to_previous
-
-        segment = GPXFileUserSegmentSplit(
+        # check if there are any splits?
+        splits = GPXFileUserSegmentSplit.objects.filter(
             gpx_file=gpx_file,
-            name=name,
-            point_start=point_start,
-            point_end=point_end,
-            total_ascent=abs(segment_total_ascent),
-            total_descent=abs(segment_total_descent),
-            distance=total_distance,
-        )
-        segment.save()
+            point_start__segment_id=segment_pk,
 
-        return {'status': 'ok'}
+        )
+        if len(splits) == 0:
+            s = GPXFileUserSegmentSplit(
+                gpx_file=gpx_file,
+                point_start=point.segment.points.all().first(),
+                point_end=point,
+            )
+            s.save()
+            update_splits.append(s)
+            s = GPXFileUserSegmentSplit(
+                gpx_file=gpx_file,
+                point_start=point,
+                point_end=point.segment.points.all().last(),
+            )
+            s.save()
+            update_splits.append(s)
+        else:
+            # we go back on the track and try to find a split start
+            start = GPXFileUserSegmentSplit.objects.filter(
+                    gpx_file=gpx_file,
+                    point_start__segment_id=segment_pk,
+                    point_start__number__lt=point.number,
+            ).order_by('point_start__number').last()
+
+            if start:
+                end_point = start.point_end
+
+                start.point_end = point
+                start.save()
+                update_splits.append(start)
+
+                s = GPXFileUserSegmentSplit(
+                    gpx_file=gpx_file,
+                    point_start=point,
+                    point_end=end_point,
+                )
+                s.save()
+                update_splits.append(s)
+
+        for split in update_splits:
+            points = GPXTrackSegmentPoint.objects.filter(
+                segment__id=split.point_start.segment.id,
+                number__gte=split.point_start.number,
+                number__lte=split.point_end.number,
+            )
+            segment_total_ascent = 0
+            segment_total_descent = 0
+            total_distance = 0
+            priv_point = None
+
+            for p in points:
+                elevation_diff_to_previous = None
+
+                if priv_point is not None:
+                    if priv_point.elevation is not None and p.elevation is not None:
+                        elevation_diff_to_previous = priv_point.elevation - p.elevation
+
+                if priv_point is not None:
+                    total_distance += geopy_distance.distance(
+                        (priv_point.location.x, priv_point.location.y),
+                        (p.location.x, p.location.y)
+                    ).m
+                priv_point = p
+
+                if elevation_diff_to_previous is not None:
+                    if elevation_diff_to_previous > 0:
+                        segment_total_descent += elevation_diff_to_previous
+                    else:
+                        segment_total_ascent += elevation_diff_to_previous
+            split.total_ascent=abs(segment_total_ascent)
+            split.total_descent=abs(segment_total_descent)
+            split.distance=total_distance
+            split.save()
+
+        # name all splits
+        splits = GPXFileUserSegmentSplit.objects.filter(
+            gpx_file=gpx_file,
+            point_start__segment_id=segment_pk,
+
+        ).order_by('point_start__number')
+        split_number = 1
+        for split in splits:
+            split.name = f"Track {split_number}"
+            split.save()
+
+            split_number += 1
+
+        return None
 
 
 class GPXWayPointType(models.Model):

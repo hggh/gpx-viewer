@@ -6,6 +6,7 @@ from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
 from django.views.generic import TemplateView, CreateView, DetailView, FormView, UpdateView
 from django.http import FileResponse, HttpRequest, HttpResponse, JsonResponse
+from django.conf import settings
 
 from .models import (
     GPXFile,
@@ -36,6 +37,11 @@ class IndexView(CreateView):
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context['waypoint_types'] = GPXWayPointType.objects.all()
+
+        try:
+            context['demo_track'] = GPXFile.objects.get(slug=settings.DEMO_TRACK_SLUG)
+        except ObjectDoesNotExist:
+            context['demo_track'] = None
 
         upload_tracks = self.request.session.get("upload_tracks", [])
 

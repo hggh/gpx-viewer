@@ -10,9 +10,11 @@
 <div class="container">
 <main class="col-12 col-md-9 col-xl-8 py-md-3 pl-md-5 bd-content" role="main">
 
+{% if demo_track %}
 <div class="alert alert-light" role="alert">
-Demo Track: <a href="https://gpxviewr.genannt.name/gpxtrack/agaxdfkIoP5msdVKgNxtSjx9qz9yqWPICbzUkKyh">2019_STGT-Berlin</a>
+Demo Track: <a href="https://gpxviewr.genannt.name/gpxtrack/{{ demo_track.slug }}">{{ demog_track.name }}</a>
 </div>
+{% endif %}
 
 <div class="container" style="padding-top:15px; padding-bottom:20px;">
     Find toilets, camping sites and more POIs (Point of Interest) from OpenStreetMap along your GPX bikepacking route.
