@@ -3,6 +3,8 @@
 ### 25. May 2024
 
   * fix performance; do not create split markers on overy almost over move
+  * fix user segment delete with update the other
+  * user splits now with click on the polyline without extra markers
 
 ### 12. May 2024
 
