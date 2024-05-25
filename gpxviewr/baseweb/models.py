@@ -597,6 +597,10 @@ class GPXFileUserSegmentSplit(TimeStampedModel):
                 s.save()
                 update_splits.append(s)
 
+        GPXFileUserSegmentSplit.update_segments(update_splits, gpx_file=gpx_file, segment_pk=segment_pk)
+
+    @staticmethod
+    def update_segments(update_splits, gpx_file, segment_pk):
         for split in update_splits:
             points = GPXTrackSegmentPoint.objects.filter(
                 segment__id=split.point_start.segment.id,

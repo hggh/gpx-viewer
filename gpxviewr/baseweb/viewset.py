@@ -73,10 +73,35 @@ class GPXFileViewSet(viewsets.ViewSet):
     def user_segment_split_delete(self, request, pk=None):
         gpx_file = GPXFile.objects.get(slug=pk)
 
-        GPXFileUserSegmentSplit.objects.filter(
+        # if we have only two left we delete both
+        if gpx_file.user_segments.all().count() == 2 or gpx_file.user_segments.all().count() == 1:
+            gpx_file.user_segments.all().delete()
+        else:
+            segment_delete_pk = request.data.get('user_segment_pk')
+            segment_pk = gpx_file.user_segments.all().get(pk=segment_delete_pk).point_start.segment.id
+
+            user_segments = gpx_file.user_segments.all().filter(point_start__segment_id=segment_pk)
+
+            for index, segment in enumerate(user_segments):
+                if segment.id == segment_delete_pk:
+                    if index == 0:
+                        segment_next = user_segments[index + 1]
+                        segment_next.point_start = segment.point_start
+                        segment_next.save()
+
+                        segment.delete()
+                    else:
+                        segment_last = user_segments[index - 1]
+                        segment_last.point_end = segment.point_end
+                        segment_last.save()
+
+                        segment.delete()
+
+        GPXFileUserSegmentSplit.update_segments(
+            gpx_file.user_segments.all().filter(point_start__segment_id=segment_pk),
             gpx_file=gpx_file,
-            pk=request.data.get('user_segment_pk')
-        ).delete()
+            segment_pk=segment_pk
+        )
 
         return Response({})
 
