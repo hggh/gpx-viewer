@@ -169,6 +169,11 @@
     </div>
     <div class="container" style="padding-top:10px;">
         <h3>Track Splits</h3>
+        {% if object.is_demo_track or not object.user_segments.all %}
+        <div class="alert alert-light" role="alert">
+            click on track (red circle) to create a new track split
+        </div>
+        {% endif %}
         <table class="table">
             <thead>
               <tr>
@@ -331,6 +336,19 @@
             li1.appendChild(pre);
             ul.appendChild(li1);
 
+            var li1 = document.createElement("li");
+            li1.className = "page-item";
+            var pre = document.createElement("a");
+            pre.className = "page-link";
+            pre.id = "elevation_hide_show";
+            pre.innerHTML = '<span aria-hidden="true">X</span>';
+            pre.setAttribute('data-bs-toggle', 'tooltip');
+            pre.setAttribute('data-bs-title', 'show/hide elevation graph');
+            pre.setAttribute("data-bs-placement", "top");
+
+            li1.appendChild(pre);
+            ul.appendChild(li1);
+
             div.appendChild(ul);
 
             div.appendChild(tab);
@@ -343,7 +361,6 @@
         return new L.Control.ElevationContainer(opts);
     }
     L.Control.elevation().addTo(map);
-
 
     L.Control.QueryOSM = L.Control.extend({
         pressed_query: function(e) {
@@ -572,6 +589,16 @@
                 }
                 break;
             }
+        }
+    });
+
+    document.querySelector("#elevation_hide_show").addEventListener("click", (event) => {
+        var w = L.DomUtil.get("map_elevation_tabs");
+        if (w.classList.contains('collapse')) {
+            w.classList.remove('collapse');
+        }
+        else {
+            w.classList.add('collapse');
         }
     });
 
@@ -928,5 +955,7 @@
 
         }
     });
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+    const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
 </script>
 {% endblock %}

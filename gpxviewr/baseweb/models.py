@@ -81,6 +81,9 @@ class GPXFile(TimeStampedModel):
 
         return super().save(**kwargs)
 
+    def is_demo_track(self):
+        return self.slug == settings.DEMO_TRACK_SLUG
+
     def get_job_status(self) -> str:
         return self.job_status_fields.get(self.job_status, 'unkown')
 
