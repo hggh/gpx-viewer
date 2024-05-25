@@ -732,8 +732,24 @@
 
         async draw_line() {
             var data = [];
+            var i = 0;
             this.segment.points.forEach((point) => {
                 data.push([point.lat, point.lon]);
+
+                if ((i % 6) == 0) {
+                    var m = L.marker([point.lat, point.lon]);
+                    m.point_number = point.point_number;
+                    m.segment_id = this.segment.segment_id;
+                    m.setIcon(L.icon({
+                        iconUrl: '/static/PolyLine.png',
+                        iconSize: [16, 16],
+                        className: 'maker_edit_polyline',
+                    }));
+
+                    m.bindPopup(this.edit_marker_popup.bind(this));
+                    this.edit_markers.push(m);
+                }
+                i += 1;
             });
 
             this.line = L.polyline(data, {'color': this.segment.color, 'opacity': 0.7}).addTo(this.map);
@@ -742,28 +758,13 @@
             this.map.addEventListener("almost:move", (event) => {
                 var result = Infinity;
                 var p = null;
-                var i = 0;
+
                 this.segment.points.forEach((point) => {
                     var distance = event.latlng.distanceTo([point.lat, point.lon]);
-
-                    if ((i % 6) == 0) {
-                        var m = L.marker([point.lat, point.lon]);
-                        m.point_number = point.point_number;
-                        m.segment_id = this.segment.segment_id;
-                        m.setIcon(L.icon({
-                            iconUrl: '/static/PolyLine.png',
-                            iconSize: [16, 16],
-                            className: 'maker_edit_polyline',
-                        }));
-
-                        m.bindPopup(this.edit_marker_popup.bind(this));
-                        this.edit_markers.push(m);
-                    }
                     if (distance < result) {
                         result = distance;
                         p = point;
                     }
-                    i += 1;
                 });
                 var xpos = this.x(p.distance / 1000);
 

@@ -1,5 +1,9 @@
 # CHANGELOG
 
+### 25. May 2024
+
+  * fix performance; do not create split markers on overy almost over move
+
 ### 12. May 2024
 
   * place POI button on the right
