@@ -7,6 +7,7 @@
   * user splits now with click on the polyline without extra markers
   * hide/show elevation graph
   * hide next/pre buttons if only one track exists
+  * nice icons for hide/show elevation graph
 
 ### 12. May 2024
 

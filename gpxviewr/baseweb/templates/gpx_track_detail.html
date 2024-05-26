@@ -341,7 +341,7 @@
             var pre = document.createElement("a");
             pre.className = "page-link";
             pre.id = "elevation_hide_show";
-            pre.innerHTML = '<span aria-hidden="true">X</span>';
+            pre.innerHTML = '&#x219F;';
             pre.setAttribute('data-bs-toggle', 'tooltip');
             pre.setAttribute('data-bs-title', 'show/hide elevation graph');
             pre.setAttribute("data-bs-placement", "top");
@@ -596,9 +596,11 @@
         var w = L.DomUtil.get("map_elevation_tabs");
         if (w.classList.contains('collapse')) {
             w.classList.remove('collapse');
+            L.DomUtil.get("elevation_hide_show").innerHTML = "&#x219F;";
         }
         else {
             w.classList.add('collapse');
+            L.DomUtil.get("elevation_hide_show").innerHTML = "&#x21A1;";
         }
     });
 
