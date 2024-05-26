@@ -321,7 +321,7 @@
             var li1 = document.createElement("li");
             li1.className = "page-item";
             var pre = document.createElement("a");
-            pre.className = "page-link";
+            pre.className = "page-link collapse";
             pre.id = "elevation_tab_previous";
             pre.innerHTML = '<span aria-hidden="true">&laquo;</span>';
             li1.appendChild(pre);
@@ -330,7 +330,7 @@
             var li1 = document.createElement("li");
             li1.className = "page-item";
             var pre = document.createElement("a");
-            pre.className = "page-link";
+            pre.className = "page-link collapse";
             pre.id = "elevation_tab_next";
             pre.innerHTML = '<span aria-hidden="true">&raquo;</span>';
             li1.appendChild(pre);
@@ -952,7 +952,8 @@
             index += 1;
         });
         if (index > 1) {
-
+            L.DomUtil.get('elevation_tab_previous').classList.remove("collapse");
+            L.DomUtil.get('elevation_tab_next').classList.remove("collapse");
         }
     });
     const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')

@@ -6,6 +6,7 @@
   * fix user segment delete with update the other
   * user splits now with click on the polyline without extra markers
   * hide/show elevation graph
+  * hide next/pre buttons if only one track exists
 
 ### 12. May 2024
 
