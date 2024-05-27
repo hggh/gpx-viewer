@@ -1,5 +1,9 @@
 # CHANGELOG
 
+### 26. May 2024
+
+  * show delete info on track page
+
 ### 25. May 2024
 
   * fix performance; do not create split markers on overy almost over move
