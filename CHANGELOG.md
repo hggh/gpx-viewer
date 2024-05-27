@@ -3,6 +3,7 @@
 ### 26. May 2024
 
   * show delete info on track page
+  * show nice info if track file is deleted
 
 ### 25. May 2024
 

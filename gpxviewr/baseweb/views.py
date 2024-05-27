@@ -1,11 +1,14 @@
 from typing import Any
 from django import http
+from django.shortcuts import redirect
+from django.contrib import messages
 from django.db import models
 from django.forms.forms import BaseForm
 from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
 from django.views.generic import TemplateView, CreateView, DetailView, FormView, UpdateView
-from django.http import FileResponse, HttpRequest, HttpResponse, JsonResponse
+from django.http import FileResponse, HttpRequest, HttpResponse, JsonResponse, Http404
+
 from django.conf import settings
 
 from .models import (
@@ -63,6 +66,16 @@ class IndexView(CreateView):
 class GPXFileDetailView(DetailView):
     template_name = 'gpx_track_detail.html'
     model = GPXFile
+
+    def get(self, request, *args, **kwargs):
+        try:
+            self.object = self.get_object()
+            context = self.get_context_data(object=self.object)
+            return self.render_to_response(context)
+        except Http404:
+            messages.add_message(self.request, messages.WARNING, "Track does not longer exists, upload a new...")
+
+            return redirect('/')
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
