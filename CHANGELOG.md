@@ -3,6 +3,7 @@
 ### 4. Jun 2024
 
   * hover over track split - zoom to track and highlight it in green
+  * disable split button after press
 
 ### 26. May 2024
 

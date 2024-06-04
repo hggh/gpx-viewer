@@ -775,6 +775,7 @@
             button.addEventListener("click", (event) => {
                 var point_number = event.target.dataset.pointNumber;
                 var segment_id = event.target.dataset.segmentId;
+                event.target.disabled = true;
 
                 var url = "/api/gpxfile/" + this.gpx_file_slug + "/user_segment_split/";
                 var r = new XMLHttpRequest();
