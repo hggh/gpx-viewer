@@ -1,5 +1,9 @@
 # CHANGELOG
 
+### 4. Jun 2024
+
+  * hover over track split - zoom to track and highlight it in green
+
 ### 26. May 2024
 
   * show delete info on track page

@@ -519,6 +519,9 @@ class GPXFileUserSegmentSplit(TimeStampedModel):
 
         return None
 
+    def get_segment_id(self) -> int:
+        return self.point_start.segment.pk
+
     def generate_gpx(self) -> str:
         points = GPXTrackSegmentPoint.objects.filter(
             segment__id=self.point_start.segment.pk,
