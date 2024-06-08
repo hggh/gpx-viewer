@@ -51,6 +51,7 @@ class GPXFile(TimeStampedModel):
         5: 'error',
     }
     line_colors = [
+        '#2f2faf',
         '#ff0066',
         '#1f1fbf',
         '#3ef0fb',

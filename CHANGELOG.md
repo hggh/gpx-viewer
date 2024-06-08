@@ -1,5 +1,9 @@
 # CHANGELOG
 
+### UNRELEASED
+
+  * change color of first track/segment in Map
+
 ### 4. Jun 2024
 
   * hover over track split - zoom to track and highlight it in green
