@@ -1,6 +1,6 @@
 # CHANGELOG
 
-### UNRELEASED
+### 8. Jun 2024
 
   * change color of first track/segment in Map
   * fix download of GPX Tracks (content type was on wrong on firefox mobile)
