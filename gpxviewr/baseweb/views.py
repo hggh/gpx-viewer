@@ -7,7 +7,7 @@ from django.forms.forms import BaseForm
 from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
 from django.views.generic import TemplateView, CreateView, DetailView, FormView, UpdateView
-from django.http import FileResponse, HttpRequest, HttpResponse, JsonResponse, Http404
+from django.http import HttpResponse, JsonResponse, Http404
 
 from django.conf import settings
 
@@ -105,10 +105,10 @@ class GPXTrackDownloadView(FormView):
         slug = form.cleaned_data.get('slug')
         self.object = GPXFile.objects.get(slug=slug)
 
-        gpx_file = self.object.generate_download_gpx_file(waypoint_types)
-
-        r = FileResponse(gpx_file, as_attachment=True, filename='waypoints.gpx')
-        r['Content-Disposition'] = 'attachment; filename={0}'.format("waypoints.gpx")
+        r = HttpResponse(self.object.generate_download_gpx_file(waypoint_types), headers={
+            "Content-Type": "application/gpx+xml",
+            "Content-Disposition": 'attachment; filename="waypoints.gpx"',
+        })
 
         return r
 
@@ -125,8 +125,10 @@ class GPXFileUserSegmentSplitDownloadView(DetailView):
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
 
-        r = FileResponse(self.object.generate_gpx(), as_attachment=True, filename=f'{self.object.name}.gpx')
-        r['Content-Disposition'] = 'attachment; filename={0}'.format(f'{self.object.name}.gpx')
+        r = HttpResponse(self.object.generate_gpx(), headers={
+            "Content-Type": "application/gpx+xml",
+            "Content-Disposition": f'attachment; filename="{self.object.name}.gpx"',
+        })
 
         return r
 
@@ -146,9 +148,11 @@ class GPXWayPointPathFromTrackDownloadView(DetailView):
         try:
             self.object.track_to_waypoint
         except ObjectDoesNotExist:
-            return FileResponse()
+            return HttpResponse()
 
-        r = FileResponse(self.object.track_to_waypoint.get_gpx_track(), as_attachment=True, filename=f'to {self.object.name}.gpx')
-        r['Content-Disposition'] = 'attachment; filename={0}'.format(f'to {self.object.name}.gpx')
+        r = HttpResponse(self.object.track_to_waypoint.get_gpx_track(), headers={
+            "Content-Type": "application/gpx+xml",
+            "Content-Disposition": f'attachment; filename="{self.object.name}.gpx"',
+        })
 
         return r
