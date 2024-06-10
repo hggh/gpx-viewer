@@ -1,7 +1,7 @@
 # gpx-viewer
 
 
-Demo: https://gpxviewr.genannt.name/gpxtrack/agaxdfkIoP5msdVKgNxtSjx9qz9yqWPICbzUkKyh
+Demo: https://gpxviewr.genannt.name/
 
 
 ## development
