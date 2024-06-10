@@ -1,4 +1,4 @@
-Django==5.0.3
+Django==5.0.6
 django-extensions==3.2.3
 
 psycopg2
@@ -13,10 +13,10 @@ pandas
 pycodestyle
 
 redis
-celery==5.3.6
+celery==5.4.0
 
 geojson==3.1.0
-djangorestframework==3.14.0
+djangorestframework==3.15.1
 django-cors-headers==4.3.1
 
 geopy
