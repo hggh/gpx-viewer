@@ -1,8 +1,9 @@
 # CHANGELOG
 
-### UNRELEASED
+### 10. Jun 2024
 
   * show track split table only if split exists
+  * change default preselected OSM query
 
 ### 8. Jun 2024
 

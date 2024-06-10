@@ -10,6 +10,7 @@
     around_max: 5000
     around_duplicate: 3000
     marker_filename: marker_toilets.png
+    checked: true
 - model: baseweb.GPXWayPointType
   pk: 2
   fields:
@@ -22,6 +23,7 @@
     around_max: 10000
     around_duplicate: 3000
     marker_filename: marker_camp_site.png
+    checked: true
 - model: baseweb.GPXWayPointType
   pk: 3
   fields:
@@ -34,6 +36,7 @@
     around_max: 2000
     around_duplicate: 3000
     marker_filename: marker_drinking_water.png
+    checked: true
 - model: baseweb.GPXWayPointType
   pk: 4
   fields:
@@ -46,6 +49,7 @@
     around_max: 300
     around_duplicate: 10000
     marker_filename: marker_fuel.png
+    checked: false
 - model: baseweb.GPXWayPointType
   pk: 5
   fields:
@@ -58,6 +62,7 @@
     around_max: 1000
     around_duplicate: 10000
     marker_filename: marker_supermarkt.png
+    checked: false
 - model: baseweb.GPXWayPointType
   pk: 6
   fields:
@@ -70,3 +75,4 @@
     around_max: 10000
     around_duplicate: 3000
     marker_filename: marker_hotel.png
+    checked: false
