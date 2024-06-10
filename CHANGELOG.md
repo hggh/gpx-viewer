@@ -1,5 +1,9 @@
 # CHANGELOG
 
+### UNRELEASED
+
+  * show track split table only if split exists
+
 ### 8. Jun 2024
 
   * change color of first track/segment in Map
