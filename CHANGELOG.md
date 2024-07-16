@@ -1,8 +1,9 @@
 # CHANGELOG
 
-### UNRELEASED
+### 16. Jul 2024
 
   * Django, DjangoRestFramework, Celery Update
+  * update gpx python library to create Garmin compatible GPX Tracks
 
 ### 10. Jun 2024
 

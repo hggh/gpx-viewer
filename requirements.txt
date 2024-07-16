@@ -5,7 +5,7 @@ psycopg2
 pyyml
 requests
 
-gpx==0.2.1
+gpx @ git+https://github.com/sgraaf/gpx@94aadaf
 overpy==0.7
 numpy
 pandas
