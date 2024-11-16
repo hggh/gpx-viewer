@@ -28,6 +28,13 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker meta
+        id: meta-web
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            gpx-viewer/web
         
       - name: Build and push Docker image Web
         id: push-web
@@ -36,8 +43,15 @@ jobs:
           file: Dockerfile-web
           context: .
           push: true
-          tags: ${{ env.REGISTRY }}/gpx-viewer/web:latest
+          tags: ${{ steps.meta-web.outputs.tags }}
+          labels: ${{ steps.meta-web.outputs.labels }}
 
+      - name: Docker meta
+        id: meta-celery
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            gpx-viewer/celery
 
       - name: Build and push Docker image Celery
         id: push-celery
@@ -46,4 +60,5 @@ jobs:
           file: Dockerfile-celery
           context: .
           push: true
-          tags: ${{ env.REGISTRY }}/gpx-viewer/celery:latest
+          tags: ${{ steps.meta-celery.outputs.tags }}
+          labels: ${{ steps.meta-celery.outputs.labels }}
