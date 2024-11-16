@@ -34,7 +34,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            gpx-viewer/web
+            ${{ env.REGISTRY }}/gpx-viewer/web
         
       - name: Build and push Docker image Web
         id: push-web
@@ -51,7 +51,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            gpx-viewer/celery
+            ${{ env.REGISTRY }}/gpx-viewer/celery
 
       - name: Build and push Docker image Celery
         id: push-celery
