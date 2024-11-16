@@ -40,7 +40,7 @@ jobs:
 
 
       - name: Build and push Docker image Celery
-        id: push-web
+        id: push-celery
         uses: docker/build-push-action@v6
         with:
           file: Dockerfile-celery
