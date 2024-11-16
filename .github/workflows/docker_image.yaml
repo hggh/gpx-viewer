@@ -1,0 +1,49 @@
+name: Create and publish a Docker image
+
+
+on:
+  push:
+    branches: ['main']
+
+env:
+  REGISTRY: ghcr.io
+
+
+jobs:
+  build-and-push-image:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+        
+      - name: Build and push Docker image Web
+        id: push-web
+        uses: docker/build-push-action@v6
+        with:
+          file: {context}/Dockerfile-web
+          context: .
+          push: true
+          tags: ${{ env.REGISTRY }}/gpx-viewer/web:latest
+
+
+      - name: Build and push Docker image Celery
+        id: push-web
+        uses: docker/build-push-action@v6
+        with:
+          file: {context}/Dockerfile-celery
+          context: .
+          push: true
+          tags: ${{ env.REGISTRY }}/gpx-viewer/celery:latest
