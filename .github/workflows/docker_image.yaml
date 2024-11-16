@@ -33,7 +33,7 @@ jobs:
         id: push-web
         uses: docker/build-push-action@v6
         with:
-          file: {context}/Dockerfile-web
+          file: Dockerfile-web
           context: .
           push: true
           tags: ${{ env.REGISTRY }}/gpx-viewer/web:latest
@@ -43,7 +43,7 @@ jobs:
         id: push-web
         uses: docker/build-push-action@v6
         with:
-          file: {context}/Dockerfile-celery
+          file: Dockerfile-celery
           context: .
           push: true
           tags: ${{ env.REGISTRY }}/gpx-viewer/celery:latest
