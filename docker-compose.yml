@@ -8,6 +8,15 @@ services:
       - type: bind
         source: local_settings.py
         target: /app/gpxviewr/local_settings.py
+      - type: bind
+        source: ./django-static
+        target: /static
+      - type: bind
+        source: ./local-fs-storage
+        target: /local-fs-storage
+      - type: bind
+        source: ./temp-geojson
+        target: /temp-geojson
     networks:
       - gpxv
   celery:
@@ -17,6 +26,15 @@ services:
       - type: bind
         source: local_settings.py
         target: /app/gpxviewr/local_settings.py
+      - type: bind
+        source: ./django-static
+        target: /static
+      - type: bind
+        source: ./local-fs-storage
+        target: /local-fs-storage
+      - type: bind
+        source: ./temp-geojson
+        target: /temp-geojson
     networks:
       - gpxv
   valhalla:
