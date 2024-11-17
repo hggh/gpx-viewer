@@ -1,22 +1,56 @@
 services:
+  web:
+    image: ghcr.io/hggh/gpx-viewer/web:latest
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - type: bind
+        source: local_settings.py
+        target: /app/gpxviewr/local_settings.py
+    networks:
+      - gpxv
+  celery:
+    image: ghcr.io/hggh/gpx-viewer/celery:latest
+    restart: unless-stopped
+    volumes:
+      - type: bind
+        source: local_settings.py
+        target: /app/gpxviewr/local_settings.py
+    networks:
+      - gpxv
   valhalla:
     image: ghcr.io/valhalla/valhalla:latest
+    restart: unless-stopped
     command: /usr/local/bin/valhalla_service /data/valhalla.json 2
-    ports:
-      - "127.0.0.1:8002:8002"
     volumes:
       - type: bind
         source: ./valhalla-data
         target: /data
+    networks:
+      - gpxv
   redis:
-    image: redis:7.2.3
-    ports:
-      - "127.0.0.1:6379:6379"
-  postgres:
+    image: redis:7
+    restart: unless-stopped
+    volumes:
+      - "redis-data:/data"
+    networks:
+      - gpxv
+  db:
     image: postgis/postgis:16-3.4
-    ports:
-      - "127.0.0.1:5432:5432"
+    restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: geheim
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?error}"
       POSTGRES_DB: gpxviewer
+    volumes:
+      - "db-data:/var/lib/postgresql/data"
+    networks:
+      - gpxv
+
+networks:
+  gpxv:
+
+volumes:
+  db-data:
+  redis-data:

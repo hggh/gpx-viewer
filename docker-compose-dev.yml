@@ -1,0 +1,18 @@
+services:
+  valhalla:
+    image: ghcr.io/valhalla/valhalla:latest
+    command: /usr/local/bin/valhalla_service /data/valhalla.json 2
+    volumes:
+      - type: bind
+        source: ./valhalla-data
+        target: /data
+  redis:
+    image: redis:7
+    ports:
+      - "127.0.0.1:6379:6379"
+  db:
+    image: postgis/postgis:17-3.5
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: geheim
+      POSTGRES_DB: gpxviewer
