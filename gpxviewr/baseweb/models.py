@@ -82,7 +82,7 @@ class GPXFile(TimeStampedModel):
 
         return super().save(**kwargs)
 
-    def is_demo_track(self):
+    def is_demo_track(self) -> bool:
         return self.slug == settings.DEMO_TRACK_SLUG
 
     def get_job_status(self) -> str:

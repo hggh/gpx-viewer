@@ -76,3 +76,16 @@
     around_duplicate: 3000
     marker_filename: marker_hotel.png
     checked: false
+- model: baseweb.GPXWayPointType
+  pk: 7
+  fields:
+    name: Shelter
+    gpx_sym_name: Picnic Area
+    osm_name: shelter_type
+    osm_value: lean_to|weather_shelter
+    osm_query_type: "~"
+    around: 5000
+    around_max: 10000
+    around_duplicate: 3000
+    marker_filename: marker_shelter.png
+    checked: false

@@ -1,5 +1,9 @@
 # CHANGELOG
 
+### 7. Jan 2025
+
+  * add shelter_type ~ lean_to|weather_shelter
+
 ### 16. Jul 2024
 
   * Django, DjangoRestFramework, Celery Update
