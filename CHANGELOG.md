@@ -3,6 +3,7 @@
 ### 15. Jan 2025
 
   * new layout - more mobile friendly
+  * Django to 5.1.5
 
 ### 7. Jan 2025
 
