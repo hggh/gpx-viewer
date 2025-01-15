@@ -1,0 +1,6 @@
+<div class="" id="waypoint_tags_info_{{object.id}}">
+    <h5 id="offcanvasTopLabel" id="canvas_top_title">{{object.name}}</h5>
+    {% for name, value in object.tags.items %}
+    <b>{{name}}:</b> {{value}}<br/>
+    {% endfor %}
+</div>

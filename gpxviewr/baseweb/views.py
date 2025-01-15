@@ -113,6 +113,22 @@ class GPXTrackDownloadView(FormView):
         return r
 
 
+class WaypointDetailView(DetailView):
+    model = GPXTrackWayPoint
+    template_name = '_waypoint_detail.html'
+
+    def get_object(self, queryset=None):
+        gpx_file = GPXFile.objects.get(slug=self.kwargs.get('slug', None))
+        object = GPXTrackWayPoint.objects.get(gpx_file=gpx_file, pk=self.kwargs.get('pk', None))
+
+        return object
+
+
+class GPXFileUserSegmentSplitView(DetailView):
+    model = GPXFile
+    template_name = '_track_split.html'
+
+
 class GPXFileUserSegmentSplitDownloadView(DetailView):
     model = GPXFileUserSegmentSplit
 

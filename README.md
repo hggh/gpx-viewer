@@ -16,7 +16,7 @@ pip3 install -r requirements.txt
 
 #### Postgres + Redis
 ```
-docker compose up -d
+docker compose -f docker-compose-dev.yml up -d
 ```
 
 #### celery worker

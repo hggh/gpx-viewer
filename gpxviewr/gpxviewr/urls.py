@@ -25,8 +25,10 @@ from baseweb.views import (
     GPXFileDetailView,
     GPXTrackDownloadView,
     GPXFileUserSegmentSplitDownloadView,
+    GPXFileUserSegmentSplitView,
     GPXTrackWaypointUpdateView,
     GPXWayPointPathFromTrackDownloadView,
+    WaypointDetailView,
     IndexView,
 )
 
@@ -42,6 +44,8 @@ urlpatterns = [
     path('robots.txt', RobotsTxtView.as_view(), name='robots'),
     path('', IndexView.as_view(), name='root'),
     path('gpxtrack/<slug:slug>', GPXFileDetailView.as_view(), name='gpx-file-detail'),
+    path('gpxtrack/<slug:slug>/track_splits', GPXFileUserSegmentSplitView.as_view()),
+    path('gpxtrack/<slug:slug>/waypoint/<int:pk>', WaypointDetailView.as_view()),
     path('gpxtrack/<slug:slug>/download', GPXTrackDownloadView.as_view(), name='gpx-track-download-detail'),
     path('gpxtrack/<slug:slug>/download_gpx_track_to_waypoint/<int:pk>', GPXWayPointPathFromTrackDownloadView.as_view()),
     path('gpxtrack/<slug:slug>/user_segment_split_download/<int:pk>', GPXFileUserSegmentSplitDownloadView.as_view()),

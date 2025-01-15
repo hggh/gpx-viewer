@@ -1,6 +1,6 @@
 services:
   valhalla:
-    image: ghcr.io/valhalla/valhalla:latest
+    image: ghcr.io/valhalla/valhalla:3.5.1
     command: /usr/local/bin/valhalla_service /data/valhalla.json 2
     volumes:
       - type: bind

@@ -1,0 +1,48 @@
+{% load static %}
+{% if object.is_demo_track or not object.user_segments.all %}
+<div>
+    <br/>
+    Move your mouse cursor over the track and click inside the red circle to split the tack!
+</div>
+{% endif %}
+<table class="table">
+    <thead>
+      <tr>
+        <th scope="col"></th>
+        <th scope="col"></th>
+        <th scope="col">KM</th>
+        <th scope="col"></th>
+        <th scope="col"></th>
+      </tr>
+    </thead>
+    <tbody class="table-group-divider">
+        {% for split in object.user_segments.all %}
+        <tr class="user-track-splits" data-id="{{split.pk}}" data-segment-id="{{ split.get_segment_id }}">
+            <th scope="row">{{split.name}}</th>
+            <td></td>
+            <td>{{split.get_human_distance }}</td>
+            <td>
+                {% if split.get_total_ascent %}
+                    <img src="{% static 'bootstrap-icons-1.11.2/arrow-up-right.svg' %}" title="Up"/>
+                    {{ split.get_total_ascent }} m
+                {% endif %}
+                {% if split.get_total_descent %}
+                <img src="{% static 'bootstrap-icons-1.11.2/arrow-down-right.svg' %}" title="Up"/>
+                    {{ split.get_total_descent }} m
+                {% endif %}
+            </td>
+            <td>
+                <button type="button" onclick="user_segment_split_delete(this, {{split.pk}})" class="btn btn-secondary btn-sm" title="delete the split">
+                <img src="{% static 'bootstrap-icons-1.11.2/trash.svg' %}" title="Delete"/>
+                </button>
+
+                <a href="/gpxtrack/{{object.slug}}/user_segment_split_download/{{split.pk}}">
+                    <button type="button" class="btn btn-secondary btn-sm" title="Download Track">
+                        <img src="{% static 'bootstrap-icons-1.11.2/cloud-download.svg' %}" title="Download GPX Track"/>
+                    </button>
+                </a>
+            </td>
+        </tr>
+        {%endfor %}
+    </tbody>
+</table>

@@ -1,5 +1,9 @@
 # CHANGELOG
 
+### 15. Jan 2025
+
+  * new layout - more mobile friendly
+
 ### 7. Jan 2025
 
   * add shelter_type ~ lean_to|weather_shelter

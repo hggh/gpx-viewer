@@ -714,6 +714,7 @@ class GPXTrackWayPoint(TimeStampedModel):
             "hidden": self.hidden,
             "name": self.name,
             "waypoint_type": {
+                "name": self.waypoint_type.name,
                 "html_id": self.waypoint_type.html_id(),
                 "marker_image_path": self.waypoint_type.marker_image_path(),
 

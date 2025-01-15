@@ -4,6 +4,51 @@
 <meta name="description" property="og:description" content="GPX Track Viewer with POI search based on OpenStreetMap"/>
 <meta property="og:type" content="website"/>
 <meta property="og:image" content="https://gpxviewr.genannt.name/static/preview.png"/>
+
+<style>
+    .flyover {
+        left: 150%;
+        overflow: hidden;
+        position: fixed;
+        width: 50%;
+        opacity: 0.95;
+        z-index: 1050;
+        transition: left 0.6s ease-out 0s;
+     }
+      
+     .flyover-centered {
+        top: 50%;
+        transform: translate(-50%, -50%);
+     }
+     
+     .flyover.in {
+        left: 50%;
+     }
+    .nolinkcolor {
+        text-decoration: none;
+    }
+    .elevation_hide_show_shake {
+        /* Start the shake animation and make the animation last for 0.5 seconds */
+        animation: shake 2.5s;
+      
+        /* When the animation is finished, start again */
+        //animation-iteration-count: infinite;
+      }
+      
+      @keyframes shake {
+        0% { transform: translate(1px, 1px) rotate(0deg); }
+        10% { transform: translate(-1px, -2px) rotate(-1deg); }
+        20% { transform: translate(-3px, 0px) rotate(1deg); }
+        30% { transform: translate(3px, 2px) rotate(0deg); }
+        40% { transform: translate(1px, -1px) rotate(1deg); }
+        50% { transform: translate(-1px, 2px) rotate(-1deg); }
+        60% { transform: translate(-3px, 1px) rotate(0deg); }
+        70% { transform: translate(3px, 1px) rotate(-1deg); }
+        80% { transform: translate(-1px, -1px) rotate(1deg); }
+        90% { transform: translate(1px, 2px) rotate(0deg); }
+        100% { transform: translate(1px, -2px) rotate(-1deg); }
+      }
+</style>
 {% endblock %}
 
 {% block sidebarleft %}
@@ -32,280 +77,81 @@
             </form>
     </div>
 
-    <div class="list-group-item border-end-0 d-inline-block">
-        <h5>show/hide POIs on map</h5>
-        <ul class="list-group">
-            {% for wpt in object.get_waypoint_types %}
-                <li class="list-group-item">
-                    <input type="checkbox" checked name="wpt_{{wpt.html_id}}" data-id="{{wpt.html_id}}" title="Show/Hide {{wpt.name }} on map" class="nav-link wpt_enable_checkbox" style="">{{wpt.name}}
-                </li>
-            {% endfor %}
-        </ul>
-    </div>
 </div>
 {% endblock%}
 
 {% block sidebarright %}
-<div class="row">
-    <select class="form-select form-select-sm" aria-label="information about POIs" id="information_poi_dropdown">
-        <option id="foo">select... POI</option>
-        {% for wpt in object.get_waypoint_types %}
-        <option id="{{ wpt.html_id }}-tab" value="#{{ wpt.html_id }}-tab-pane" type="button" role="tab" aria-controls="{{ wpt.html_id }}-tab-pane" aria-selected="true">{{wpt.name}} <img src="{{wpt.marker_image_path}}" /></option>
-        {% endfor %}
-    </select>
-</div>
-<div class="tab-content" id="myTabContent">
-    {% for wpt in object.get_waypoint_types_with_entries %}
-    <div class="collapse tab-content-hidden" id="{{wpt.object.html_id }}-tab-pane">
-        <br/>
-        <h4>{{ wpt.object.name }}</h4>
-        <table class="table table-hover">
-        <tbody>
-        {% for wp in wpt.waypoints %}
-            <tr>
-                <td>
-                    {% if wp.get_url %}<a href="{{wp.get_url}}" target="_blank">{{wp.name }}{%else %}{{wp.name }}{% endif %}
-                    {% if wp.track_to_waypoint %}
-                    <br/><small><a href="/gpxtrack/{{object.slug}}/download_gpx_track_to_waypoint/{{wp.pk}}">Download GPX Track to POI ({{wp.track_to_waypoint.get_away_kilometer}} km)</a></small>
-                    {% endif %}
-                </td>
-                <td>
-                    <button data-id="{{wp.pk }}" data-status="{{wp.hidden|lower}}" class="waypoint_show_hide btn btn-outline-info">{% if wp.hidden == True %}Show{% else %}Hide{% endif %}</button>
-                </td>
-                <td class="col-md-2">
-                    <button class="waypoints_to_map btn btn-dark" data-id="{{wp.id}}" data-lat="{{wp.location.x}}" data-lon="{{wp.location.y}}">on map</button>
-                </td>
-            </tr>
-        {% endfor %}
-        </tbody>
-        </table>
+<div>
+    <div class="offcanvas-body">
+    <small>
+    You can split your track into segments to download it to your garmin or plan your tour.
+    </small>
+    <br/>
+        <div id="sidebar_split_track">
+        </div>
     </div>
-    {% endfor %}
 </div>
-<script>
-    document.querySelector("#amenity_toilets-tab-pane").classList.remove('collapse');
-    var information_poi_dropdown = document.querySelector("#information_poi_dropdown");
-    information_poi_dropdown.addEventListener("change", (event) => {
-        document.querySelectorAll(".tab-content-hidden").forEach(box => {
-            box.classList.add('collapse');
-        });
-        var d = document.querySelector(event.target.value);
-        d.classList.remove('collapse');
-    });
-</script>
 {% endblock%}
+
 
 {% block content %}
 {% load static %}
-<script src="{% static '/js/d3-7.8.5.js' %}"></script>
-<script>
-    var gpx_track_status_reload = false;
-</script>
+<script type="text/javascript" src="{% static '/js/d3-7.8.5.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/gpx-viewr.js' %}"></script>
 
 <main class="col ps-md-2 pt-2">
     <div class="page-header pt-3">
         <h2>{{object.name }}</h2>
-    </div>
-
-    {% if object.get_job_status == 'error' %}
-    <div class="alert alert-danger" role="alert">
-        Job is in status error - ask on GitHub for help! :-(
-    </div>
-    {% endif %}
-
-    {% if object.job_is_finished == False and object.get_job_status != 'error' %}
-    <div class="alert alert-warning" role="alert">
-    <div class="spinner-border text-primary" role="status">
-    </div>
-    <span id="job_status_info_box" style="padding-left:10px;">wating for job status</span>
-    <script>
-        gpx_track_status_reload = true;
-        var job_status_interval;
-        var job_status_url = "/api/gpxfile/{{ object.slug }}/job_status/";
-
-        function check_job_status() {
-            var job_status_request = new XMLHttpRequest();
-            job_status_request.open('POST', job_status_url);
-
-            job_status_request.addEventListener('load', function(event) {
-                var job_status_info_box = document.querySelector("#job_status_info_box")
-
-                var d = JSON.parse(job_status_request.responseText);
-                if (d["finished"] == true || d["job_status_name"] == 'error') {
-                    clearInterval(job_status_interval);
-                    location.reload();
-                }
-                else {
-                    if (d["job_status_name"] == 'gpx_track_loading') {
-                        job_status_info_box.innerHTML = "GPX Track is processing";
-                    }
-                    else if (d["job_status_name"] == 'osm_query') {
-                        job_status_info_box.innerHTML = "OpenStreetMap Query is in progress...";
-                    }
-                }
-            });
-            job_status_request.send();
-        }
-        job_status_interval = setInterval(check_job_status, 500);
-    </script>
-    </div>
-    {% endif %}
-
-    <div id="map" style="width: 100%; height: 600px;"></div>
-
-    <div class="row">
-        <div class="col-sm-7 col-lg-9">
-            <div class="container" style="padding-top:20px; padding-bottom:20px;">
-                {% for waypoint in object.waypoints.all %}
-                <div class="collapse" id="waypoint_tags_info_{{waypoint.id}}">
-                    <h5>{{waypoint.name}}</h5>
-                    {% for name, value in waypoint.tags.items %}
-                    <b>{{name}}:</b> {{value}}<br/>
-                    {% endfor %}
-                </div>
-                {% endfor %}
-            </div>
+        <div style="float:right;">
+            <a class="nolinkcolor" href="#" title="Click on map and open location in OpenStreetMap">
+                <img id="map_query_openstreetmap" width="20px" height="20px" src="{% static 'img/openstreetmap_logo.svg' %}"/>
+            </a>
+            |
+            <a class="nolinkcolor" href="#" title="Click on map and open location in Google Maps">
+                <img id="map_query_google_maps" width="20px" height="20px" src="{% static 'bootstrap-icons-1.11.2/google.svg' %}"/>
+            </a>
+            |
+            <span id="elevation_tab_previous" class="collapse">
+                <a class="nolinkcolor" href="#">
+                    <img width="25px" height="25px" src="{% static 'bootstrap-icons-1.11.2/arrow-left.svg' %}"/>
+                </a>
+            </span>
+            <a class="nolinkcolor" href="#" title="show/hide elevation graph">
+                <img id="elevation_hide_show" class="animated shake" width="25px" height="25px" src="{% static 'bootstrap-icons-1.11.2/graph-up.svg' %}"/>
+            </a>
+            <span id="elevation_tab_next" class="collapse">
+                <a class="nolinkcolor" href="#">
+                    <img width="25px" height="25px" src="{% static 'bootstrap-icons-1.11.2/arrow-right.svg' %}"/>
+                </a>
+            </span>
         </div>
     </div>
-    <div class="container" style="padding-top:10px;">
-        <h3>Track Splits</h3>
-        {% if object.is_demo_track or not object.user_segments.all %}
-        <div class="alert alert-light" role="alert">
-            click on track (red circle) to create a new track split
-        </div>
-        {% endif %}
-        {% if object.user_segments.all %}
-        <table class="table">
-            <thead>
-              <tr>
-                <th scope="col"></th>
-                <th scope="col"></th>
-                <th scope="col">KM</th>
-                <th scope="col"></th>
-                <th scope="col"></th>
-              </tr>
-            </thead>
-            <tbody class="table-group-divider">
-                {% for split in object.user_segments.all %}
-                <tr class="user-track-splits" data-id="{{split.pk}}" data-segment-id="{{ split.get_segment_id }}">
-                    <th scope="row">{{split.name}}</th>
-                    <td></td>
-                    <td>{{split.get_human_distance }}</td>
-                    <td>
-                        {% if split.get_total_ascent %}
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-up-right" viewBox="0 0 16 16">
-                            <path fill-rule="evenodd" d="M14 2.5a.5.5 0 0 0-.5-.5h-6a.5.5 0 0 0 0 1h4.793L2.146 13.146a.5.5 0 0 0 .708.708L13 3.707V8.5a.5.5 0 0 0 1 0z"/>
-                            </svg>
-                            {{ split.get_total_ascent }} m
-                        {% endif %}
-                        {% if split.get_total_descent %}
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-down-right" viewBox="0 0 16 16">
-                            <path fill-rule="evenodd" d="M14 13.5a.5.5 0 0 1-.5.5h-6a.5.5 0 0 1 0-1h4.793L2.146 2.854a.5.5 0 1 1 .708-.708L13 12.293V7.5a.5.5 0 0 1 1 0z"/>
-                            </svg>
-                            {{ split.get_total_descent }} m
-                        {% endif %}
-                    </td>
-                    <td>
-                        <button type="button" onclick="user_segment_split_delete(this, {{split.pk}})" class="btn btn-secondary btn-sm" title="delete the split">
-                        <img src="/static/bootstrap-icons-1.11.2/x-square.svg"/> Delete
-                        </button>
 
-                        <a href="/gpxtrack/{{object.slug}}/user_segment_split_download/{{split.pk}}">
-                            <button type="button" class="btn btn-secondary btn-sm" title="Download Track">
-                                Download GPX Track
-                            </button>
-                        </a>
-                    </td>
-                </tr>
-                {%endfor %}
-            </tbody>
-        </table>
-        {% endif %}
+    <div id="map" style="width: 100%; height: 200px;"></div>
+
+    <div id="map_query_google_maps_info_message_box" class="mt-4 p-5 bg-primary text-white rounded flyover flyover-centered">
+        Click on map to open this location in Google Maps.
     </div>
 
-    <div class="container" style="padding-top:30px;">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th scope="col">Track Name</th>
-                    <th scope="col"></th>
-                    <th scope="col">KM</th>
-                    <th scope="col"></th>
-                </tr>
-            </thead>
-            <tbody class="table-group-divider">
-                {% for track in object.tracks.all %}
-                <tr>
-                    <th scope="row">{{track.name}} {% if track.segments.count > 1 %} (Segments: {{track.segments.count}}){% endif %}</th>
-                    <td></td>
-                    <td>{{track.get_human_distance}}</td>
-                    <td>
-                            {% if track.get_total_ascent %}
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-up-right" viewBox="0 0 16 16">
-                                <path fill-rule="evenodd" d="M14 2.5a.5.5 0 0 0-.5-.5h-6a.5.5 0 0 0 0 1h4.793L2.146 13.146a.5.5 0 0 0 .708.708L13 3.707V8.5a.5.5 0 0 0 1 0z"/>
-                                </svg>
-                                {{ track.get_total_ascent }} m
-                            {% endif %}
-                            {% if track.get_total_descent %}
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-down-right" viewBox="0 0 16 16">
-                                <path fill-rule="evenodd" d="M14 13.5a.5.5 0 0 1-.5.5h-6a.5.5 0 0 1 0-1h4.793L2.146 2.854a.5.5 0 1 1 .708-.708L13 12.293V7.5a.5.5 0 0 1 1 0z"/>
-                                </svg>
-                                {{ track.get_total_descent }} m
-                            {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div id="map_query_opensteetmap_info_message_box" class="mt-4 p-5 bg-primary text-white rounded flyover flyover-centered">
+        Click on map to open this location in OpenStreetMap.
     </div>
-    <div class="container">
-        <small>
-            Track will be deleted on {{object.delete_after}}
-        </small>
-    </div>
+   
 </main>
 
 <script>
-    var osm_query_feature = false;
-    var google_query_feature = false;
+    document.getElementById('map').style.height = window.innerHeight - 200 + "px";
 
-    var map_waypoints = [];
     const gpx_file_slug = '{{object.slug}}';
     const map = L.map('map').setView([51.505, 10.09], 3);
-    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
     const tiles = L.tileLayer('https://tile.openstreetmap.de/{z}/{x}/{y}.png', {
         maxZoom: 19,
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(map);
 
-    map.on('click', function(e) {
-        if (osm_query_feature) {
-            osm_query_feature = false;
-            document.getElementById('map').style.cursor = '';
-            window.open(
-                "https://www.openstreetmap.org/query?lat=" + e.latlng.lat + "&lon=" + e.latlng.lng + "#map=14/" + e.latlng.lat + "/" + e.latlng.lng,
-                "_blank"
-            );
-        }
-        if(google_query_feature) {
-            google_query_feature = false;
-            document.getElementById('map').style.cursor = '';
-            window.open(
-                "https://www.google.com/maps/@" + e.latlng.lat + "," + e.latlng.lng + ",17z?entry=ttu",
-                "_blank"
-            );
-        }
+    document.querySelector("#osm_tile_lang").addEventListener("change", (event) => {
+        tiles.setUrl(event.target.value);
     });
-
-    function user_segment_split_delete(button, user_segment_pk) {
-        var r = new XMLHttpRequest();
-        r.open('POST', "/api/gpxfile/{{ object.slug }}/user_segment_split_delete/");
-        r.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-        r.addEventListener('load', function(event) {
-            location.reload();
-        });
-        r.send(JSON.stringify({'user_segment_pk': user_segment_pk}));
-    }
 
     L.Control.ElevationContainer = L.Control.extend({
         options: {
@@ -317,271 +163,60 @@
             this.map = map;
             var div = L.DomUtil.create('div');
             div.id = "map_elevation";
-            div.className = "map_elevation";
+            div.classList.add("map_elevation");
 
             var tab = document.createElement("div");
             tab.className = "tab-content";
             tab.id = "map_elevation_tabs";
-
-            var ul = document.createElement("ul");
-            ul.className = "pagination";
-            var li1 = document.createElement("li");
-            li1.className = "page-item";
-            var pre = document.createElement("a");
-            pre.className = "page-link collapse";
-            pre.id = "elevation_tab_previous";
-            pre.innerHTML = '<span aria-hidden="true">&laquo;</span>';
-            li1.appendChild(pre);
-            ul.appendChild(li1);
-
-            var li1 = document.createElement("li");
-            li1.className = "page-item";
-            var pre = document.createElement("a");
-            pre.className = "page-link collapse";
-            pre.id = "elevation_tab_next";
-            pre.innerHTML = '<span aria-hidden="true">&raquo;</span>';
-            li1.appendChild(pre);
-            ul.appendChild(li1);
-
-            var li1 = document.createElement("li");
-            li1.className = "page-item";
-            var pre = document.createElement("a");
-            pre.className = "page-link";
-            pre.id = "elevation_hide_show";
-            pre.innerHTML = '&#x219F;';
-            pre.setAttribute('data-bs-toggle', 'tooltip');
-            pre.setAttribute('data-bs-title', 'show/hide elevation graph');
-            pre.setAttribute("data-bs-placement", "top");
-
-            li1.appendChild(pre);
-            ul.appendChild(li1);
-
-            div.appendChild(ul);
 
             div.appendChild(tab);
 
             return div;
         }
     });
-
     L.Control.elevation = function(opts) {
         return new L.Control.ElevationContainer(opts);
     }
     L.Control.elevation().addTo(map);
 
-    L.Control.QueryOSM = L.Control.extend({
-        pressed_query: function(e) {
-            if (osm_query_feature == false) {
-                document.getElementById('map').style.cursor = 'crosshair';
-            }
-            else {
-                document.getElementById('map').style.cursor = '';
-            }
-            osm_query_feature = !osm_query_feature;
-            e.stopPropagation();
-        },
-        onAdd: function(map) {
-            this.map = map;
-            var img = L.DomUtil.create('img');
-            img.src = '/static/patch-question.png';
-            img.title = "Query OpenStreetmap Object";
 
-            L.DomEvent.on(img, 'click', this.pressed_query, this);
-            return img;
-        },
-        onRemove: function(map) {
-        }
-    });
-    
-    L.control.queryosm = function(opts) {
-        return new L.Control.QueryOSM(opts);
-    }
-    L.control.queryosm({ position: 'bottomleft' }).addTo(map);
-
-
-    L.Control.QueryGoogle = L.Control.extend({
-        pressed_query: function(e) {
-            if (google_query_feature == false) {
-                document.getElementById('map').style.cursor = 'crosshair';
-            }
-            else {
-                document.getElementById('map').style.cursor = '';
-            }
-            google_query_feature = !google_query_feature;
-            e.stopPropagation();
-        },
-        onAdd: function(map) {
-            this.map = map;
-            var img = L.DomUtil.create('img');
-            img.src = '{% static 'bootstrap-icons-1.11.2/google.svg' %}';
-            img.title = "Query Google Maps";
-
-            L.DomEvent.on(img, 'click', this.pressed_query, this);
-            return img;
-        },
-        onRemove: function(map) {
-        }
-    });
-
-    L.control.querygoogle = function(opts) {
-        return new L.Control.QueryGoogle(opts);
-    }
-    L.control.querygoogle({ position: 'bottomleft' }).addTo(map);
-
-    document.querySelector("#osm_tile_lang").addEventListener("change", (event) => {
-        tiles.setUrl(event.target.value);
-    });
-
-    var waypoints_url = "/api/gpxfile/" + gpx_file_slug + "/waypoints/";
-    var map_layer_groups = {};
-
-    get_draw_waypoints();
-
-    function show_route_to(waypoint_pk) {
-        url = '/api/gpxfile/' + gpx_file_slug + '/geojson_track_to_waypoint/';
-        var r = new XMLHttpRequest();
-        r.open('POST', url);
-        r.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-        r.addEventListener('load', function(event) {
-            if (r.status == 200) {
-                var d = JSON.parse(r.responseText);
-                geojson = L.geoJSON(d, {style: function (feature) {
-                    return {
-                        color: feature.properties.color,
-                        weight: feature.properties.weight,
-                        opacity: feature.properties.opacity,
-                    };
-                }});
-                geojson.addTo(map);
-            }
-        });
-        r.send(JSON.stringify({"waypoint_pk": waypoint_pk}));
-    }
-    function setUpLayerGroups(waypoint_types) {
-        for (var k in  map_layer_groups) {
-            map_layer_groups[k].remove();
-        }
-        for (const wt of waypoint_types) {
-            map_layer_groups[wt.html_id] = L.layerGroup();
-            map_layer_groups[wt.html_id].addTo(map);
-        }
-    }
-    function setUpMarks(waypoints) {
-        map_waypoints = [];
-        for (const waypoint of waypoints) {
-            if (waypoint.hidden == true) {
-                continue;
-            }
-            var m = L.marker([waypoint.lat, waypoint.lon]);
-            map_waypoints[waypoint.id] = m;
-            m.waypointId = waypoint.id;
-            m.setIcon(L.icon({
-                iconSize: [16, 16],
-                iconUrl: waypoint.waypoint_type.marker_image_path,
-                className: waypoint.class_name,
-            }));
-            if (waypoint.has_gpx_track_to == true) {
-                m.addEventListener("popupopen", (event) => {
-                    show_route_to(event.target.waypointId);
-                });
-            }
-            m.addEventListener("popupopen", (event) => {
-                var w = document.querySelector("#waypoint_tags_info_" + waypoint.id);
-                if (w) {
-                    w.classList.remove('collapse');
-                }
+    d3.json('/api/gpxfile/' + gpx_file_slug + '/json').then(function (data) {
+        var index = 0;
+        var active_tab = true;
+        data.forEach(track => {
+            track.segments.forEach(segment => {
+                var f = new TrackSegment(gpx_file_slug, segment.segment_id, map, segment, track.name, active_tab, index);
+                active_tab = false;
             });
-            m.addEventListener("popupclose", (event) => {
-                var w = document.querySelector("#waypoint_tags_info_" + waypoint.id);
-                if (w) {
-                    w.classList.add('collapse');
-                }
-            });
-            if (waypoint.name != "" || waypoint.url != null || waypoint.has_gpx_track_to == true) {
-                var content = "";
-                if (waypoint.name != "") {
-                    content += "<b>" + waypoint.name + "</b><br/>";
-                }
-                if (waypoint.url != null) {
-                    content += "Homepage: <a href='" + waypoint.url + "' target='_blank'>" + waypoint.url + "</a>";
-                }
-                if (waypoint.has_gpx_track_to == true) {
-                    ln = waypoint.track_to_waypoint.length;
-                    content += "<br/><a href='/gpxtrack/"+gpx_file_slug+"/download_gpx_track_to_waypoint/"+waypoint.id+"'>Download Track to WayPoint ("+ln+" km)</a><br/>";
-                }
-                m.bindPopup(content).openPopup();
-            }
-            else {
-                m.bindPopup('').openPopup();
-            }
-            m.addTo(map_layer_groups[waypoint.waypoint_type.html_id]);
+            index += 1;
+        });
+        if (index > 1) {
+            L.DomUtil.get('elevation_tab_previous').classList.remove("collapse");
+            L.DomUtil.get('elevation_tab_next').classList.remove("collapse");
         }
-    }
-    document.querySelectorAll(".wpt_enable_checkbox").forEach(box => {
-        box.addEventListener("change", (event) => {
-            if (event.target.checked) {
-                map_layer_groups[event.target.dataset.id].addTo(map);
-            }
-            else {
-                map_layer_groups[event.target.dataset.id].removeFrom(map);
-            }
-        });
     });
 
-    document.querySelectorAll(".waypoint_show_hide").forEach(box => {
-        box.addEventListener("click", (event) => {
-            var waypoint_id = event.target.dataset.id;
-            var current_status = event.target.dataset.status;
-            var waypoint_hidden = "";
+    var split_track_menu = new SplitTrackMenu(gpx_file_slug, map, "sidebar_split_track");
+    split_track_menu.get_data();
 
-            if (event.target.dataset.status == "false") {
-                waypoint_hidden = "checked";
-                event.target.dataset.status = "true";
-                event.target.innerHTML = "Show";
-            }
-            else {
-                waypoint_hidden = "";
-                event.target.dataset.status = "false";
-                event.target.innerHTML = "Hide";
-            }
-            var r = new XMLHttpRequest();
-            r.open('POST', "/waypoint/" + waypoint_id + "/update");
-            r.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    var waypoints = new Waypoints(gpx_file_slug, map);
+    waypoints.get_data();
 
-            r.addEventListener('load', function(event) {
-                get_draw_waypoints();
-            });
-            r.send("hidden=" + waypoint_hidden + "&csrfmiddlewaretoken=" + csrftoken);
-        });
+    var map_query_google_maps = new MapQueryGoogleMaps(map);  
+    var map_query_openstreetmap = new MapQueryOpenStreetMap(map);
+
+    user_segment_split = new UserSegmentSplit(gpx_file_slug, map);
+
+
+    document.querySelector("#elevation_hide_show").addEventListener("click", (event) => {
+        var w = L.DomUtil.get("map_elevation_tabs");
+        if (w.classList.contains('collapse')) {
+            w.classList.remove('collapse');
+        }
+        else {
+            w.classList.add('collapse');
+        }
     });
-
-    document.querySelectorAll(".waypoints_to_map").forEach(box => {
-        box.addEventListener("click", (event) => {
-            map.flyTo(L.latLng(
-                event.target.dataset.lat,
-                event.target.dataset.lon
-            ), 12);
-            map_waypoints[event.target.dataset.id].bounce(4);
-        });
-    });
-
-    function get_draw_waypoints() {
-        var waypoints_request = new XMLHttpRequest();
-        waypoints_request.open('POST', waypoints_url);
-
-        waypoints_request.addEventListener('load', function(event) {
-            var d = JSON.parse(waypoints_request.responseText);
-            var waypoints_data = d["waypoints"];
-            var waypoint_types_data = d["waypoint_types"];
-            setUpLayerGroups(waypoint_types_data);
-            setUpMarks(waypoints_data);
-        });
-        waypoints_request.send();
-    }
-    if (gpx_track_status_reload == true) {
-        setInterval(get_draw_waypoints, 3000);
-    }
-
     document.querySelector("#elevation_tab_next").addEventListener("click", (event) => {
         var tab = document.querySelector("#map_elevation_tabs");
         var tabs = tab.querySelectorAll(".tab-pane");
@@ -598,19 +233,6 @@
             }
         }
     });
-
-    document.querySelector("#elevation_hide_show").addEventListener("click", (event) => {
-        var w = L.DomUtil.get("map_elevation_tabs");
-        if (w.classList.contains('collapse')) {
-            w.classList.remove('collapse');
-            L.DomUtil.get("elevation_hide_show").innerHTML = "&#x219F;";
-        }
-        else {
-            w.classList.add('collapse');
-            L.DomUtil.get("elevation_hide_show").innerHTML = "&#x21A1;";
-        }
-    });
-
     document.querySelector("#elevation_tab_previous").addEventListener("click", (event) => {
         var tab = document.querySelector("#map_elevation_tabs");
         var tabs = tab.querySelectorAll(".tab-pane");
@@ -628,381 +250,16 @@
         }
     });
 
-    class TrackSegment {
-        constructor(gpx_file_slug, segment_pk, map, segment, track_name, active_tab, index) {
-            this.gpx_file_slug = gpx_file_slug;
-            this.segment_pk = segment_pk;
-            this.map = map;
-            this.segment = segment;
-            this.tab_element_name = "map_elevation_tabs";
-            this.index = index;
-            this._marker_movement = true;
-            this.segment_split_lines = [];
+    function hide_elevation_graph() {
+        var w = L.DomUtil.get("map_elevation_tabs");
+        w.classList.add('collapse');
 
-            this.margin = {
-                top: 10,
-                bottom: 30,
-                right: 30,
-                left: 50,
-            };
-            this.width = 460 - this.margin.left - this.margin.right;
-            this.height = 200 - this.margin.top - this.margin.bottom;
-            
-            this.tab_element = document.createElement("div");
-            this.tab_element.id = "graph_tab_" + this.segment_pk;
+        var e = L.DomUtil.get("elevation_hide_show");
+        e.classList.add("elevation_hide_show_shake");
 
-
-            if (active_tab) {
-                this.tab_element.className = "tab-pane active";
-            }
-            else {
-                this.tab_element.className = "tab-pane";
-            }
-            this.tab_element.role = "tabpanel";
-            this.tab_element.tabindex = "0";
-
-            var text = document.createElement("h5");
-            text.innerHTML = track_name;
-            this.tab_element.appendChild(text);
-
-            var graph_tab = document.createElement("div");
-            graph_tab.id = "graph_" + this.segment_pk;
-            this.tab_element.appendChild(graph_tab);
-
-            var box = L.DomUtil.get(this.tab_element_name);
-            box.appendChild(this.tab_element);
-
-            this.svg = d3.select(this.get_container_name()).append("svg")
-                .attr("width", this.width + this.margin.left + this.margin.right)
-                .attr("height", this.height + this.margin.top + this.margin.bottom)
-                .append("g")
-                .attr("transform",`translate(${this.margin.left},${this.margin.top})`);
-
-            this.background = this.svg.append("g").attr("class", "group1");
-            this.foreground = this.svg.append("g").attr("class", "group2");
-
-            this._marker = L.circleMarker([0, 0], {'color': '#ff0000'}).addTo(this.map);
-            this._marker.setRadius(7);
-
-            this._marker.addEventListener("popupclose", (event) => {
-                this._marker_movement = true;
-            });
-            this._marker.bindPopup(this.edit_marker_popup.bind(this));
-
-            this.graph();
-            this.draw_line();
-
-            this.get_user_segment_split_data();
-        }
-
-        async get_user_segment_split_data() {
-            var url = "/api/gpxfile/" + this.gpx_file_slug + "/user_segment_splits/";
-            var r = new XMLHttpRequest();
-            r.open('POST', url);
-            r.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-            r.addEventListener("load", (event) => {
-                this.user_segment_split_data = JSON.parse(r.responseText);
-                this.setup_split_overlay();
-            });
-            r.send(JSON.stringify({'segment_pk': this.segment_pk}));
-        }
-
-        async setup_split_overlay() {
-            this.user_segment_split_data.forEach((split) => {
-                var data = [];
-
-                this.segment.points.forEach((point) => {
-                    if (point.point_number >= split.start.number && point.point_number <= split.end.number) {
-                        data.push([point.lat, point.lon]);
-                    }
-                });
-                this.segment_split_lines[split.id] = L.polyline(data, {'color': 'green', 'opacity': 1});
-            });
-
-            document.querySelectorAll(".user-track-splits").forEach(box => {
-                box.addEventListener("mouseover", (event) => {
-                    var id = event.target.parentNode.dataset.id;
-                    var segment_id = event.target.parentNode.dataset.segmentId;
-
-                    if (id && segment_id && parseInt(segment_id) == parseInt(this.segment_pk)) {
-                        this.user_segment_split_data.forEach((split) => {
-                            if (split.id == parseInt(id)) {
-                                this.segment_split_lines[split.id].bringToFront();
-                                this.segment_split_lines[split.id].addTo(this.map);
-                                this.map.fitBounds(this.segment_split_lines[split.id].getBounds());
-
-                                setTimeout(() => {
-                                    this.segment_split_lines[split.id].removeFrom(this.map);
-                                }, 1000);
-                            }
-                        });
-                    }
-                });
-            });
-        }
-
-        edit_marker_popup(layer) {
-            this._marker_movement = false;
-
-            var l = L.GeometryUtil.closest(this.map, this.line, layer._latlng, true);
-            var s = this.segment.points.findIndex((element) => element.lat == l.lat && element.lon == l.lng);
-            var point = this.segment.points[s];
-
-            var split_data_html = null;
-            if (this.user_segment_split_data) {
-                var split_start = 0;
-                for (var split of this.user_segment_split_data) {
-                    if (point.point_number > split.start.number && split.start.number > split_start) {
-                        split_start = split.start.number;
-                    }
-                }
-                // FIXME? point number vs Index of Array?
-                var distance_last_start = this.segment.points[point.point_number].distance - this.segment.points[split_start].distance;
-
-                var split_data_html = document.createElement("div");
-                split_data_html.innerText = "from last Start: " + Math.round(distance_last_start / 1000) + " km";
-            }
-
-            var html = document.createElement("div");
-            if (split_data_html) {
-                html.appendChild(split_data_html);
-            }
-
-            var button = document.createElement("button");
-            button.innerText = "Split Track here";
-            button.className = "btn btn-outline-info";
-            button.setAttribute("type", "button");
-            button.setAttribute("data-point-number", point.point_number);
-            button.setAttribute("data-segment-id", this.segment_pk);
-            button.addEventListener("click", (event) => {
-                var point_number = event.target.dataset.pointNumber;
-                var segment_id = event.target.dataset.segmentId;
-                event.target.disabled = true;
-
-                var url = "/api/gpxfile/" + this.gpx_file_slug + "/user_segment_split/";
-                var r = new XMLHttpRequest();
-                r.open('POST', url);
-                r.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-                r.addEventListener("load", (event) => {
-                    location.reload();
-                });
-                r.send(JSON.stringify({'segment_pk': segment_id, 'point_number': point_number}));
-                
-            });
-
-            html.appendChild(button);
-            return html;
-        }
-
-        async draw_line() {
-            var data = [];
-
-            this.segment.points.forEach((point) => {
-                data.push([point.lat, point.lon]);
-            });
-
-            this.line = L.polyline(data, {'color': this.segment.color, 'opacity': 0.7}).addTo(this.map);
-            this.map.almostOver.addLayer(this.line);
-
-            this.map.addEventListener("almost:move", (event) => {
-                if (this._marker_movement == false) {
-                    return;
-                }
-                var result = Infinity;
-                var p = null;
-
-                this.segment.points.forEach((point) => {
-                    var distance = event.latlng.distanceTo([point.lat, point.lon]);
-                    if (distance < result) {
-                        result = distance;
-                        p = point;
-                    }
-                });
-                var xpos = this.x(p.distance / 1000);
-
-                this.draw_tooltip(xpos, p);
-                this._marker.setLatLng(p);
-            });
-            this.map.fitBounds(this.line.getBounds());
-        }
-
-        draw_tooltip(xpos, point) {
-            this.xAxisLine.attr("x", xpos);
-
-            var mouse_text_xpos = xpos + 10;
-            if (xpos > (this.width / 2)) {
-                mouse_text_xpos = xpos - 120;
-            }
-
-            this.mouse_text
-                .text(Math.round(point.distance / 1000) + " km / " + Math.round(point.elevation) + "m")
-                .style("opacity", 1)
-                .attr("class", "mouse-text")
-                .attr("y", "40")
-                .attr("x", mouse_text_xpos);
-        }
-
-        get_container_name() {
-            return "#graph_" + this.segment_pk;
-        }
-
-        pm_mouseover(event) {
-            if (this._marker_movement == false) {
-                return;
-            }
-
-            var [xpos, ypos] = d3.pointer(event);
-            this.xAxisLine.attr("x", xpos);
-
-            var mouse_pointer_distance = this.x.invert(xpos);
-            var i = d3.bisector((d) => d.distance).right(this.segment.points, (mouse_pointer_distance * 1000));
-
-            this.draw_tooltip(xpos, this.segment.points[i]);
-
-            this._marker.setLatLng([this.segment.points[i].lat, this.segment.points[i].lon]);
-        }
-
-        async graph() {
-            this.x = d3.scaleLinear();
-            this.y = d3.scaleLinear();
-
-            this.xAxisLine = this.foreground.append("g").append("rect")
-                .attr("class", "dotted")
-                .attr("stroke-with", "1px")
-                .attr("width", ".5px")
-                .attr("height", this.height);
-
-            this.mouse_text = this.foreground.append("g")
-                .append("text")
-                .style("opacity", 0)
-                .attr("text-anchor", "right");
-
-            const listeningRect = this.foreground
-                .append("rect")
-                .attr("class", "listening-rect")
-                .attr("width", this.width)
-                .attr("height", this.height)
-
-            listeningRect.on("mousemove", this.pm_mouseover.bind(this));
-
-            this.x.domain(d3.extent(this.segment.points, d => d.distance / 1000))
-                .range([ 0, this.width ]);
-
-            this.background.append("g")
-                .attr("transform", `translate(0,${this.height})`)
-                .call(d3.axisBottom(this.x));
-
-            this.y.domain([0, d3.max(this.segment.points, d => +d.elevation)])
-                .range([ this.height, 0 ]);
-
-            this.background.append("g")
-                  .call(d3.axisLeft(this.y))
-                  .call(g => g.append("text")
-                  .attr("x", -this.margin.left)
-                  .attr("y", 10)
-                  .attr("fill", "currentColor")
-                  .attr("text-anchor", "start")
-                  .text("m"));
-
-            this.background.append("path")
-                .datum(this.segment.points)
-                .attr("fill", "#cce5df")
-                .attr("stroke", "#69b3a2")
-                .attr("stroke-width", 1.5)
-                .attr("d", d3.area()
-                    .x(d => this.x(d.distance / 1000))
-                    .y0(this.y(0))
-                    .y1(d => this.y(d.elevation))
-                )
-        }
     }
+    // show the elevation graph and then hide it after 1s
+    setTimeout(hide_elevation_graph, 1500);
 
-    class UserSegmentSplit {
-        constructor(gpx_file_slug, map) {
-            this.gpx_file_slug = gpx_file_slug;
-            this.map = map;
-            this.data = [];
-            this._markers = [];
-            this._layer = L.layerGroup().addTo(this.map);
-
-            this.init();
-            this.get_data();
-        }
-
-        init() {
-            document.querySelectorAll(".user-track-splits").forEach(box => {
-                box.addEventListener("mouseover", (event) => {
-                    var id = event.target.parentNode.dataset.id;
-
-                    if (id) {
-                        this._markers[id + "_start"].bounce(1);
-                        this._markers[id + "_end"].bounce(1);
-                    }
-                });
-            });
-        }
-        get_url() {
-            return "/api/gpxfile/" + this.gpx_file_slug + "/user_segment_splits/";
-        }
-        draw_markers() {
-            this._layer.clearLayers();
-
-            this.data.forEach(s => {
-                var start = L.marker([s.start.lat, s.start.lon], {
-                    icon: L.icon({
-                        iconUrl: '/static/marker_start.svg',
-                        iconSize: [20, 32],
-                    })
-                });
-                start.bindPopup("Start: " + s.name);
-                start.addTo(this._layer);
-
-                var end = L.marker([s.end.lat + 0.001, s.end.lon], {
-                    icon: L.icon({
-                        iconUrl: '/static/marker_end.svg',
-                        iconSize: [20, 32],
-                    })
-                });
-                end.bindPopup("End: " + s.name);
-                end.addTo(this._layer);
-
-                this._markers[s.id + "_start"] = start;
-                this._markers[s.id + "_end"] = end;
-            });
-        }
-
-        get_data() {
-            var instance = this;
-            var r = new XMLHttpRequest();
-            r.open('POST', this.get_url());
-
-            r.addEventListener('load', function(event) {
-                instance.data = JSON.parse(r.responseText);
-
-                instance.draw_markers();
-            });
-            r.send()
-        }
-    }
-
-    user_segment_split = new UserSegmentSplit(gpx_file_slug, map);
-
-    d3.json('/api/gpxfile/' + gpx_file_slug + '/json').then(function (data) {
-        var index = 0;
-        var active_tab = true;
-        data.forEach(track => {
-            track.segments.forEach(segment => {
-                var f = new TrackSegment(gpx_file_slug, segment.segment_id, map, segment, track.name, active_tab, index);
-                active_tab = false;
-            });
-            index += 1;
-        });
-        if (index > 1) {
-            L.DomUtil.get('elevation_tab_previous').classList.remove("collapse");
-            L.DomUtil.get('elevation_tab_next').classList.remove("collapse");
-        }
-    });
-    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
-    const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
 </script>
 {% endblock %}
