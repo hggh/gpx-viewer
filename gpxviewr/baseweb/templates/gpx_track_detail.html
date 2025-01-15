@@ -127,6 +127,50 @@
         </div>
     </div>
 
+    {% if object.get_job_status == 'error' %}
+    <div class="alert alert-danger" role="alert">
+        Job is in status error - ask on GitHub for help! :-(
+    </div>
+    {% endif %}
+
+    {% if object.job_is_finished == False and object.get_job_status != 'error' %}
+    <div class="alert alert-warning" role="alert">
+    <div class="spinner-border text-primary" role="status">
+    </div>
+    <span id="job_status_info_box" style="padding-left:10px;">wating for job status</span>
+    <script>
+        gpx_track_status_reload = true;
+        var job_status_interval;
+        var job_status_url = "/api/gpxfile/{{ object.slug }}/job_status/";
+
+        function check_job_status() {
+            var job_status_request = new XMLHttpRequest();
+            job_status_request.open('POST', job_status_url);
+
+            job_status_request.addEventListener('load', function(event) {
+                var job_status_info_box = document.querySelector("#job_status_info_box")
+
+                var d = JSON.parse(job_status_request.responseText);
+                if (d["finished"] == true || d["job_status_name"] == 'error') {
+                    clearInterval(job_status_interval);
+                    location.reload();
+                }
+                else {
+                    if (d["job_status_name"] == 'gpx_track_loading') {
+                        job_status_info_box.innerHTML = "GPX Track is processing";
+                    }
+                    else if (d["job_status_name"] == 'osm_query') {
+                        job_status_info_box.innerHTML = "OpenStreetMap Query is in progress...";
+                    }
+                }
+            });
+            job_status_request.send();
+        }
+        job_status_interval = setInterval(check_job_status, 500);
+    </script>
+    </div>
+    {% endif %}
+
     <div id="map" style="width: 100%; height: 200px;"></div>
 
     <div id="map_query_google_maps_info_message_box" class="mt-4 p-5 bg-primary text-white rounded flyover flyover-centered">

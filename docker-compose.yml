@@ -63,7 +63,7 @@ services:
     networks:
       - gpxv
   db:
-    image: postgis/postgis:16-3.4
+    image: postgis/postgis:16-3.5
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
