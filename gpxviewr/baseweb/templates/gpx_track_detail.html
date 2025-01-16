@@ -101,6 +101,15 @@
 
 <main class="col ps-md-2 pt-2">
     <div class="page-header pt-3">
+        {% if object.get_job_status == 'error' %}
+            <div class="alert alert-danger" role="alert">
+                Job is in status error - ask on <a href="https://github.com/hggh/gpx-viewer/issues" target="_blank">GitHub</a> for help! :-(
+            </div>
+        {% endif %}
+        <div id="job_status_info" class="alert alert-warning collapse" role="alert">
+            <div class="spinner-border text-primary" role="status"></div>
+            <span id="job_status_info_box" style="padding-left:10px;">wating for job status</span>
+        </div>
         <h2>{{object.name }}</h2>
         <div style="float:right;">
             <a class="nolinkcolor" href="#" title="Click on map and open location in OpenStreetMap">
@@ -126,49 +135,6 @@
             </span>
         </div>
     </div>
-
-    {% if object.get_job_status == 'error' %}
-    <div class="alert alert-danger" role="alert">
-        Job is in status error - ask on GitHub for help! :-(
-    </div>
-    {% endif %}
-
-    {% if object.job_is_finished == False and object.get_job_status != 'error' %}
-    <div class="alert alert-warning" role="alert">
-    <div class="spinner-border text-primary" role="status">
-    </div>
-    <span id="job_status_info_box" style="padding-left:10px;">wating for job status</span>
-    <script>
-        var job_status_interval;
-        var job_status_url = "/api/gpxfile/{{ object.slug }}/job_status/";
-
-        function check_job_status() {
-            var job_status_request = new XMLHttpRequest();
-            job_status_request.open('POST', job_status_url);
-
-            job_status_request.addEventListener('load', function(event) {
-                var job_status_info_box = document.querySelector("#job_status_info_box")
-
-                var d = JSON.parse(job_status_request.responseText);
-                if (d["finished"] == true || d["job_status_name"] == 'error') {
-                    clearInterval(job_status_interval);
-                    location.reload();
-                }
-                else {
-                    if (d["job_status_name"] == 'gpx_track_loading') {
-                        job_status_info_box.innerHTML = "GPX Track is processing";
-                    }
-                    else if (d["job_status_name"] == 'osm_query') {
-                        job_status_info_box.innerHTML = "OpenStreetMap Query is in progress...";
-                    }
-                }
-            });
-            job_status_request.send();
-        }
-        job_status_interval = setInterval(check_job_status, 500);
-    </script>
-    </div>
-    {% endif %}
 
     <div id="map" style="width: 100%; height: 200px;"></div>
 
@@ -222,22 +188,24 @@
     }
     L.Control.elevation().addTo(map);
 
-
-    d3.json('/api/gpxfile/' + gpx_file_slug + '/json').then(function (data) {
-        var index = 0;
-        var active_tab = true;
-        data.forEach(track => {
-            track.segments.forEach(segment => {
-                var f = new TrackSegment(gpx_file_slug, segment.segment_id, map, segment, track.name, active_tab, index);
-                active_tab = false;
+    try {
+        d3.json('/api/gpxfile/' + gpx_file_slug + '/json').then(function (data) {
+            var index = 0;
+            var active_tab = true;
+            data.forEach(track => {
+                track.segments.forEach(segment => {
+                    var f = new TrackSegment(gpx_file_slug, segment.segment_id, map, segment, track.name, active_tab, index);
+                    active_tab = false;
+                });
+                index += 1;
             });
-            index += 1;
+            if (index > 1) {
+                document.getElementById('elevation_tab_previous').classList.remove("collapse");
+                document.getElementById('elevation_tab_next').classList.remove("collapse");
+            }
         });
-        if (index > 1) {
-            L.DomUtil.get('elevation_tab_previous').classList.remove("collapse");
-            L.DomUtil.get('elevation_tab_next').classList.remove("collapse");
-        }
-    });
+    } catch (error) {
+    }
 
     var split_track_menu = new SplitTrackMenu(gpx_file_slug, map, "sidebar_split_track");
     split_track_menu.get_data();
@@ -249,6 +217,9 @@
     var map_query_openstreetmap = new MapQueryOpenStreetMap(map);
 
     user_segment_split = new UserSegmentSplit(gpx_file_slug, map);
+
+    var gpx_file_status = new GPXFileStatus(map, gpx_file_slug, waypoints);
+    gpx_file_status.get_status();
 
 
     document.querySelector("#elevation_hide_show").addEventListener("click", (event) => {
