@@ -1,3 +1,7 @@
+import * as d3 from "d3";
+import TrackSegment from "./TrackSegment";
+
+
 export default class GPXFileStatus {
     constructor(map, gpx_file_slug, waypoints, job_status_info_id="job_status_info", job_status_info_box_id="job_status_info_box") {
         this.map = map;
@@ -53,13 +57,12 @@ export default class GPXFileStatus {
         }
         if (d.job_status_name == "osm_query" && this.gpx_track_loading_finished == false) {
             this.gpx_track_loading_finished = true;
-            var gpx_file_slug = this.gpx_file_slug;
-            d3.json('/api/gpxfile/' + gpx_file_slug + '/json').then(function (data) {
+            d3.json('/api/gpxfile/' + this.gpx_file_slug + '/json').then(function (data) {
                 var index = 0;
                 var active_tab = true;
                 data.forEach(track => {
                     track.segments.forEach(segment => {
-                        var f = new TrackSegment(gpx_file_slug, segment.segment_id, map, segment, track.name, active_tab, index);
+                        new TrackSegment(this.gpx_file_slug, segment.segment_id, this.map, segment, track.name, active_tab, index);
                         active_tab = false;
                     });
                     index += 1;
@@ -68,7 +71,7 @@ export default class GPXFileStatus {
                     document.getElementById('elevation_tab_previous').classList.remove("collapse");
                     document.getElementById('elevation_tab_next').classList.remove("collapse");
                 }
-            });
+            }.bind(this));
         }
         this.last_status = d.job_status_name;
         if (this.reload == true) {

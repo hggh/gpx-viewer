@@ -4,51 +4,6 @@
 <meta name="description" property="og:description" content="GPX Track Viewer with POI search based on OpenStreetMap"/>
 <meta property="og:type" content="website"/>
 <meta property="og:image" content="https://gpxviewr.genannt.name/static/preview.png"/>
-
-<style>
-    .flyover {
-        left: 150%;
-        overflow: hidden;
-        position: fixed;
-        width: 50%;
-        opacity: 0.95;
-        z-index: 1050;
-        transition: left 0.6s ease-out 0s;
-     }
-      
-     .flyover-centered {
-        top: 50%;
-        transform: translate(-50%, -50%);
-     }
-     
-     .flyover.in {
-        left: 50%;
-     }
-    .nolinkcolor {
-        text-decoration: none;
-    }
-    .elevation_hide_show_shake {
-        /* Start the shake animation and make the animation last for 0.5 seconds */
-        animation: shake 2.5s;
-      
-        /* When the animation is finished, start again */
-        //animation-iteration-count: infinite;
-      }
-      
-      @keyframes shake {
-        0% { transform: translate(1px, 1px) rotate(0deg); }
-        10% { transform: translate(-1px, -2px) rotate(-1deg); }
-        20% { transform: translate(-3px, 0px) rotate(1deg); }
-        30% { transform: translate(3px, 2px) rotate(0deg); }
-        40% { transform: translate(1px, -1px) rotate(1deg); }
-        50% { transform: translate(-1px, 2px) rotate(-1deg); }
-        60% { transform: translate(-3px, 1px) rotate(0deg); }
-        70% { transform: translate(3px, 1px) rotate(-1deg); }
-        80% { transform: translate(-1px, -1px) rotate(1deg); }
-        90% { transform: translate(1px, 2px) rotate(0deg); }
-        100% { transform: translate(1px, -2px) rotate(-1deg); }
-      }
-</style>
 {% endblock %}
 
 {% block sidebarleft %}
@@ -76,7 +31,6 @@
                 </div>
             </form>
     </div>
-
 </div>
 {% endblock%}
 
@@ -97,8 +51,6 @@
 {% block content %}
 {% load static %}
 <div class="collapse" id="gpx_file_slug" data-slug="{{ object.slug }}"></div>
-<script type="text/javascript" src="{% static 'bundle.js' %}"></script>
-
 <main class="col ps-md-2 pt-2">
     <div class="page-header pt-3">
         {% if object.get_job_status == 'error' %}
@@ -145,7 +97,5 @@
     <div id="map_query_opensteetmap_info_message_box" class="mt-4 p-5 bg-primary text-white rounded flyover flyover-centered">
         Click on map to open this location in OpenStreetMap.
     </div>
-   
 </main>
-
 {% endblock %}

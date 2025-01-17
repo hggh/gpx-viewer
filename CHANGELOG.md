@@ -1,5 +1,9 @@
 # CHANGELOG
 
+### 17. Jan 2025
+
+  * change to webpack for JS/CSS
+
 ### 15. Jan 2025
 
   * new layout - more mobile friendly

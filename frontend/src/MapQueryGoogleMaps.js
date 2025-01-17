@@ -1,5 +1,3 @@
-import L from "leaflet";
-
 export default class MapQueryGoogleMaps {
     constructor(map) {
         this.map = map;

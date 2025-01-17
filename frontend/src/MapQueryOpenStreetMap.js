@@ -1,5 +1,3 @@
-import L from "leaflet";
-
 export default class MapQueryOpenStreetMap {
     constructor(map) {
         this.map = map;

@@ -48,13 +48,13 @@ export default class Waypoints {
 
         this.data.waypoints.forEach(waypoint => {
             if (this.leaflet_layers.has(waypoint.waypoint_type.name) == false) {
-                var layer = L.layerGroup()
+                let layer = L.layerGroup()
                 layer.addTo(this.map);
                 this.leaflet_layers.set(waypoint.waypoint_type.name, {"name": waypoint.waypoint_type.name, "layer": layer})
             }
-            var leaflet_layer = this.leaflet_layers.get(waypoint.waypoint_type.name);
+            let leaflet_layer = this.leaflet_layers.get(waypoint.waypoint_type.name);
 
-            var marker = L.marker([waypoint.lat, waypoint.lon]);
+            let marker = L.marker([waypoint.lat, waypoint.lon]);
             marker.waypointId = waypoint.id;
             marker.setIcon(L.icon({
                 iconSize: [16, 16],
@@ -68,7 +68,7 @@ export default class Waypoints {
             }
 
             if (waypoint.name != "" || waypoint.url != null || waypoint.has_gpx_track_to == true) {
-                var content = "";
+                let content = "";
                 if (waypoint.name != "") {
                     content += "<b>" + waypoint.name + "</b><br/>";
                 }
@@ -77,7 +77,7 @@ export default class Waypoints {
                 }
                 if (waypoint.has_gpx_track_to == true) {
                     var ln = waypoint.track_to_waypoint.length;
-                    content += "<br/><a href='/gpxtrack/"+gpx_file_slug+"/download_gpx_track_to_waypoint/"+waypoint.id+"'>Download Track to WayPoint ("+ln+" km)</a><br/>";
+                    content += "<br/><a href='/gpxtrack/"+this.gpx_file_slug+"/download_gpx_track_to_waypoint/"+waypoint.id+"'>Download Track to WayPoint ("+ln+" km)</a><br/>";
                 }
                 marker.bindPopup(content).openPopup();
             }
@@ -89,7 +89,7 @@ export default class Waypoints {
                 
                 var waypoint_id = event.target.waypointId;
 
-                var r = new XMLHttpRequest();
+                let r = new XMLHttpRequest();
                 r.open('GET', "/gpxtrack/" +  this.gpx_file_slug + "/waypoint/" + waypoint_id);
                 
                 r.addEventListener('load', function(event) {

@@ -4,12 +4,16 @@
   "description": "GPX Viewr",
   "private": true,
   "scripts": {
-    "dev": "webpack --watch --mode development"
+    "dev": "webpack --watch --mode development",
+    "build": "webpack --config=webpack.config.js"
   },
   "author": "Jonas Genannt",
   "license": "GPL-3.0-only",
   "devDependencies": {
+    "@eslint/js": "^9.18.0",
     "css-loader": "^7.1.2",
+    "eslint": "^9.18.0",
+    "globals": "^15.14.0",
     "mini-css-extract-plugin": "^2.9.2",
     "style-loader": "^4.0.0",
     "webpack": "^5.97.1",

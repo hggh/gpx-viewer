@@ -12,7 +12,7 @@
 
 {% if demo_track %}
 <div class="alert alert-light" role="alert">
-Demo Track: <a href="https://gpxviewr.genannt.name/gpxtrack/{{ demo_track.slug }}">{{ demo_track.name }}</a>
+    Demo Track: <a href="/gpxtrack/{{ demo_track.slug }}">{{ demo_track.name }}</a>
 </div>
 {% endif %}
 
@@ -27,7 +27,9 @@ Demo Track: <a href="https://gpxviewr.genannt.name/gpxtrack/{{ demo_track.slug }
 
 <div class="container" style="padding-top:15px; padding-bottom:20px;">
     Find toilets, camping sites and more POIs (Point of Interest) from OpenStreetMap along your GPX bikepacking route.
-    <!-- Finde Toiletten, Camping Plätze und mehr von OpenStreetMap entlang deiner GPX Route für die Radreise -->
+    <div class="collapse">
+        Finde Toiletten, Camping Plätze und mehr von OpenStreetMap entlang deiner GPX Route für die Radreise.
+    </div>
 </div>
 
 <form method="post" id="gpx_track_upload" enctype="multipart/form-data">

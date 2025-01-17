@@ -78,7 +78,7 @@ document.addEventListener("DOMContentLoaded", function() {
         console.log(error);
     }
 
-    var split_track_menu = new SplitTrackMenu(gpx_file_slug, map, "sidebar_split_track");
+    let split_track_menu = new SplitTrackMenu(gpx_file_slug, map, "sidebar_split_track");
     split_track_menu.get_data();
 
     var waypoints = new Waypoints(gpx_file_slug, map);

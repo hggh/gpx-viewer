@@ -24,6 +24,14 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: "build webpack"
+        uses: actions/setup-node@v4
+        working-directory: ./frontend
+        with:
+          node-version: 19
+        - run: npm install
+        - run: npm run build
+
       - name: Extract metadata (tags, labels) for Docker
         id: meta-web
         uses: docker/metadata-action@v5
