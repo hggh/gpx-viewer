@@ -6,6 +6,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?error}"
       POSTGRES_DB: gpxviewer
+      GPX_VIEWR_BOOT_MODE: web
     ports:
       - "127.0.0.1:8000:8000"
     volumes:
@@ -24,12 +25,13 @@ services:
     networks:
       - gpxv
   celery:
-    image: ghcr.io/hggh/gpx-viewer/celery:latest
+    image: ghcr.io/hggh/gpx-viewer/web:latest
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?error}"
       POSTGRES_DB: gpxviewer
+      GPX_VIEWR_BOOT_MODE: celery
     volumes:
       - type: bind
         source: local_settings.py

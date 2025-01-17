@@ -35,23 +35,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: Dockerfile-web
+          file: Dockerfile
           push: true
           tags: ghcr.io/hggh/gpx-viewer/web:latest
           labels: ${{ steps.meta-web.outputs.labels }}
-      
-      - name: celery Extract metadata (tags, labels) for Docker
-        id: meta-celery
-        uses: docker/metadata-action@v5
-        with:
-          images: ghcr.io/hggh/gpx-viewer/celery
-
-      - name: celery Build and push Docker image
-        id: push-celery
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: Dockerfile-celery
-          push: true
-          tags: ghcr.io/hggh/gpx-viewer/celery:latest
-          labels: ${{ steps.meta-celery.outputs.labels }}

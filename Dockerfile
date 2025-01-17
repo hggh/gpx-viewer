@@ -1,8 +1,6 @@
-FROM python:3.12-slim-bookworm
+FROM python:3.13-slim-bookworm
 EXPOSE 8000
 VOLUME /app/gpxviewr/local_settings.py
-ENV GUNICORN_WORKERS=5
-ENV GUNICORN_THREADS=5
 
 ENV DEBIAN_FRONTEND noninteractive
 
@@ -16,6 +14,7 @@ RUN apt-get install --no-install-recommends -y \
  libgdal32
 
 COPY gpxviewr /app
+COPY bootup.sh /bootup.sh
 
 COPY requirements.txt /app/
 
@@ -25,4 +24,4 @@ RUN pip install -r /app/requirements.txt
 WORKDIR /app
 
 
-CMD gunicorn --capture-output -b 0.0.0.0:8000 -w $GUNICORN_WORKERS --threads $GUNICORN_THREADS gpxviewr.wsgi:application
+CMD /bootup.sh

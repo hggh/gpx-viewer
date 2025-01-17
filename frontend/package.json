@@ -1,0 +1,24 @@
+{
+  "name": "frontend",
+  "version": "1.0.0",
+  "description": "GPX Viewr",
+  "private": true,
+  "scripts": {
+    "dev": "webpack --watch --mode development"
+  },
+  "author": "Jonas Genannt",
+  "license": "GPL-3.0-only",
+  "devDependencies": {
+    "css-loader": "^7.1.2",
+    "mini-css-extract-plugin": "^2.9.2",
+    "style-loader": "^4.0.0",
+    "webpack": "^5.97.1",
+    "webpack-cli": "^6.0.1"
+  },
+  "dependencies": {
+    "bootstrap": "^5.3.3",
+    "d3": "^7.9.0",
+    "leaflet": "^1.9.4",
+    "leaflet-geometryutil": "^0.10.3"
+  }
+}

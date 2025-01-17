@@ -1,3 +1,6 @@
+import L from "leaflet";
+import GeometryUtil from "leaflet-geometryutil";
+
 L.Map.mergeOptions({
     // @option almostOver: Boolean = true
     // Set it to false to disable this plugin

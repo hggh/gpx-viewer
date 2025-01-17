@@ -4,6 +4,9 @@ gpxviewr/gpxviewr/local_settings.py
 
 valhalla-data
 
+frontend/node_modules
+frontend/dist
+
 # Django #
 *.log
 *.pot

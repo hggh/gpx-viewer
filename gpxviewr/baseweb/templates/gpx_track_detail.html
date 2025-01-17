@@ -96,8 +96,8 @@
 
 {% block content %}
 {% load static %}
-<script type="text/javascript" src="{% static '/js/d3-7.8.5.js' %}"></script>
-<script type="text/javascript" src="{% static 'js/gpx-viewr.js' %}"></script>
+<div class="collapse" id="gpx_file_slug" data-slug="{{ object.slug }}"></div>
+<script type="text/javascript" src="{% static 'bundle.js' %}"></script>
 
 <main class="col ps-md-2 pt-2">
     <div class="page-header pt-3">
@@ -113,7 +113,7 @@
         <h2>{{object.name }}</h2>
         <div style="float:right;">
             <a class="nolinkcolor" href="#" title="Click on map and open location in OpenStreetMap">
-                <img id="map_query_openstreetmap" width="20px" height="20px" src="{% static 'img/openstreetmap_logo.svg' %}"/>
+                <img id="map_query_openstreetmap" width="20px" height="20px" src="{% static 'openstreetmap_logo.svg' %}"/>
             </a>
             |
             <a class="nolinkcolor" href="#" title="Click on map and open location in Google Maps">
@@ -148,132 +148,4 @@
    
 </main>
 
-<script>
-    document.getElementById('map').style.height = window.innerHeight - 200 + "px";
-
-    const gpx_file_slug = '{{object.slug}}';
-    const map = L.map('map').setView([51.505, 10.09], 3);
-    const tiles = L.tileLayer('https://tile.openstreetmap.de/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-    }).addTo(map);
-
-    document.querySelector("#osm_tile_lang").addEventListener("change", (event) => {
-        tiles.setUrl(event.target.value);
-    });
-
-    L.Control.ElevationContainer = L.Control.extend({
-        options: {
-            position: "topright",
-            width: 500,
-            height: 240,
-        },
-        onAdd: function(map) {
-            this.map = map;
-            var div = L.DomUtil.create('div');
-            div.id = "map_elevation";
-            div.classList.add("map_elevation");
-
-            var tab = document.createElement("div");
-            tab.className = "tab-content";
-            tab.id = "map_elevation_tabs";
-
-            div.appendChild(tab);
-
-            return div;
-        }
-    });
-    L.Control.elevation = function(opts) {
-        return new L.Control.ElevationContainer(opts);
-    }
-    L.Control.elevation().addTo(map);
-
-    try {
-        d3.json('/api/gpxfile/' + gpx_file_slug + '/json').then(function (data) {
-            var index = 0;
-            var active_tab = true;
-            data.forEach(track => {
-                track.segments.forEach(segment => {
-                    var f = new TrackSegment(gpx_file_slug, segment.segment_id, map, segment, track.name, active_tab, index);
-                    active_tab = false;
-                });
-                index += 1;
-            });
-            if (index > 1) {
-                document.getElementById('elevation_tab_previous').classList.remove("collapse");
-                document.getElementById('elevation_tab_next').classList.remove("collapse");
-            }
-        });
-    } catch (error) {
-    }
-
-    var split_track_menu = new SplitTrackMenu(gpx_file_slug, map, "sidebar_split_track");
-    split_track_menu.get_data();
-
-    var waypoints = new Waypoints(gpx_file_slug, map);
-    waypoints.get_data();
-
-    var map_query_google_maps = new MapQueryGoogleMaps(map);  
-    var map_query_openstreetmap = new MapQueryOpenStreetMap(map);
-
-    user_segment_split = new UserSegmentSplit(gpx_file_slug, map);
-
-    var gpx_file_status = new GPXFileStatus(map, gpx_file_slug, waypoints);
-    gpx_file_status.get_status();
-
-
-    document.querySelector("#elevation_hide_show").addEventListener("click", (event) => {
-        var w = L.DomUtil.get("map_elevation_tabs");
-        if (w.classList.contains('collapse')) {
-            w.classList.remove('collapse');
-        }
-        else {
-            w.classList.add('collapse');
-        }
-    });
-    document.querySelector("#elevation_tab_next").addEventListener("click", (event) => {
-        var tab = document.querySelector("#map_elevation_tabs");
-        var tabs = tab.querySelectorAll(".tab-pane");
-        for (var i = 0, length = tabs.length; i < length; i++) {
-            if (tabs[i].classList.contains('active')) {
-                tabs[i].classList.remove('active');
-                if (i == tabs.length - 1) {
-                    tabs[0].classList.add('active');
-                }
-                else {
-                    tabs[i + 1].classList.add('active');
-                }
-                break;
-            }
-        }
-    });
-    document.querySelector("#elevation_tab_previous").addEventListener("click", (event) => {
-        var tab = document.querySelector("#map_elevation_tabs");
-        var tabs = tab.querySelectorAll(".tab-pane");
-        for (var i = 0, length = tabs.length; i < length; i++) {
-            if (tabs[i].classList.contains('active')) {
-                tabs[i].classList.remove('active');
-                if (i == 0) {
-                    tabs[length - 1 ].classList.add('active');
-                }
-                else {
-                    tabs[i - 1].classList.add('active');
-                }
-                break;
-            }
-        }
-    });
-
-    function hide_elevation_graph() {
-        var w = L.DomUtil.get("map_elevation_tabs");
-        w.classList.add('collapse');
-
-        var e = L.DomUtil.get("elevation_hide_show");
-        e.classList.add("elevation_hide_show_shake");
-
-    }
-    // show the elevation graph and then hide it after 1s
-    setTimeout(hide_elevation_graph, 1500);
-
-</script>
 {% endblock %}
