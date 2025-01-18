@@ -145,5 +145,5 @@ document.addEventListener("DOMContentLoaded", function() {
     }
     // show the elevation graph and then hide it after 1s
     setTimeout(hide_elevation_graph, 1500);
-
 });
+
