@@ -1,4 +1,5 @@
 import logging
+import time
 
 from django.utils import timezone
 
@@ -101,13 +102,21 @@ def gpx_waypoint_find_route_from_track(waypoint_pk):
 
 @shared_task
 def gpx_file_load_into_database(gpx_file_pk):
-    gpx_file = GPXFile.objects.get(pk=gpx_file_pk)
-    gpx_file.job_status = 2
-    gpx_file.save(update_fields=['job_status'])
+    time.sleep(1)
+    try:
+        gpx_file = GPXFile.objects.get(pk=gpx_file_pk)
+        gpx_file.job_status = 2
+        gpx_file.save(update_fields=['job_status'])
 
-    gpx_file.load_file_to_database()
+        gpx_file.load_file_to_database()
 
-    gpx_flile_query_osm.delay(gpx_file_pk)
+        gpx_flile_query_osm.delay(gpx_file_pk)
+    except Exception as e:
+        print("ERROR in GPXFile with PK: {}: {}".format(gpx_file_pk, e))
+
+        gpx_file = GPXFile.objects.get(pk=gpx_file_pk)
+        gpx_file.job_status = 5
+        gpx_file.save(update_fields=['job_status'])
 
 
 @shared_task

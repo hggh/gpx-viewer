@@ -21,6 +21,7 @@ from django.conf.urls.static import static
 from rest_framework.routers import DefaultRouter
 
 from baseweb.views import (
+    StatusView,
     RobotsTxtView,
     GPXFileDetailView,
     GPXTrackDownloadView,
@@ -42,6 +43,7 @@ router.register(r'gpxfile', GPXFileViewSet, basename='gpxfile')
 urlpatterns = [
     path('api/', include(router.urls)),
     path('robots.txt', RobotsTxtView.as_view(), name='robots'),
+    path('status', StatusView.as_view(), name='status'),
     path('', IndexView.as_view(), name='root'),
     path('gpxtrack/<slug:slug>', GPXFileDetailView.as_view(), name='gpx-file-detail'),
     path('gpxtrack/<slug:slug>/track_splits', GPXFileUserSegmentSplitView.as_view()),

@@ -6,7 +6,7 @@ from django.db import models
 from django.forms.forms import BaseForm
 from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
-from django.views.generic import TemplateView, CreateView, DetailView, FormView, UpdateView
+from django.views.generic import TemplateView, CreateView, DetailView, FormView, UpdateView, View
 from django.http import HttpResponse, JsonResponse, Http404
 
 from django.conf import settings
@@ -26,6 +26,16 @@ from .forms import (
 )
 
 from .tasks import gpx_file_load_into_database
+
+
+class StatusView(View):
+    def get(self, request, *args, **kwargs):
+        errors = GPXFile.objects.filter(job_status=5)
+
+        if errors:
+            return HttpResponse("Error", status=404)
+
+        return HttpResponse("OK")
 
 
 class RobotsTxtView(TemplateView):
