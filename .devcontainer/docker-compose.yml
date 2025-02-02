@@ -1,0 +1,42 @@
+services:
+  devcontainer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    networks:
+      - gpxvdev
+    volumes:
+      - "../:/workspace:cached"
+  valhalla:
+    image: ghcr.io/valhalla/valhalla:3.5.1
+    command: /usr/local/bin/valhalla_service /data/valhalla.json 2
+    #volumes:
+    #  - type: bind
+    #    source: ./valhalla-data
+    #    target: /data
+    networks:
+      - gpxvdev
+
+  redis:
+    image: redis:7
+    volumes:
+      - "redis-data:/data"
+    networks:
+      - gpxvdev
+  db:
+    image: postgis/postgis:17-3.5
+    volumes:
+      - "db-data:/var/lib/postgresql/data"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: geheim
+      POSTGRES_DB: gpxviewer
+    networks:
+      - gpxvdev
+
+networks:
+  gpxvdev:
+
+volumes:
+  db-data:
+  redis-data:

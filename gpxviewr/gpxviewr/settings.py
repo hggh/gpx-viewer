@@ -93,7 +93,7 @@ DATABASES = {
         "NAME": "gpxviewer",
         "USER": "postgres",
         "PASSWORD": "geheim",
-        "HOST": "localhost"
+        "HOST": "db"
     },
 }
 
@@ -134,7 +134,7 @@ USE_TZ = True
 CELERY_TIMEZONE = "Europe/Berlin"
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
-CELERY_BROKER_URL = 'redis://localhost'
+CELERY_BROKER_URL = 'redis://redis'
 CELERY_BEAT_SCHEDULE = {
     'gpx_file_delete_after_days': {
         'task': 'baseweb.tasks.gpx_file_delete_after_days',
@@ -142,7 +142,7 @@ CELERY_BEAT_SCHEDULE = {
     }
 }
 
-VALHALLA_ROUTING_API_HOST = 'http://localhost:8002/'
+VALHALLA_ROUTING_API_HOST = 'http://valhalla:8002/'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
