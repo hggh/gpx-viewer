@@ -8,7 +8,9 @@ RUN apt-get install --no-install-recommends -y \
  gcc \
  virtualenv \
  git \
- libgdal32
+ libgdal32 \
+ nodejs \
+ npm
 
  RUN groupadd -g 1337 dev
  RUN useradd -m -u 1337 -g dev -s /bin/bash dev

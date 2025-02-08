@@ -66,8 +66,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 track.segments.forEach(segment => {
                     var f = new TrackSegment(gpx_file_slug, segment.segment_id, map, segment, track.name, active_tab, index);
                     active_tab = false;
+                    index += 1;
                 });
-                index += 1;
             });
             if (index > 1) {
                 document.getElementById('elevation_tab_previous').classList.remove("collapse");
