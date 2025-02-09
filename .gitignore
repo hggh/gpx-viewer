@@ -1,6 +1,7 @@
 gpxviewr/storage-fs
 gpxviewr/geojson-temp
 gpxviewr/gpxviewr/local_settings.py
+gpxviewr/baseweb/static/
 
 valhalla-data
 
