@@ -67,37 +67,17 @@ export default class Waypoints {
                 });
             }
 
-            if (waypoint.name != "" || waypoint.url != null || waypoint.has_gpx_track_to == true) {
-                let content = "";
-                if (waypoint.name != "") {
-                    content += "<b>" + waypoint.name + "</b><br/>";
-                }
-                if (waypoint.url != null) {
-                    content += "Homepage: <a href='" + waypoint.url + "' target='_blank'>" + waypoint.url + "</a>";
-                }
-                if (waypoint.has_gpx_track_to == true) {
-                    var ln = waypoint.track_to_waypoint.length;
-                    content += "<br/><a href='/gpxtrack/"+this.gpx_file_slug+"/download_gpx_track_to_waypoint/"+waypoint.id+"'>Download Track to WayPoint ("+ln+" km)</a><br/>";
-                }
-                marker.bindPopup(content).openPopup();
-            }
-            else {
-                marker.bindPopup('').openPopup();
-            }
-
+            marker.bindPopup('Loading...').openPopup();
             marker.addEventListener("popupopen", event => {
-                
                 var waypoint_id = event.target.waypointId;
+                var marker_event = event.target;
 
                 let r = new XMLHttpRequest();
                 r.open('GET', "/gpxtrack/" +  this.gpx_file_slug + "/waypoint/" + waypoint_id);
-                
-                r.addEventListener('load', function(event) {
-                    var content_top = document.getElementById("canvas_top");
-                    content_top.innerHTML = r.responseText;
 
-                    var offcanvasTop = new bootstrap.Offcanvas(document.getElementById("offcanvasTop"));
-                    offcanvasTop.show();
+                r.addEventListener('load', function(event) {
+                    marker_event.setPopupContent(r.responseText);
+                    marker_event.update();
 
                 });
                 r.send()

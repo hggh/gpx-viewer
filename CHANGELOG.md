@@ -1,5 +1,14 @@
 # CHANGELOG
 
+### 9. Feb 2025
+  * Status API
+  * if GPX file is broken, inform user
+  * fix delete Split File
+  * fix Elevation Graph if more segments and tracks inside a GPX File exists
+  * show Waypoint info in the Popup instead in canvas.
+  * geojson to 3.2.0
+  * django-cors-headers to 4.7.0
+
 ### 17. Jan 2025
 
   * change to webpack for JS/CSS

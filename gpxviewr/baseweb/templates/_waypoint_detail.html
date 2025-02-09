@@ -1,6 +1,17 @@
 <div class="" id="waypoint_tags_info_{{object.id}}">
     <h5 id="offcanvasTopLabel" id="canvas_top_title">{{object.name}}</h5>
-    {% for name, value in object.tags.items %}
+    {% if object.get_url %}
+        <b>Website:</b> <a target="_blank" href="{{ object.get_url }}">{{ object.get_url }}</a><br/>
+    {% endif %}
+    {% if object.get_phone %}
+    <b>Phone:</b> <a href="tel:{{ object.get_phone }}">{{ object.get_phone }}</a><br/>
+    {% endif %}
+
+    {% if object.has_gpx_track_to %}
+    <a href="{{ object.track_to_waypoint.get_download_url }}">Download Track to Waypoint</a> - {{ object.track_to_waypoint.get_away_kilometer }} km<br/>
+    {% endif %}
+
+    {% for name, value in object.get_tags.items %}
     <b>{{name}}:</b> {{value}}<br/>
     {% endfor %}
 </div>

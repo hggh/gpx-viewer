@@ -4,6 +4,7 @@ import time
 import os
 import geojson
 import json
+import phonenumbers
 from geopy import distance as geopy_distance
 from datetime import timedelta
 
@@ -720,10 +721,6 @@ class GPXTrackWayPoint(TimeStampedModel):
 
             }
         }
-        if self.has_gpx_track_to():
-            data["track_to_waypoint"] = {
-                "length": self.track_to_waypoint.get_away_kilometer(),
-            }
         return data
 
     def has_gpx_track_to(self) -> bool:
@@ -738,6 +735,24 @@ class GPXTrackWayPoint(TimeStampedModel):
         if self.is_camping_site() is True and self.get_url():
             return 'marker_camping_with_url'
         return 'marker_default'
+
+    def get_tags(self) -> dict:
+        tags = self.tags
+        tags.pop('contact:website', None)
+        tags.pop('phone', None)
+        tags.pop('website', None)
+        tags.pop('name', None)
+
+        return tags
+
+    def get_phone(self) -> str | None:
+        if self.tags.get('phone', None):
+            try:
+                phonenumbers.parse(self.tags.get('phone'), None)
+                return self.tags.get('phone')
+            except Exception as e:
+                pass
+        return None
 
     def get_url(self) -> str:
         if self.tags.get('contact:website', None):
@@ -763,6 +778,9 @@ class GPXTrackWayPointFromTrack(TimeStampedModel):
 
     def __str__(self) -> str:
         return f"{self.away_kilometer}"
+
+    def get_download_url(self) -> str:
+        return f"/gpxtrack/{self.waypoint.gpx_file.slug}/download_gpx_track_to_waypoint/{self.waypoint.pk}"
 
     def get_away_kilometer(self) -> int:
         if self.away_kilometer > 1:
