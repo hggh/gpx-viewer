@@ -1,5 +1,8 @@
 # CHANGELOG
 
+### 12. Feb 2025
+  * better Exception handling, output complete traceback into docker logs
+
 ### 9. Feb 2025
   * Status API
   * if GPX file is broken, inform user

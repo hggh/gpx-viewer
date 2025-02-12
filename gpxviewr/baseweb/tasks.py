@@ -1,5 +1,6 @@
 import logging
 import time
+import traceback
 
 from django.utils import timezone
 
@@ -48,7 +49,7 @@ def gpx_flile_query_osm(gpx_file_pk):
 
     except Exception as e:
         print(f"Error on GPXFile PK {gpx_file.pk} with error: ")
-        print(e)
+        traceback.print_exception(e)
         gpx_file.job_status = 5
         gpx_file.save()
 
