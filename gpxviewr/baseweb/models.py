@@ -10,6 +10,8 @@ from datetime import timedelta
 
 from django.utils import timezone
 from django.core.files.storage import FileSystemStorage
+from django.core.validators import URLValidator
+from django.core.exceptions import ValidationError
 from django.conf import settings
 from django.contrib.gis.db import models
 from django.core.exceptions import ObjectDoesNotExist
@@ -219,7 +221,12 @@ class GPXFile(TimeStampedModel):
             );
             out center qt;
         """
-        result = api.query(overpass_query)
+        try:
+            result = api.query(overpass_query)
+        except overpy.exception.OverpassGatewayTimeout:
+            print("OverpassGatewayTimeout - retry")
+            time.sleep(4)
+            self.query_data_osm(points=points, around_meters=around_meters, point_type=point_type, around_duplicate=around_duplicate)
 
         for node in result.get_nodes():
             wp = GPXTrackWayPoint(
@@ -288,11 +295,22 @@ class GPXFile(TimeStampedModel):
 
         track_number = 1
         for track in gpxfile.tracks:
+            track_link = None
             if track.name is not None and track.name != '':
                 name = track.name
             else:
                 name = "Track {}".format(track_number)
             track_number += 1
+
+            for l in track.links:
+                if l.href and len(l.href) <= 6000:
+                    try:
+                        URLValidator().__call__(l.href)
+                        track_link = l.href
+                        break
+                    except ValidationError as e:
+                        print(f"URL not valid: {gpxfile}: {l.href} with error: {e}")
+                        pass
 
             track_has_segments_with_points = False
             if len(track.trksegs) > 0:
@@ -310,6 +328,7 @@ class GPXFile(TimeStampedModel):
             gpx_track = GPXTrack(
                 gpx_file=self,
                 name=name,
+                link=track_link,
                 distance=track.distance,
             )
             gpx_track.save()
@@ -413,6 +432,7 @@ class GPXTrack(TimeStampedModel):
     gpx_file = models.ForeignKey("GPXFile", on_delete=models.CASCADE, related_name='tracks')
     name = models.CharField(max_length=200, null=False, blank=False)
     distance = models.FloatField()
+    link = models.URLField(max_length=6000, null=True)
 
     def __str__(self) -> str:
         return f"GPX Track {self.name}"
@@ -741,6 +761,7 @@ class GPXTrackWayPoint(TimeStampedModel):
         tags.pop('contact:website', None)
         tags.pop('phone', None)
         tags.pop('website', None)
+        tags.pop('url', None)
         tags.pop('name', None)
 
         return tags
@@ -757,6 +778,9 @@ class GPXTrackWayPoint(TimeStampedModel):
     def get_url(self) -> str:
         if self.tags.get('contact:website', None):
             return self.tags.get('contact:website')
+
+        if self.tags.get('url', None):
+            return self.tags.get('url', None)
 
         return self.tags.get('website', None)
 
@@ -803,7 +827,7 @@ class GPXTrackWayPointFromTrack(TimeStampedModel):
 
     def get_gpx_track(self) -> str:
         gpx = GPX()
-        gpx.creator = 'GPX Tools by hggh'
+        gpx.creator = 'GPXViewr by hggh'
         if self.waypoint.name != "":
             name = f"to {self.waypoint.name}"
         else:

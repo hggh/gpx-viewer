@@ -1,4 +1,10 @@
 # CHANGELOG
+### 1. March 2025
+  * handle Overpass Server Load too high - retry it after 4 seconds
+  * parse "url" tag as website
+  * make phone tags clickable via tel:
+  * brouter files have a <link> inside, parse first link with href element and display it
+  * Django 5.1.6
 
 ### 12. Feb 2025
   * better Exception handling, output complete traceback into docker logs
