@@ -64,7 +64,7 @@ class GPXFileViewSet(viewsets.ViewSet):
         status = GPXFileUserSegmentSplit.add_segment(
             gpx_file=gpx_file,
             segment_pk=request.data.get('segment_pk'),
-            point_number=request.data.get('point_number'),  
+            point_number=request.data.get('point_number'),
         )
 
         return Response(status)
