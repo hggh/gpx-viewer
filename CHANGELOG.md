@@ -4,6 +4,7 @@
   * make contact:phone tag also as tel: link
   * internal reorg of models into files
   * Django 5.1.7 Upgrade
+  * GPX Track Link with Hostname
 
 ### 1. March 2025
   * handle Overpass Server Load too high - retry it after 4 seconds

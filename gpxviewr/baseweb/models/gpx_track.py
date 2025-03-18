@@ -1,4 +1,7 @@
+from urllib.parse import urlparse
+
 from django.contrib.gis.db import models
+from django.db.models import Sum
 
 from django_extensions.db.models import TimeStampedModel
 
@@ -14,6 +17,13 @@ class GPXTrack(TimeStampedModel):
 
     class Meta:
         ordering = ['name',]
+
+    def get_link_hostname(self):
+        if self.link:
+            url = urlparse(self.link)
+            return url.hostname
+
+        return None
 
     def get_human_distance(self) -> str:
         d = int(self.distance / 1000)

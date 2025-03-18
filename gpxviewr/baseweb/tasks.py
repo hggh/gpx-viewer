@@ -48,8 +48,8 @@ def gpx_flile_query_osm(gpx_file_pk):
         gpx_file.save()
 
     except Exception as e:
-        print(f"Error on GPXFile PK {gpx_file.pk} with error: ")
-        traceback.print_exception(e)
+        print(f"Error on GPXFile PK {gpx_file.pk} with error: {e}")
+        print(traceback.print_exception(e))
         gpx_file.job_status = 5
         gpx_file.save()
 
@@ -114,6 +114,7 @@ def gpx_file_load_into_database(gpx_file_pk):
         gpx_flile_query_osm.delay(gpx_file_pk)
     except Exception as e:
         print("ERROR in GPXFile with PK: {}: {}".format(gpx_file_pk, e))
+        print(traceback.print_exception(e))
 
         gpx_file = GPXFile.objects.get(pk=gpx_file_pk)
         gpx_file.job_status = 5

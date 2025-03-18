@@ -35,7 +35,7 @@
     <div class="list-group-item border-end-0 d-inline-block">
         <h2>Tracks</h2>
         {% for track in object.tracks.all %}
-            {{ track.name }} / {{track.get_human_distance }} {%if track.link %}<a href="{{ track.link }}" target="_blank">Link</a>{% endif %}<br/>
+            {{ track.name }} / {{track.get_human_distance }} {%if track.link %}<a href="{{ track.link }}" target="_blank">Link ({{track.get_link_hostname}})</a>{% endif %}<br/>
         {% endfor %}
     </div>
 </div>

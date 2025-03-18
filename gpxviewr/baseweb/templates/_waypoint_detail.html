@@ -4,11 +4,12 @@
         <b>Website:</b> <a target="_blank" href="{{ object.get_url }}">{{ object.get_url }}</a><br/>
     {% endif %}
     {% if object.get_phone %}
-    <b>Phone:</b> <a href="tel:{{ object.get_phone }}">{{ object.get_phone }}</a><br/>
+        <b>Phone:</b> <a href="tel:{{ object.get_phone }}">{{ object.get_phone }}</a><br/>
     {% endif %}
 
     {% if object.has_gpx_track_to %}
     <a href="{{ object.track_to_waypoint.get_download_url }}">Download Track to Waypoint</a> - {{ object.track_to_waypoint.get_away_kilometer }} km<br/>
+    <br/>
     {% endif %}
 
     {% for name, value in object.get_tags.items %}
