@@ -227,7 +227,7 @@ class GPXFile(TimeStampedModel):
         except overpy.exception.OverpassGatewayTimeout:
             print("OverpassGatewayTimeout - retry")
             time.sleep(4)
-            self.query_data_osm(points=points, around_meters=around_meters, point_type=point_type, around_duplicate=around_duplicate)
+            return self.query_data_osm(points=points, around_meters=around_meters, point_type=point_type, around_duplicate=around_duplicate)
 
         for node in result.get_nodes():
             wp = GPXTrackWayPoint(
