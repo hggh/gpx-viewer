@@ -3,7 +3,7 @@
 ### XX. XX 2025 [DRAFT]
   * Django Upgrade to 5.2
 
-### 18. March 2025
+### 22. March 2025
   * Django DB Migration on Startup
   * make contact:phone tag also as tel: link
   * internal reorg of models into files
