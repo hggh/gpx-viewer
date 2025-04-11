@@ -57,7 +57,7 @@ class GPXFile(TimeStampedModel):
     ]
 
     slug = models.SlugField(default=generate_slug_token, editable=False, max_length=50)
-    name = models.CharField(max_length=100, null=False, blank=False)
+    name = models.CharField(max_length=200, null=False, blank=False)
     wpt_options = models.JSONField(default=dict)
     job_status = models.IntegerField(default=1, null=False)
     delete_after = models.DateField(null=False, blank=False)
@@ -246,8 +246,8 @@ class GPXFile(TimeStampedModel):
             )
             if c.count() == 0:
                 sp = GPXTrackSegmentPoint.objects.filter(segment__in=self.get_all_segments_primary_keys()).annotate(
-                    distance=FDistance('location', Point([node.lat, node.lon], srid=4326))
-                ).order_by('-distance').last()
+                    caldistance=FDistance('location', Point([node.lat, node.lon], srid=4326))
+                ).order_by('-caldistance').last()
                 wp.track_segment_point_nearby = sp
                 wp.save()
                 if wp.is_camping_site() or wp.is_hotel():
@@ -270,8 +270,8 @@ class GPXFile(TimeStampedModel):
             )
             if c.count() == 0:
                 sp = GPXTrackSegmentPoint.objects.filter(segment__in=self.get_all_segments_primary_keys()).annotate(
-                    distance=FDistance('location', Point([way.center_lat, way.center_lon], srid=4326))
-                ).order_by('-distance').last()
+                    caldistance=FDistance('location', Point([way.center_lat, way.center_lon], srid=4326))
+                ).order_by('-caldistance').last()
                 wp.track_segment_point_nearby = sp
                 wp.save()
                 if wp.is_camping_site() or wp.is_hotel():
@@ -292,14 +292,14 @@ class GPXFile(TimeStampedModel):
         gpxfile = GPX.from_file(self.file.path)
 
         if gpxfile.name is not None and gpxfile.name != '':
-            self.name = gpxfile.name
+            self.name = gpxfile.name[:199] if len(gpxfile.name) > 199 else gpxfile.name
             self.save()
 
         track_number = 1
         for track in gpxfile.tracks:
             track_link = None
             if track.name is not None and track.name != '':
-                name = track.name
+                name = track.name[:199] if len(track.name) > 199 else track.name
             else:
                 name = "Track {}".format(track_number)
             track_number += 1
@@ -393,6 +393,7 @@ class GPXFile(TimeStampedModel):
                         elevation=point.ele,
                         number=point_number,
                         elevation_diff_to_previous=elevation_diff_to_previous,
+                        distance=total_distance,
                     )
                     b_points.append(p)
                     priv_point = p

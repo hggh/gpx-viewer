@@ -10,6 +10,7 @@ class GPXTrackSegmentPoint(TimeStampedModel):
     location = models.PointField(db_index=True)
     elevation = models.FloatField(null=True, blank=False)
     elevation_diff_to_previous = models.FloatField(null=True, blank=False)
+    distance = models.IntegerField(null=True, blank=True)
 
     def __str__(self) -> str:
         return f"{self.number}"

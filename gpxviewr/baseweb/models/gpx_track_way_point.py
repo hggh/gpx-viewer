@@ -64,6 +64,24 @@ class GPXTrackWayPoint(TimeStampedModel):
 
         return tags
 
+    def track_segment_distance(self):
+        if self.track_segment_point_nearby and self.track_segment_point_nearby.distance:
+            value = int(self.track_segment_point_nearby.distance / 1000)
+            if value == 0:
+                return 1
+            return value
+        return None
+
+    def user_segment_split_distance(self):
+        if self.gpx_file.user_segments.all() and self.track_segment_point_nearby and self.track_segment_point_nearby.distance:
+            split = self.gpx_file.user_segments.all().filter(point_start__number__lte=self.track_segment_point_nearby.number).order_by('point_start__number').last()
+            if split:
+                value = int((self.track_segment_point_nearby.distance - split.point_start.distance) / 1000)
+                if value == 0:
+                    return 1
+                return value
+        return None
+
     def get_phone(self) -> str | None:
         if self.tags.get('phone', None):
             try:

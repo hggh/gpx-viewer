@@ -1,5 +1,12 @@
 <div class="" id="waypoint_tags_info_{{object.id}}">
     <h5 id="offcanvasTopLabel" id="canvas_top_title">{{object.name}}</h5>
+    {% if object.track_segment_distance %}
+    on kilometer: <b>{{ object.track_segment_distance }} km</b> from Track Segment Start<br/>
+    {% endif %}
+    {% if object.user_segment_split_distance %}
+    on kilometer: <b>{{object.user_segment_split_distance}} km</b> from last split<br/>
+    {% endif %}
+
     {% if object.get_url %}
         <b>Website:</b> <a target="_blank" href="{{ object.get_url }}">{{ object.get_url }}</a><br/>
     {% endif %}
