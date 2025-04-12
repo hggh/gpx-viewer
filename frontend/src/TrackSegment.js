@@ -35,6 +35,9 @@ export default class TrackSegment {
         this.tab_element.tabindex = "0";
 
         var text = document.createElement("h5");
+        if (track_name.length > 55) {
+            track_name = track_name.substring(0, 55) + "...";
+        }
         text.innerHTML = track_name;
         this.tab_element.appendChild(text);
 

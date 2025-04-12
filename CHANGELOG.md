@@ -1,10 +1,11 @@
 # CHANGELOG
 
-### XX. XX 2025 [DRAFT]
+### 12. April 2025
   * Django Upgrade to 5.2
   * allow 200 chars as GPX Filename
   * strip gpx name and gpx track name over 200 chars; prevent databaseerrors
   * show kilometers on WayPoint Popup (from split start, from track segment start)
+  * limit Track Name on elevation Graph to 55 chars.
 
 ### 22. March 2025
   * Django DB Migration on Startup
