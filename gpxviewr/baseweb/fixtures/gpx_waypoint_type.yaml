@@ -9,7 +9,7 @@
     around: 600
     around_max: 5000
     around_duplicate: 3000
-    marker_filename: marker_toilets.png
+    marker_filename: marker_toilets.svg
     checked: true
 - model: baseweb.GPXWayPointType
   pk: 2
@@ -22,7 +22,7 @@
     around: 5000
     around_max: 10000
     around_duplicate: 3000
-    marker_filename: marker_camp_site.png
+    marker_filename: marker_camp_site.svg
     checked: true
 - model: baseweb.GPXWayPointType
   pk: 3
@@ -35,7 +35,7 @@
     around: 600
     around_max: 2000
     around_duplicate: 3000
-    marker_filename: marker_drinking_water.png
+    marker_filename: marker_drinking_water.svg
     checked: true
 - model: baseweb.GPXWayPointType
   pk: 4
@@ -48,7 +48,7 @@
     around: 100
     around_max: 300
     around_duplicate: 10000
-    marker_filename: marker_fuel.png
+    marker_filename: marker_fuel.svg
     checked: false
 - model: baseweb.GPXWayPointType
   pk: 5
@@ -61,7 +61,7 @@
     around: 300
     around_max: 1000
     around_duplicate: 10000
-    marker_filename: marker_supermarkt.png
+    marker_filename: marker_supermarkt.svg
     checked: false
 - model: baseweb.GPXWayPointType
   pk: 6
@@ -74,7 +74,7 @@
     around: 5000
     around_max: 10000
     around_duplicate: 3000
-    marker_filename: marker_hotel.png
+    marker_filename: marker_hotel.svg
     checked: false
 - model: baseweb.GPXWayPointType
   pk: 7
@@ -87,5 +87,5 @@
     around: 5000
     around_max: 10000
     around_duplicate: 3000
-    marker_filename: marker_shelter.png
+    marker_filename: marker_shelter.svg
     checked: false

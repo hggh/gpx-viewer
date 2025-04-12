@@ -6,6 +6,8 @@
   * strip gpx name and gpx track name over 200 chars; prevent databaseerrors
   * show kilometers on WayPoint Popup (from split start, from track segment start)
   * limit Track Name on elevation Graph to 55 chars.
+  * change waypoint icons to SVG
+  * allow size change of Waypoint icons via range
 
 ### 22. March 2025
   * Django DB Migration on Startup

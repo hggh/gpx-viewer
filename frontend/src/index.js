@@ -92,6 +92,11 @@ document.addEventListener("DOMContentLoaded", function() {
     let gpx_file_status = new GPXFileStatus(map, gpx_file_slug, waypoints);
     gpx_file_status.get_status();
 
+    document.querySelector("#waypoint_icon_size").addEventListener("input", (event) => {
+        let icon_size = parseInt(event.target.value);
+        waypoints.draw(icon_size);
+    });
+
 
     document.querySelector("#elevation_hide_show").addEventListener("click", (event) => {
         var w = L.DomUtil.get("map_elevation_tabs");

@@ -43,7 +43,7 @@ export default class Waypoints {
         r.send(JSON.stringify({"waypoint_pk": waypoint_pk}));
     }
 
-    draw() {
+    draw(icon_size=16) {
         this.remove();
 
         this.data.waypoints.forEach(waypoint => {
@@ -57,7 +57,7 @@ export default class Waypoints {
             let marker = L.marker([waypoint.lat, waypoint.lon]);
             marker.waypointId = waypoint.id;
             marker.setIcon(L.icon({
-                iconSize: [16, 16],
+                iconSize: [icon_size, icon_size],
                 iconUrl: waypoint.waypoint_type.marker_image_path,
                 className: waypoint.class_name,
             }));

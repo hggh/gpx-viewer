@@ -17,7 +17,7 @@
     </div>
 
     <div class="list-group-item border-end-0 d-inline-block">
-        <span>Download Infomation as GPX Waypoint Track (hidden POIs will be excluded!)</span>
+        <span>Download Infomation as GPX Waypoint Track</span>
             <form method="POST" action="/gpxtrack/{{object.slug}}/download">
                 {% csrf_token %}
                 <input type="hidden" name="slug" value="{{object.slug}}"/>
@@ -32,6 +32,10 @@
             </form>
     </div>
     <br/>
+    <div class="list-group-item border-end-0 d-inline-block">
+        <label for="customRange3" class="form-label">Waypoint Icon Size</label>
+        <input type="range" class="form-range" value="16" min="16" max="42" step="2" id="waypoint_icon_size">
+    </div>
     <div class="list-group-item border-end-0 d-inline-block">
         <h2>Tracks</h2>
         {% for track in object.tracks.all %}
