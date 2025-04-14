@@ -58,6 +58,7 @@ export default class TrackSegment {
         this.foreground = this.svg.append("g").attr("class", "group2");
 
         this._marker = L.circleMarker([0, 0], {'color': '#ff0000'}).addTo(this.map);
+        this.tooltip = L.tooltip({permanent: true}).setLatLng([0, 0]).addTo(this.map);
         this._marker.setRadius(7);
 
         this._marker.addEventListener("popupclose", (event) => {
@@ -198,6 +199,8 @@ export default class TrackSegment {
 
             this.draw_tooltip(xpos, p);
             this._marker.setLatLng(p);
+            this.tooltip.setLatLng(p);
+            this.tooltip.setContent(" " + Math.round(p.distance / 1000) + "km");
         });
         this.map.fitBounds(this.line.getBounds());
     }
