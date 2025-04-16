@@ -205,7 +205,7 @@ class GPXFile(TimeStampedModel):
                         point_type=point_type,
                         around_duplicate=around_duplicate,
                     )
-                    time.sleep(1)
+                    time.sleep(1.5)
 
     def query_data_osm(self, points, around_meters, point_type, around_duplicate) -> None:
         from baseweb.tasks import gpx_waypoint_find_route_from_track
@@ -224,9 +224,13 @@ class GPXFile(TimeStampedModel):
         """
         try:
             result = api.query(overpass_query)
+        except overpy.exception.OverpassTooManyRequests:
+            print("OverpassTooManyRequests - retry it after sleep")
+            time.sleep(5)
+            return self.query_data_osm(points=points, around_meters=around_meters, point_type=point_type, around_duplicate=around_duplicate)
         except overpy.exception.OverpassGatewayTimeout:
             print("OverpassGatewayTimeout - retry")
-            time.sleep(4)
+            time.sleep(5)
             return self.query_data_osm(points=points, around_meters=around_meters, point_type=point_type, around_duplicate=around_duplicate)
 
         for node in result.get_nodes():
