@@ -1,5 +1,16 @@
+{% load static %}
 <div class="" id="waypoint_tags_info_{{object.id}}">
     <h5 id="offcanvasTopLabel" id="canvas_top_title">{{object.name}}</h5>
+    <div style="float:right;">
+        <a href="https://www.google.com/maps/search/?api=1&query={{object.location.x}},{{object.location.y}}" title="Open Waypoint in Google Maps" target="_blank">
+            <img width="15px" height="15px" src="{% static 'bootstrap-icons-1.11.2/google.svg' %}"/>
+        </a>
+        <a href="#" 
+        title="Copy geo Link to clipboard" onclick="navigator.clipboard.writeText('{{object.location.x}},{{object.location.y}}');">
+            <img id="clipboard_button_{{object.id}}" data-popup-text="copied..." data-popup-autoclose="1" width="15px" height="15px" src="{% static 'bootstrap-icons-1.11.2/geo.svg' %}">
+        </a>
+    </div>
+    <div style="clear:both">
     {% if object.track_segment_distance %}
     on kilometer: <b>{{ object.track_segment_distance }} km</b> from Track Segment Start<br/>
     {% endif %}
@@ -22,4 +33,5 @@
     {% for name, value in object.get_tags.items %}
     <b>{{name}}:</b> {{value}}<br/>
     {% endfor %}
+    </div>
 </div>

@@ -78,6 +78,18 @@ export default class Waypoints {
                 r.addEventListener('load', function(event) {
                     marker_event.setPopupContent(r.responseText);
                     marker_event.update();
+                    L.DomEvent.on(L.DomUtil.get("clipboard_button_" + waypoint_id), "click", (event) => {
+                        let popup = L.DomUtil.get("popup");
+                        popup.innerHTML = event.target.dataset.popupText;
+                        popup.style.display = "flex";
+
+                        if (event.target.dataset.popupAutoclose) {
+                            setTimeout(() => {
+                                let popup = L.DomUtil.get("popup");
+                                popup.style.display = "none";
+                            }, parseInt(event.target.dataset.popupAutoclose) * 1000);
+                        }
+                    });
 
                 });
                 r.send()

@@ -1,5 +1,10 @@
 # CHANGELOG
 
+### 16. April 2025
+  * try to catch OverpassTooManyRequests error and sleep after it 5sec and retry it
+  * show Google Maps link from Waypoint Popup
+  * add link to copy geo location of an Waypoint inside the Popup
+
 ### 14. April 2025
   * Django Upgrade to 5.2
   * allow 200 chars as GPX Filename
