@@ -88,23 +88,6 @@
     <button type="submit" class="btn btn-primary">Upload GPX Track!</button>
 </form>
 
-<script>
-    var f = document.querySelector("#gpx_track_upload")
-    f.onsubmit = function() {
-        var data = {};
-        var waypoint_types = document.querySelectorAll('.waypoint_types');
-        for (var i =0; i < waypoint_types.length; i++) {
-            var name = waypoint_types[i].dataset.wptName;
-            var name_html = waypoint_types[i].dataset.wptNameHtml;
-            data[name] = {
-                'enabled': document.querySelector("#" + name_html).checked,
-                'around': document.querySelector("#" + name_html + "_around").value,
-                'around_duplicate': document.querySelector("#" + name_html + "_around_duplicate").value
-            };
-        }
-        document.querySelector("#wpt_options").value = JSON.stringify(data);
-    };
-</script>
 </main>
 </div>
 
