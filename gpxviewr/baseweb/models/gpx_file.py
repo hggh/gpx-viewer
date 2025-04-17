@@ -254,7 +254,7 @@ class GPXFile(TimeStampedModel):
                 ).order_by('-caldistance').last()
                 wp.track_segment_point_nearby = sp
                 wp.save()
-                if wp.is_camping_site() or wp.is_hotel():
+                if wp.waypoint_type.generate_track_to_waypoint is True:
                     gpx_waypoint_find_route_from_track.delay(wp.pk)
 
         for way in result.get_ways():

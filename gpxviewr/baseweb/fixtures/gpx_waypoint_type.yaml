@@ -24,6 +24,7 @@
     around_duplicate: 3000
     marker_filename: marker_camp_site.svg
     checked: true
+    generate_track_to_waypoint: true
 - model: baseweb.GPXWayPointType
   pk: 3
   fields:
@@ -76,6 +77,7 @@
     around_duplicate: 3000
     marker_filename: marker_hotel.svg
     checked: false
+    generate_track_to_waypoint: true
 - model: baseweb.GPXWayPointType
   pk: 7
   fields:
@@ -89,3 +91,18 @@
     around_duplicate: 3000
     marker_filename: marker_shelter.svg
     checked: false
+- model: baseweb.GPXWayPointType
+  pk: 8
+  fields:
+    name: Bicycle
+    gpx_sym_name: Wrecker
+    osm_name: shop
+    osm_value: bicycle
+    osm_query_type: "="
+    around: 1000
+    around_max: 10000
+    around_duplicate: 4000
+    marker_filename: marker_bicycle.svg
+    checked: false
+    generate_track_to_waypoint: true
+   

@@ -12,6 +12,7 @@ class GPXWayPointType(models.Model):
     around_duplicate = models.IntegerField(null=False, blank=False, default=3000)
     marker_filename = models.CharField(max_length=100, null=True)
     checked = models.BooleanField(null=False, default=True, blank=False)
+    generate_track_to_waypoint = models.BooleanField(null=False, default=False, blank=False)
 
     def __str__(self) -> str:
         return self.name

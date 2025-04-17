@@ -1,8 +1,9 @@
 # CHANGELOG
 
-### XX. April 2025
+### 17. April 2025
   * show kilometers on track also on hover on elevation graph
   * reorg index.js and index.html; no js error on startpage
+  * Add Query for bicycle Shops
 
 ### 16. April 2025
   * try to catch OverpassTooManyRequests error and sleep after it 5sec and retry it
