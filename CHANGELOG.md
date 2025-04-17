@@ -1,5 +1,8 @@
 # CHANGELOG
 
+### XX. April 2025
+  * show kilometers on track also on hover on elevation graph
+
 ### 16. April 2025
   * try to catch OverpassTooManyRequests error and sleep after it 5sec and retry it
   * show Google Maps link from Waypoint Popup

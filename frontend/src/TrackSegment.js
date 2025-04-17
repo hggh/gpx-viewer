@@ -239,6 +239,9 @@ export default class TrackSegment {
         this.draw_tooltip(xpos, this.segment.points[i]);
 
         this._marker.setLatLng([this.segment.points[i].lat, this.segment.points[i].lon]);
+        this.tooltip.setLatLng([this.segment.points[i].lat, this.segment.points[i].lon]);
+        this.tooltip.setContent(" " + Math.round(this.segment.points[i].distance / 1000) + "km");
+
     }
 
     async graph() {
