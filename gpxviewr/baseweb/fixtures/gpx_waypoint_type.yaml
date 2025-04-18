@@ -94,7 +94,7 @@
 - model: baseweb.GPXWayPointType
   pk: 8
   fields:
-    name: Bicycle
+    name: Bicycle Shops
     gpx_sym_name: Wrecker
     osm_name: shop
     osm_value: bicycle
