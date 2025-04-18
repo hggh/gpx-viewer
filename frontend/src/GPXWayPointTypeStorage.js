@@ -37,6 +37,10 @@ export default class GPXWayPointTypeStorage {
     load() {
         let data = JSON.parse(localStorage.getItem("gpxwaypointytpe_selections"));
 
+        if ( (data instanceof Object) == false) {
+            return;
+        }
+
         for (const [key, value] of Object.entries(data)) {
             let enabled = document.getElementById(key);
             if (enabled) {
