@@ -1,5 +1,10 @@
 # CHANGELOG
 
+### XX. April 2025
+  * Store Around, around_duplicate and checked Waypoint Type settings into Browser localStore
+    * provide a reset to defaults
+    * load saved values on pageload to have the older values from user
+
 ### 17. April 2025
   * show kilometers on track also on hover on elevation graph
   * reorg index.js and index.html; no js error on startpage

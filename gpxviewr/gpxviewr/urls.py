@@ -35,10 +35,12 @@ from baseweb.views import (
 
 from baseweb.viewset import (
     GPXFileViewSet,
+    GPXWayPointTypeViewSet,
 )
 
 router = DefaultRouter()
 router.register(r'gpxfile', GPXFileViewSet, basename='gpxfile')
+router.register(r'gpxwaypointtype', GPXWayPointTypeViewSet)
 
 urlpatterns = [
     path('api/', include(router.urls)),

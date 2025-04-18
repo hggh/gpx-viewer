@@ -9,7 +9,14 @@ from .models import (
     GPXWayPointType,
     GPXTrackWayPoint,
     GPXFileUserSegmentSplit,
+    GPXWayPointType,
 )
+from .serializers import GPXWayPointTypeSerializer
+
+
+class GPXWayPointTypeViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = GPXWayPointType.objects.all()
+    serializer_class = GPXWayPointTypeSerializer
 
 
 class GPXFileViewSet(viewsets.ViewSet):

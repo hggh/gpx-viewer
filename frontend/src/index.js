@@ -15,6 +15,7 @@ import TrackSegment from "./TrackSegment";
 import MapQueryGoogleMaps from "./MapQueryGoogleMaps";
 import MapQueryOpenStreetMap from "./MapQueryOpenStreetMap";
 import GPXFileStatus from "./GPXFileStatus";
+import GPXWayPointTypeStorage from "./GPXWayPointTypeStorage";
 
 
 document.addEventListener("DOMContentLoaded", function() {
@@ -155,7 +156,15 @@ document.addEventListener("DOMContentLoaded", function() {
 
     var f = document.querySelector("#gpx_track_upload")
     if (f) {
+        var waypoint_type = new GPXWayPointTypeStorage();
+        waypoint_type.load();
+        document.getElementById("waypoint_types_reset_to_default").addEventListener("click", (event) => {
+            waypoint_type.reset_defaults();
+            waypoint_type.store();
+        });
         f.onsubmit = function() {
+            waypoint_type.store();
+
             var data = {};
             var waypoint_types = document.querySelectorAll('.waypoint_types');
             for (var i =0; i < waypoint_types.length; i++) {
