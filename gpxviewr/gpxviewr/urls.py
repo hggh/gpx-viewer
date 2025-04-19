@@ -14,7 +14,6 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
@@ -54,5 +53,4 @@ urlpatterns = [
     path('gpxtrack/<slug:slug>/download_gpx_track_to_waypoint/<int:pk>', GPXWayPointPathFromTrackDownloadView.as_view()),
     path('gpxtrack/<slug:slug>/user_segment_split_download/<int:pk>', GPXFileUserSegmentSplitDownloadView.as_view()),
     path('waypoint/<int:pk>/update', GPXTrackWaypointUpdateView.as_view(), name='waypoint-update'),
-    path('admin/', admin.site.urls),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

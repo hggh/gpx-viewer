@@ -1,5 +1,8 @@
 # CHANGELOG
 
+### XX. April 2025
+  * disable /admin Interface
+
 ### 18. April 2025
   * Store Around, around_duplicate and checked Waypoint Type settings into Browser localStore
     * provide a reset to defaults
