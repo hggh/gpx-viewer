@@ -21,7 +21,7 @@ import GPXWayPointTypeStorage from "./GPXWayPointTypeStorage";
 document.addEventListener("DOMContentLoaded", function() {
 
     if (document.getElementById("gpx_file_slug")) {
-        document.getElementById('map').style.height = window.innerHeight - 200 + "px";
+        document.getElementById('map').style.height = window.innerHeight - 120 + "px";
 
         const gpx_file_slug = document.getElementById("gpx_file_slug").dataset.slug;
         const map = L.map('map').setView([51.505, 10.09], 3);

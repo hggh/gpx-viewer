@@ -69,6 +69,10 @@
 </div>
 {% endblock%}
 
+{% block html_title %}
+{{object.name }}
+{% endblock %}
+
 
 {% block content %}
 {% load static %}
@@ -84,7 +88,6 @@
             <div class="spinner-border text-primary" role="status"></div>
             <span id="job_status_info_box" style="padding-left:10px;">wating for job status</span>
         </div>
-        <h2>{{object.name }}</h2>
         <div style="float:right;">
             <a class="nolinkcolor" href="#" title="Click on map and open location in OpenStreetMap">
                 <img id="map_query_openstreetmap" width="20px" height="20px" src="{% static 'openstreetmap_logo.svg' %}"/>
