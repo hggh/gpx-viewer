@@ -16,6 +16,7 @@ import MapQueryGoogleMaps from "./MapQueryGoogleMaps";
 import MapQueryOpenStreetMap from "./MapQueryOpenStreetMap";
 import GPXFileStatus from "./GPXFileStatus";
 import GPXWayPointTypeStorage from "./GPXWayPointTypeStorage";
+import TrackSplitGraph from "./TrackSplitGraph";
 
 
 document.addEventListener("DOMContentLoaded", function() {
@@ -75,6 +76,19 @@ document.addEventListener("DOMContentLoaded", function() {
                     document.getElementById('elevation_tab_previous').classList.remove("collapse");
                     document.getElementById('elevation_tab_next').classList.remove("collapse");
                 }
+            });
+        } catch (error) {
+            console.log(error);
+        }
+
+        // Track Split stuff
+        try {
+            d3.json('/api/gpxfile/' + gpx_file_slug + '/json').then(function (data) {
+                data.forEach(track => {
+                    track.segments.forEach(segment => {
+                        var f = new TrackSplitGraph(gpx_file_slug, segment.segment_id, map, segment, track.name);
+                    });
+                });
             });
         } catch (error) {
             console.log(error);

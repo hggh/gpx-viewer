@@ -20,6 +20,10 @@ html, body {
 .listening-rect {
     fill: transparent;
 }
+.splitxAxisLine {
+    color: blue;
+    fill: blue;
+}
 .mouse-text {
     fill: red;
 }
