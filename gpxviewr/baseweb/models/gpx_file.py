@@ -24,8 +24,8 @@ from django_extensions.db.models import TimeStampedModel
 import overpy
 
 import pandas
-from gpx import GPX, Waypoint
-from gpx.waypoint import Link
+import gpxpy
+import gpxpy.gpx
 
 
 fs = FileSystemStorage(location=settings.LOCAL_STORAGE_DIRECTORY)
@@ -119,28 +119,24 @@ class GPXFile(TimeStampedModel):
         return wtps
 
     def generate_download_gpx_file(self, options) -> str:
-        gpx = GPX()
+        gpx = gpxpy.gpx.GPX()
+        gpx.name = self.name
         gpx.creator = 'GPX Tools by hggh'
-        waypoints = []
 
         for w in self.waypoints.all().filter(waypoint_type__in=options).filter(hidden=False):
-            wp = Waypoint()
-            wp.lat = w.location.x
-            wp.lon = w.location.y
+            wp = gpxpy.gpx.GPXWaypoint()
+            wp.latitude = w.location.x
+            wp.longitude = w.location.y
             wp.name = w.name
-            wp.sym = w.waypoint_type.gpx_sym_name
+            wp.symbol = w.waypoint_type.gpx_sym_name
 
             if w.get_url():
-                wp_link = Link()
-                wp_link.href = w.get_url()
-                wp_link.text = w.get_url()
-                wp.links = [wp_link]
+                wp.link = w.get_url()
+                wp.link_text = w.get_url()
 
-            waypoints.append(wp)
+            gpx.waypoints.append(wp)
 
-        gpx.waypoints = waypoints
-
-        return gpx.to_string()
+        return gpx.to_xml()
 
     def get_user_segment_splits(self, segment_pk=None) -> list:
         data = []
@@ -176,15 +172,16 @@ class GPXFile(TimeStampedModel):
         if around_meters is None:
             around_meters = point_type.around
 
-        gpxfile = GPX.from_file(self.file.path)
+        f = open(self.file.path, 'r')
+        gpxfile = gpxpy.parse(f)
 
         for track in gpxfile.tracks:
-            for segment in track.trksegs:
+            for segment in track.segments:
                 points = []
                 curr = 0
 
-                for point in segment.trkpts:
-                    points.append((point.lat, point.lon))
+                for point in segment.points:
+                    points.append((point.latitude, point.longitude))
                     curr += 1
 
                     if curr == 2000:
@@ -293,7 +290,8 @@ class GPXFile(TimeStampedModel):
     def load_file_to_database(self) -> None:
         from baseweb.models import GPXTrackSegmentPoint, GPXTrack, GPXTrackSegment
         json_data = []
-        gpxfile = GPX.from_file(self.file.path)
+        f = open(self.file.path, 'r')
+        gpxfile = gpxpy.parse(f)
 
         if gpxfile.name is not None and gpxfile.name != '':
             self.name = gpxfile.name[:199] if len(gpxfile.name) > 199 else gpxfile.name
@@ -308,22 +306,19 @@ class GPXFile(TimeStampedModel):
                 name = "Track {}".format(track_number)
             track_number += 1
 
-            for l in track.links:
-                if l.href and len(l.href) <= 6000:
-                    try:
-                        URLValidator().__call__(l.href)
-                        track_link = l.href
-                        break
-                    except ValidationError as e:
-                        print(f"URL not valid: {gpxfile}: {l.href} with error: {e}")
-                        pass
+            if track.link and len(track.link) <= 6000:
+                try:
+                    URLValidator().__call__(track.link)
+                    track_link = track.link
+                except ValidationError as e:
+                    print(f"URL not valid: {gpxfile}: {track.link} with error: {e}")
+                    pass
 
             track_has_segments_with_points = False
-            if len(track.trksegs) > 0:
-                for segment in track.trksegs:
-                    if len(segment.trkpts) > 0:
+            if len(track.segments) > 0:
+                for segment in track.segments:
+                    if len(segment.points) > 0:
                         track_has_segments_with_points = True
-                        continue
 
             if track_has_segments_with_points is False:
                 print("{} seems to have to points in any segment".format(
@@ -335,7 +330,7 @@ class GPXFile(TimeStampedModel):
                 gpx_file=self,
                 name=name,
                 link=track_link,
-                distance=track.distance,
+                distance=track.length_3d(),
             )
             gpx_track.save()
 
@@ -343,21 +338,21 @@ class GPXFile(TimeStampedModel):
                 'name': name,
                 'slug': self.slug,
                 'track_id': gpx_track.pk,
-                'distance': track.distance,
+                'distance': track.length_3d(),
                 'segments': [],
             }
 
             segment_number = 0
             color_int = 0
-            for segment in track.trksegs:
-                if len(segment.trkpts) == 0:
+            for segment in track.segments:
+                if len(segment.points) == 0:
                     print("{}: Segment {} has no points".format(self.file.path, segment_number))
                     continue
 
                 s = GPXTrackSegment(
                     number=segment_number,
                     track=gpx_track,
-                    distance=segment.distance,
+                    distance=segment.length_3d(),
                 )
                 s.save()
                 segment_number += 1
@@ -367,7 +362,7 @@ class GPXFile(TimeStampedModel):
                 segment_data = {
                     'number': s.number,
                     'segment_id': s.pk,
-                    'distance': segment.distance,
+                    'distance': segment.length_3d(),
                     'color': self.line_colors[color_int],
                     'points': [],
                 }
@@ -380,21 +375,21 @@ class GPXFile(TimeStampedModel):
                 point_number = 0
                 priv_point = None
                 total_distance = 0
-                for point in segment.trkpts:
+                for point in segment.points:
                     elevation_diff_to_previous = None
                     if priv_point is not None:
-                        if priv_point.elevation is not None and point.ele is not None:
-                            elevation_diff_to_previous = priv_point.elevation - point.ele
+                        if priv_point.elevation is not None and point.elevation is not None:
+                            elevation_diff_to_previous = priv_point.elevation - point.elevation
 
-                        m = geopy_distance.distance((priv_point.location.x, priv_point.location.y), (point.lat, point.lon)).m
+                        m = geopy_distance.distance((priv_point.location.x, priv_point.location.y), (point.latitude, point.longitude)).m
                     else:
                         m = 0
                     total_distance += m
 
                     p = GPXTrackSegmentPoint(
                         segment=s,
-                        location=Point([point.lat, point.lon], srid=4326),
-                        elevation=point.ele,
+                        location=Point([point.latitude, point.longitude], srid=4326),
+                        elevation=point.elevation,
                         number=point_number,
                         elevation_diff_to_previous=elevation_diff_to_previous,
                         distance=total_distance,
@@ -403,14 +398,14 @@ class GPXFile(TimeStampedModel):
                     priv_point = p
                     point_number += 1
 
-                    if point.ele:
-                        ele = float(point.ele)
+                    if point.elevation:
+                        ele = float(point.elevation)
                     else:
                         ele = 0
 
                     segment_data['points'].append({
-                        'lat': float(point.lat),
-                        'lon': float(point.lon),
+                        'lat': float(point.latitude),
+                        'lon': float(point.longitude),
                         'distance': total_distance,
                         'elevation': ele,
                         'point_number': p.number,

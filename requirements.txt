@@ -6,7 +6,7 @@ pyyml
 requests
 phonenumbers
 
-gpx @ git+https://github.com/sgraaf/gpx@94aadaf
+gpxpy==1.6.2
 overpy==0.7
 numpy
 pandas
