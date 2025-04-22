@@ -1,6 +1,6 @@
 # CHANGELOG
 
-### XX. April 2025
+### 22. April 2025
   * disable /admin Interface
   * more space for map; move filename/track title into header
   * Change GPX Library to gpxpy to fix import problems with some GPXTracks
