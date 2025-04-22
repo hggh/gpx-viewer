@@ -3,8 +3,8 @@ import geojson
 from django.contrib.gis.db import models
 
 from django_extensions.db.models import TimeStampedModel
-from gpx import GPX, Waypoint, Track
-from gpx.track_segment import TrackSegment
+import gpxpy
+import gpxpy.gpx
 
 
 class GPXTrackWayPointFromTrack(TimeStampedModel):
@@ -38,7 +38,7 @@ class GPXTrackWayPointFromTrack(TimeStampedModel):
         return fc
 
     def get_gpx_track(self) -> str:
-        gpx = GPX()
+        gpx = gpxpy.gpx.GPX()
         gpx.creator = 'GPXViewr by hggh'
         if self.waypoint.name != "":
             name = f"to {self.waypoint.name}"
@@ -46,19 +46,19 @@ class GPXTrackWayPointFromTrack(TimeStampedModel):
             name = f"to {self.waypoint.waypoint_type.osm_value}"
         gpx.name = name
 
-        track = Track()
+        track = gpxpy.gpx.GPXTrack()
         track.name = name
 
-        segment = TrackSegment()
+        segment = gpxpy.gpx.GPXTrackSegment()
 
         for latlon in self.geojson:
-            w = Waypoint()
-            w.lat = latlon[1]
-            w.lon = latlon[0]
+            w = gpxpy.gpx.GPXTrackPoint()
+            w.latitude = latlon[1]
+            w.longitude = latlon[0]
 
             segment.points.append(w)
 
-        track.trksegs = [segment]
-        gpx.tracks = [track]
+        track.segments.append(segment)
+        gpx.tracks.append(track)
 
-        return gpx.to_string()
+        return gpx.to_xml()

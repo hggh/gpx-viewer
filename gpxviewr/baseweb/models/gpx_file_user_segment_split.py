@@ -4,8 +4,8 @@ from geopy import distance as geopy_distance
 from django.contrib.gis.db import models
 from django_extensions.db.models import TimeStampedModel
 
-from gpx import GPX, Waypoint, Track
-from gpx.track_segment import TrackSegment
+import gpxpy
+import gpxpy.gpx
 
 
 class GPXFileUserSegmentSplit(TimeStampedModel):
@@ -55,26 +55,26 @@ class GPXFileUserSegmentSplit(TimeStampedModel):
             number__lte=self.point_end.number,
         )
 
-        gpx = GPX()
+        gpx = gpxpy.gpx.GPX()
         gpx.creator = 'GPX Tools by hggh'
         gpx.name = self.name
 
-        track = Track()
+        track = gpxpy.gpx.GPXTrack()
         track.name = self.name
-        segment = TrackSegment()
+        segment = gpxpy.gpx.GPXTrackSegment()
 
         for point in points:
-            w = Waypoint()
-            w.lat = point.location.x
-            w.lon = point.location.y
-            w.ele = point.elevation
+            w = gpxpy.gpx.GPXTrackPoint()
+            w.latitude = point.location.x
+            w.longitude = point.location.y
+            w.elevation = point.elevation
 
             segment.points.append(w)
 
-        track.trksegs = [segment]
-        gpx.tracks = [track]
+        track.segments.append(segment)
+        gpx.tracks.append(track)
 
-        return gpx.to_string()
+        return gpx.to_xml()
 
     @staticmethod
     def add_segment(gpx_file, segment_pk, point_number):

@@ -3,6 +3,7 @@
 ### XX. April 2025
   * disable /admin Interface
   * more space for map; move filename/track title into header
+  * Change GPX Library to gpxpy to fix import problems with some GPXTracks
 
 ### 18. April 2025
   * Store Around, around_duplicate and checked Waypoint Type settings into Browser localStore
