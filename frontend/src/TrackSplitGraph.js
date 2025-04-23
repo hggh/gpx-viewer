@@ -15,7 +15,7 @@ export default  class TrackSplitGraph {
 
         this.margin = {
             top: 10,
-            bottom: 30,
+            bottom: 49,
             right: 30,
             left: 50,
         };
@@ -45,8 +45,77 @@ export default  class TrackSplitGraph {
             mouse_text_xpos = xpos - 120;
         }
 
+        if (this.splitted_data.length > 0 ) {
+            let left_split = null;
+            let left_split_key = null;
+            for (let key = this.splitted_data.length -1 ; key >= 0 ; key--) {
+                let currsplit = this.splitted_data[key];
+                if (point.distance > currsplit.distance) {
+                    left_split = currsplit;
+                    left_split_key = key;
+                    break;
+                }
+            }
+            if (left_split) {
+                let start_point = this.x(left_split.distance / 1000);
+                this.yAxisLine.attr("y", this.height + 20);
+                this.yAxisLine.attr("x", start_point);
+                this.yAxisLine.attr("width", xpos - start_point);
+
+                this.split_kilometer_text_left.text(Math.round((point.distance - left_split.distance) / 1000) + "km")
+                        .attr("y", this.height + 45)
+                        .attr("x", start_point);
+            }
+            let next = this.splitted_data[left_split_key + 1];
+            if (next) {
+                this.yAxisLineRight.attr("y", this.height + 20);
+                this.yAxisLineRight.attr("x", xpos);
+                this.yAxisLineRight.attr("width", this.x(next.distance / 1000) - xpos);
+
+                this.split_kilometer_text_right.text(Math.round((next.distance - point.distance) / 1000) + "km")
+                        .attr("y", this.height + 45)
+                        .attr("x", xpos);
+            }
+            else {
+                let last_point = this.segment.points[this.segment.points.length -1];
+                let end_point_xpos = this.x(last_point.distance / 1000);
+
+                this.split_kilometer_text_right.text(Math.round((last_point.distance - point.distance) / 1000) + "km")
+                        .style("opacity", 1)
+                        .attr("y", this.height + 45)
+                        .attr("x", xpos);
+
+                this.yAxisLineRight.attr("y", this.height + 20);
+                this.yAxisLineRight.attr("x", xpos);
+                this.yAxisLineRight.attr("width", end_point_xpos - xpos);
+            }
+        }
+        if (this.splitted_data.length == 0) {
+            let start_point = this.x(0);
+            this.yAxisLine.attr("y", this.height + 20);
+            this.yAxisLine.attr("x", start_point);
+            this.yAxisLine.attr("width", xpos - start_point);
+
+            this.split_kilometer_text_left.text(Math.round(point.distance / 1000) + " km")
+                    .style("opacity", 1)
+                    .attr("y", this.height + 45)
+                    .attr("x", start_point);
+            let last_point = this.segment.points[this.segment.points.length -1];
+            let end_point_xpos = this.x(last_point.distance / 1000);
+
+            this.split_kilometer_text_right.text(Math.round((last_point.distance - point.distance) / 1000) + "km")
+                        .style("opacity", 1)
+                        .attr("y", this.height + 45)
+                        .attr("x", xpos);
+
+            this.yAxisLineRight.attr("y", this.height + 20);
+            this.yAxisLineRight.attr("x", xpos);
+            this.yAxisLineRight.attr("width", end_point_xpos - xpos);
+
+        }
+
         this.mouse_text
-            .text(Math.round(point.distance / 1000) + " km / " + Math.round(point.elevation) + "m (click to split)")
+            .text(Math.round(point.distance / 1000) + " km / " + Math.round(point.elevation) + "m (click to split) ")
             .style("opacity", 1)
             .attr("class", "mouse-text")
             .attr("y", "40")
@@ -119,6 +188,11 @@ export default  class TrackSplitGraph {
                 legend.appendChild(button_move);
 
                 button_move.addEventListener("click", (event) => {
+                    this.yAxisLine.attr("width", 0);
+                    this.yAxisLineRight.attr("width", 0);
+                    this.split_kilometer_text_left.text("");
+                    this.split_kilometer_text_right.text("");
+
                     this.moving = true;
                     this.moving_key = parseInt(event.target.dataset.key);
                     this.split_lines[this.moving_key].on("click", this.movement_click.bind(this));
@@ -128,6 +202,8 @@ export default  class TrackSplitGraph {
                 });
 
                 button_delete.addEventListener("click", (event) => {
+                    this.moving = false;
+                    this.moving_key = null;
                     let splitted_data = new Array();
                     this.splitted_data.keys().forEach((key) => {
                         if (key != parseInt(event.target.dataset.key)) {
@@ -269,6 +345,7 @@ export default  class TrackSplitGraph {
             this.xAxisLine.attr("x", xpos);
             this.xAxisLine.attr("height", this.height);
             this.draw_tooltip(xpos, this.segment.points[i]);
+
         }
     }
     movement_click(event) {      
@@ -302,6 +379,18 @@ export default  class TrackSplitGraph {
         this.x = d3.scaleLinear();
         this.y = d3.scaleLinear();
 
+        this.split_kilometer_text_right = this.foreground.append("g")
+            .style("opacity", 1)
+            .append("text")
+            .style("opacity", 0)
+            .attr("text-anchor", "right");
+
+        this.split_kilometer_text_left = this.foreground.append("g")
+            .style("opacity", 1)
+            .append("text")
+            .style("opacity", 0)
+            .attr("text-anchor", "right");
+
         this.mouse_text = this.foreground.append("g")
             .append("text")
             .style("opacity", 0)
@@ -318,6 +407,18 @@ export default  class TrackSplitGraph {
         .attr("stroke-with", "1px")
         .attr("width", ".5px")
         .attr("height", this.height);
+
+        this.yAxisLine = this.background.append("g").append("rect")
+            .attr("stroke-with", "4px")
+            .attr("class", "split-graph-line-left")
+            .attr("width", "10px")
+            .attr("height", "10");
+
+        this.yAxisLineRight = this.background.append("g").append("rect")
+            .attr("stroke-with", "4px")
+            .attr("class", "split-graph-line-right")
+            .attr("width", "10px")
+            .attr("height", "10");
 
         listeningRect.on("mousemove", this.pm_mouseover.bind(this));
         this.xAxisLine.on("click", this.mouse_marker_click.bind(this));
