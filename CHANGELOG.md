@@ -1,5 +1,9 @@
 # CHANGELOG
 
+### 23. April 2025
+  * update README
+  * fuel station change around_max to 1000
+
 ### 22. April 2025
   * disable /admin Interface
   * more space for map; move filename/track title into header

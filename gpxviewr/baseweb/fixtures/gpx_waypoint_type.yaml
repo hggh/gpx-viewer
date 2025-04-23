@@ -47,7 +47,7 @@
     osm_value: fuel
     osm_query_type: "="
     around: 100
-    around_max: 300
+    around_max: 1000
     around_duplicate: 10000
     marker_filename: marker_fuel.svg
     checked: false
