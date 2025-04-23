@@ -19,6 +19,7 @@ celery -A gpxviewr worker -l INFO -B
 
 ```
 cd gpxviewr/
+./manage.py loaddata baseweb/fixtures/gpx_waypoint_type.yaml 
 ./manage.py runserver
 ```
 
