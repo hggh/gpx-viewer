@@ -6,33 +6,26 @@ Demo: https://gpxviewr.genannt.name/
 
 ## development
 
-#### Python setup
-
-```
-virtualenv -p python3 .venv
-source .venv/bin/activate
-pip3 install -r requirements.txt
-```
-
-#### Postgres + Redis
-```
-docker compose -f docker-compose-dev.yml up -d
-```
+For development devcontainers are used.
 
 #### celery worker
+
 ```
+cd gpxviewr/
 celery -A gpxviewr worker -l INFO -B
 ```
 
 #### development webserver
+
 ```
+cd gpxviewr/
 ./manage.py runserver
 ```
-
 
 #### webpack
 
 ```
+cd frontend
 npm run dev
 ```
 
