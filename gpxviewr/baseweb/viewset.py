@@ -10,6 +10,8 @@ from .models import (
     GPXTrackWayPoint,
     GPXFileUserSegmentSplit,
     GPXWayPointType,
+    GPXTrackSegment,
+    GPXTrackSegmentPoint,
 )
 from .serializers import GPXWayPointTypeSerializer
 
@@ -66,49 +68,43 @@ class GPXFileViewSet(viewsets.ViewSet):
 
     @action(detail=True, methods=['POST',])
     def user_segment_split(self, request, pk=None):
+        splitted_data = request.data.get('splitted_data', [])
+        segment_pk = request.data.get('segment_pk', None)
+        if segment_pk is None:
+            return Response({"segment_pk missing"}, status=403)
         gpx_file = GPXFile.objects.get(slug=pk)
 
-        status = GPXFileUserSegmentSplit.add_segment(
-            gpx_file=gpx_file,
-            segment_pk=request.data.get('segment_pk'),
-            point_number=request.data.get('point_number'),
-        )
+        segment = GPXTrackSegment.objects.get(pk=segment_pk, track__gpx_file=gpx_file)
 
-        return Response(status)
+        # we delete all UserSegmentSplit Point and recreate it
+        gpx_file.user_segments.all().filter(point_start__segment=segment).delete()
 
-    @action(detail=True, methods=['POST',])
-    def user_segment_split_delete(self, request, pk=None):
-        gpx_file = GPXFile.objects.get(slug=pk)
+        user_split_number = 1
+        update_splits = []
+        for i in range(len(splitted_data)):
+            element = splitted_data[i]
 
-        # if we have only two left we delete both
-        if gpx_file.user_segments.all().count() == 2 or gpx_file.user_segments.all().count() == 1:
-            gpx_file.user_segments.all().delete()
-        else:
-            segment_delete_pk = request.data.get('user_segment_pk')
-            segment_pk = gpx_file.user_segments.all().get(pk=segment_delete_pk).point_start.segment.id
+            point_start = GPXTrackSegmentPoint.objects.get(number=element.get('point_number'), segment=segment)
+            try:
+                element_next = splitted_data[i+ 1]
+                point_end = GPXTrackSegmentPoint.objects.get(number=element_next.get('point_number'), segment=segment)
+            except IndexError:
+                element_next = None
+                point_end = segment.points.all().last()
+            print(f"Next element {element_next}")
 
-            user_segments = gpx_file.user_segments.all().filter(point_start__segment_id=segment_pk)
+            u = GPXFileUserSegmentSplit(
+                name=f"Track {user_split_number}",
+                gpx_file=gpx_file,
+                point_start=point_start,
+                point_end=point_end,
+            )
+            u.save()
+            update_splits.append(u)
+            user_split_number += 1
 
-            for index, segment in enumerate(user_segments):
-                if segment.id == segment_delete_pk:
-                    if index == 0:
-                        segment_next = user_segments[index + 1]
-                        segment_next.point_start = segment.point_start
-                        segment_next.save()
-
-                        segment.delete()
-                    else:
-                        segment_last = user_segments[index - 1]
-                        segment_last.point_end = segment.point_end
-                        segment_last.save()
-
-                        segment.delete()
-
-        GPXFileUserSegmentSplit.update_segments(
-            gpx_file.user_segments.all().filter(point_start__segment_id=segment_pk),
-            gpx_file=gpx_file,
-            segment_pk=segment_pk
-        )
+        if len(update_splits) > 0:
+            GPXFileUserSegmentSplit.update_segments(update_splits, gpx_file=gpx_file, segment_pk=segment_pk)
 
         return Response({})
 

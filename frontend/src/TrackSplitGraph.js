@@ -1,4 +1,4 @@
-import L from "leaflet";
+import L, { DomUtil, point } from "leaflet";
 import * as d3 from "d3";
 
 export default  class TrackSplitGraph {
@@ -11,7 +11,10 @@ export default  class TrackSplitGraph {
         this.tab_element_name = "split_track_graph";
         this.split_track_graph_legend = L.DomUtil.get("split_track_graph_legend");
         this.split_track_graph_legend_text = L.DomUtil.get("split_track_graph_legend_text");
+        this.split_create_edit_button = L.DomUtil.get("track_split_edit");
         this.split_lines = [];
+        this.editing = false;
+        this.map_height = parseInt(document.getElementById('map').style.height.replace('px', ''));
 
         this.margin = {
             top: 10,
@@ -19,23 +22,27 @@ export default  class TrackSplitGraph {
             right: 30,
             left: 50,
         };
-        this.splitted_data = new Array();
-        this.width = parseInt(L.DomUtil.get(this.tab_element_name).clientWidth) - this.margin.right - this.margin.left;
-        this.height = 200 - this.margin.top - this.margin.bottom;
-
-        this.svg = d3.select("#" + this.tab_element_name).append("svg")
-            .attr("width", this.width + this.margin.right + this.margin.left)
-            .attr("height", this.height + this.margin.top + this.margin.bottom)
-            .append("g")
-            .attr("transform",`translate(${this.margin.left},${this.margin.top})`);
-
-        this.background = this.svg.append("g").attr("class", "group1");
-        this.foreground = this.svg.append("g").attr("class", "group2");
 
         this.leaflet_layer_group = L.layerGroup();
         this.leaflet_layer_group.addTo(this.map);
-        
-        this.graph();
+
+        this.split_create_edit_button.addEventListener("click", this.create_edit_button_click.bind(this), false);
+        this.splitted_data = new Array();
+    }
+    create_edit_button_click(event) {
+        L.DomUtil.get("right_canvas_close").click();
+
+        if (this.editing == false) {
+            DomUtil.get(this.tab_element_name).classList.remove("collapse");
+            this.split_track_graph_legend.classList.remove("collapse");
+            this.split_track_graph_legend_text.classList.remove("collapse");
+            document.getElementById('map').style.height = (this.map_height - 280) + "px";
+
+            this.editing = true;
+            this.graph();
+            this.draw_legend_text();
+            this.draw_split_lines(); 
+        }
     }
     draw_tooltip(xpos, point) {
         this.xAxisLine.attr("x", xpos);
@@ -74,7 +81,7 @@ export default  class TrackSplitGraph {
 
                 this.split_kilometer_text_right.text(Math.round((next.distance - point.distance) / 1000) + "km")
                         .attr("y", this.height + 45)
-                        .attr("x", xpos);
+                        .attr("x", this.x(next.distance / 1000) - 20);
             }
             else {
                 let last_point = this.segment.points[this.segment.points.length -1];
@@ -83,7 +90,7 @@ export default  class TrackSplitGraph {
                 this.split_kilometer_text_right.text(Math.round((last_point.distance - point.distance) / 1000) + "km")
                         .style("opacity", 1)
                         .attr("y", this.height + 45)
-                        .attr("x", xpos);
+                        .attr("x", end_point_xpos - 20);
 
                 this.yAxisLineRight.attr("y", this.height + 20);
                 this.yAxisLineRight.attr("x", xpos);
@@ -106,7 +113,7 @@ export default  class TrackSplitGraph {
             this.split_kilometer_text_right.text(Math.round((last_point.distance - point.distance) / 1000) + "km")
                         .style("opacity", 1)
                         .attr("y", this.height + 45)
-                        .attr("x", xpos);
+                        .attr("x", end_point_xpos - 20);
 
             this.yAxisLineRight.attr("y", this.height + 20);
             this.yAxisLineRight.attr("x", xpos);
@@ -225,7 +232,7 @@ export default  class TrackSplitGraph {
             this.split_track_graph_legend.appendChild(legend);
         });
     }
-    draw_legend_text() {
+    async draw_legend_text() {
         this.split_track_graph_legend_text.innerHTML = "";
         this.splitted_data.keys().forEach((key) => {
             let element = this.splitted_data[key];
@@ -275,9 +282,47 @@ export default  class TrackSplitGraph {
             
             legend_text.innerHTML = content;
             legend.appendChild(legend_text);
-           
+
             this.split_track_graph_legend_text.appendChild(legend);
         });
+
+        let button_upload_div = document.createElement("div");
+        button_upload_div.style = "padding-top:80px;"
+        let button_upload = document.createElement("button");
+        button_upload.classList.add("btn", "btn-success");
+        button_upload.type = "button";
+        button_upload.innerHTML = "Save Split!";
+        button_upload_div.appendChild(button_upload);
+        button_upload.addEventListener("click", this.upload_data.bind(this), false);
+        this.split_track_graph_legend_text.appendChild(button_upload_div);
+    }
+    download_data() {
+        var instance = this;
+        let url = "/api/gpxfile/" + this.gpx_file_slug + "/user_segment_splits/";
+        let r = new XMLHttpRequest();
+        r.open('POST', url);
+        r.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        r.addEventListener("load", (event) => {
+            instance.splitted_data = JSON.parse(r.responseText);
+            instance.draw_gpx_track_lines_map();
+
+        });
+        r.send(JSON.stringify({"segment_pk": this.segment_pk}));
+    }
+    upload_data(event) {
+        let spinner = document.createElement("div");
+        spinner.classList.add("spinner-border", "text-primary");
+        spinner.role = "status";
+        this.split_track_graph_legend_text.appendChild(spinner);
+        event.target.disabled = true;
+        var url = "/api/gpxfile/" + this.gpx_file_slug + "/user_segment_split/";
+        var r = new XMLHttpRequest();
+        r.open('POST', url);
+        r.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        r.addEventListener("load", (event) => {
+            location.reload();
+        });
+        r.send(JSON.stringify({"segment_pk": this.segment_pk, "splitted_data": this.splitted_data}));
     }
     draw_gpx_track_lines_map() {
         this.leaflet_layer_group.remove();
@@ -345,7 +390,6 @@ export default  class TrackSplitGraph {
             this.xAxisLine.attr("x", xpos);
             this.xAxisLine.attr("height", this.height);
             this.draw_tooltip(xpos, this.segment.points[i]);
-
         }
     }
     movement_click(event) {      
@@ -376,6 +420,18 @@ export default  class TrackSplitGraph {
         this.draw_legend_text();
     }
     async graph() {
+        this.width = parseInt(L.DomUtil.get(this.tab_element_name).clientWidth) - this.margin.right - this.margin.left;
+        this.height = 200 - this.margin.top - this.margin.bottom;
+
+        this.svg = d3.select("#" + this.tab_element_name).append("svg")
+            .attr("width", this.width + this.margin.right + this.margin.left)
+            .attr("height", this.height + this.margin.top + this.margin.bottom)
+            .append("g")
+            .attr("transform",`translate(${this.margin.left},${this.margin.top})`);
+
+        this.background = this.svg.append("g").attr("class", "group1");
+        this.foreground = this.svg.append("g").attr("class", "group2");
+
         this.x = d3.scaleLinear();
         this.y = d3.scaleLinear();
 

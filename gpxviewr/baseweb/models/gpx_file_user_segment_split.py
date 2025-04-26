@@ -77,63 +77,6 @@ class GPXFileUserSegmentSplit(TimeStampedModel):
         return gpx.to_xml()
 
     @staticmethod
-    def add_segment(gpx_file, segment_pk, point_number):
-        from baseweb.models import GPXTrackSegmentPoint
-
-        point = GPXTrackSegmentPoint.objects.get(
-            segment__id=segment_pk,
-            segment__track__gpx_file=gpx_file,
-            number=point_number,
-        )
-        update_splits = []
-
-        # check if there are any splits?
-        splits = GPXFileUserSegmentSplit.objects.filter(
-            gpx_file=gpx_file,
-            point_start__segment_id=segment_pk,
-
-        )
-        if len(splits) == 0:
-            s = GPXFileUserSegmentSplit(
-                gpx_file=gpx_file,
-                point_start=point.segment.points.all().first(),
-                point_end=point,
-            )
-            s.save()
-            update_splits.append(s)
-            s = GPXFileUserSegmentSplit(
-                gpx_file=gpx_file,
-                point_start=point,
-                point_end=point.segment.points.all().last(),
-            )
-            s.save()
-            update_splits.append(s)
-        else:
-            # we go back on the track and try to find a split start
-            start = GPXFileUserSegmentSplit.objects.filter(
-                    gpx_file=gpx_file,
-                    point_start__segment_id=segment_pk,
-                    point_start__number__lt=point.number,
-            ).order_by('point_start__number').last()
-
-            if start:
-                end_point = start.point_end
-
-                start.point_end = point
-                start.save()
-                update_splits.append(start)
-
-                s = GPXFileUserSegmentSplit(
-                    gpx_file=gpx_file,
-                    point_start=point,
-                    point_end=end_point,
-                )
-                s.save()
-                update_splits.append(s)
-
-        GPXFileUserSegmentSplit.update_segments(update_splits, gpx_file=gpx_file, segment_pk=segment_pk)
-
-    @staticmethod
     def update_segments(update_splits, gpx_file, segment_pk):
         from baseweb.models import GPXTrackSegmentPoint
 

@@ -10,7 +10,6 @@ import * as bootstrap from "bootstrap";
 import "./leaflet.almostover";
 import SplitTrackMenu from "./SplitTrackMenu";
 import Waypoints from "./Waypoints";
-import UserSegmentSplit from "./UserSegmentSplit";
 import TrackSegment from "./TrackSegment";
 import MapQueryGoogleMaps from "./MapQueryGoogleMaps";
 import MapQueryOpenStreetMap from "./MapQueryOpenStreetMap";
@@ -87,6 +86,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 data.forEach(track => {
                     track.segments.forEach(segment => {
                         var f = new TrackSplitGraph(gpx_file_slug, segment.segment_id, map, segment, track.name);
+                        f.download_data();
                     });
                 });
             });
@@ -102,8 +102,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
         let map_query_google_maps = new MapQueryGoogleMaps(map);  
         let map_query_openstreetmap = new MapQueryOpenStreetMap(map);
-
-        let user_segment_split = new UserSegmentSplit(gpx_file_slug, map);
 
         let gpx_file_status = new GPXFileStatus(map, gpx_file_slug, waypoints);
         gpx_file_status.get_status();
