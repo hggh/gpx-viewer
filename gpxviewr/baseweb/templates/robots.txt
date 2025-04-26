@@ -2,3 +2,4 @@ User-agent: *
 Disallow: /gpxtrack
 Disallow: /api
 Disallow: /static
+Disallow: /impressum

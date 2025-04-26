@@ -40,6 +40,7 @@ class StatusView(View):
 
 class RobotsTxtView(TemplateView):
     template_name = 'robots.txt'
+    content_type = 'text/plain'
 
 
 class IndexView(CreateView):

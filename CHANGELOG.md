@@ -1,5 +1,11 @@
 # CHANGELOG
 
+### 26. April 2025
+  * Complete new Track Splitting with JavaScript in Realtime with preview on Map
+  * fix robots.txt
+  * show split button only on TRack View
+  * hide text on button on smaller screens
+
 ### 23. April 2025
   * update README
   * fuel station change around_max to 1000
