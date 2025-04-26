@@ -46,22 +46,14 @@
 {% endblock%}
 
 {% block sidebarright %}
-<script>
-    function user_segment_split_delete(button, user_segment_pk) {
-        var r = new XMLHttpRequest();
-        r.open('POST', "/api/gpxfile/{{ object.slug }}/user_segment_split_delete/");
-        r.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-        r.addEventListener('load', function(event) {
-            location.reload();
-        });
-        r.send(JSON.stringify({'user_segment_pk': user_segment_pk}));
-    }
-</script>
 <div>
-    <div class="offcanvas-body">
+    <div class="offcanvas-body" style="padding-top:0px;">
     <small>
     You can split your track into segments to download it to your garmin or plan your tour.
     </small>
+    <div>
+        <button id="track_split_edit" type="button" class="btn btn-info">Create/Edit Split</button>
+    </div>
     <br/>
         <div id="sidebar_split_track">
         </div>
@@ -114,6 +106,10 @@
     </div>
 
     <div id="map" style="width: 100%; height: 200px;"></div>
+    <div id="split_track_graph" style="width:100%; height: 200px;" class="collapse"></div>
+    <div id="split_track_graph_legend" style="width: 100%; height: 100px;" class="collapse"></div>
+    <div id="split_track_graph_legend_text" style="width: 100%; height: 100px;" class="collapse"></div>
+
 
     <div id="map_query_google_maps_info_message_box" class="mt-4 p-5 bg-primary text-white rounded flyover flyover-centered">
         Click on map to open this location in Google Maps.

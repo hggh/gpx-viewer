@@ -20,6 +20,16 @@ html, body {
 .listening-rect {
     fill: transparent;
 }
+.splitxAxisLine {
+    color: blue;
+    fill: blue;
+}
+.split-graph-line-left {
+    fill: red;
+}
+.split-graph-line-right {
+    fill: blueviolet;
+}
 .mouse-text {
     fill: red;
 }

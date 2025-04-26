@@ -149,22 +149,13 @@ class GPXFile(TimeStampedModel):
         data = []
 
         for s in segments:
-            segment = {
-                "name": s.name,
-                "id": s.pk,
-                "segment_pk": s.point_start.segment.id,
-                "start": {
-                    "number": s.point_start.number,
-                    "lat": float(s.point_start.location.x),
-                    "lon": float(s.point_start.location.y),
-                },
-                "end": {
-                    "number": s.point_end.number,
-                    "lat": float(s.point_end.location.x),
-                    "lon": float(s.point_end.location.y),
-                }
-            }
-            data.append(segment)
+            data.append({
+                'lat': s.point_start.location.x,
+                'lon': s.point_start.location.y,
+                'distance': s.point_start.distance,
+                'elevation': s.point_start.elevation,
+                'point_number': s.point_start.number,
+            })
 
         return data
 
