@@ -1,4 +1,10 @@
 {% load static %}
+{% if object.is_single_segement_and_single_track is False %}
+<div class="alert alert-danger" role="alert">
+    Track Splitting works better if GPX File contains only one Track with one Segment!
+</div>
+{% endif %}
+
 <table class="table">
     <thead>
       <tr>

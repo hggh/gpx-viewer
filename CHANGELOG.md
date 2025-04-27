@@ -5,6 +5,7 @@
   * fix robots.txt
   * show split button only on TRack View
   * hide text on button on smaller screens
+  * optimize layout for smaller screens
 
 ### 23. April 2025
   * update README

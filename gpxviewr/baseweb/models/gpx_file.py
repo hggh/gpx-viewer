@@ -79,6 +79,14 @@ class GPXFile(TimeStampedModel):
 
         return super().save(**kwargs)
 
+    def is_single_segement_and_single_track(self):
+        from baseweb.models import GPXTrackSegment
+        if self.tracks.all().count() != 1:
+            return False
+        if GPXTrackSegment.objects.all().filter(track__gpx_file=self).count() != 1:
+            return False
+        return True
+
     def is_demo_track(self) -> bool:
         return self.slug == settings.DEMO_TRACK_SLUG
 
