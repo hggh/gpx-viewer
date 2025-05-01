@@ -41,7 +41,10 @@ export default  class TrackSplitGraph {
             this.editing = true;
             this.graph();
             this.draw_legend_text();
-            this.draw_split_lines(); 
+            this.draw_split_lines();
+
+            this._marker = L.circleMarker([0, 0], {'color': '#0000ff'}).addTo(this.map);
+            this._marker.setRadius(7);
         }
     }
     draw_tooltip(xpos, point) {
@@ -391,6 +394,7 @@ export default  class TrackSplitGraph {
             this.xAxisLine.attr("height", this.height);
             this.draw_tooltip(xpos, this.segment.points[i]);
         }
+        this._marker.setLatLng([this.segment.points[i].lat, this.segment.points[i].lon]);
     }
     movement_click(event) {      
         this.split_lines[this.moving_key].on("click", null);

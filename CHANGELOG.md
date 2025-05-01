@@ -1,5 +1,8 @@
 # CHANGELOG
 
+### 1. May 2025
+  * add blue marker for splitting on track
+
 ### 26. April 2025
   * Complete new Track Splitting with JavaScript in Realtime with preview on Map
   * fix robots.txt
