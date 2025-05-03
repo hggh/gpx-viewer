@@ -87,14 +87,14 @@
 {% block content %}
 {% load static %}
 <div class="collapse" id="gpx_file_slug" data-slug="{{ object.slug }}"></div>
-<main class="col ps-md-2 pt-2">
-    <div class="page-header pt-3">
+<main class="col">
+    <div class="page-header">
         {% if object.get_job_status == 'error' %}
-            <div class="alert alert-danger" role="alert">
+            <div class="alert alert-danger mt-2" role="alert">
                 Job is in status error - ask on <a href="https://github.com/hggh/gpx-viewer/issues" target="_blank">GitHub</a> for help! :-(
             </div>
         {% endif %}
-        <div id="job_status_info" class="alert alert-warning collapse" role="alert">
+        <div id="job_status_info" class="alert alert-warning collapse mt-2" role="alert">
             <div class="spinner-border text-primary" role="status"></div>
             <span id="job_status_info_box" style="padding-left:10px;">wating for job status</span>
         </div>

@@ -73,6 +73,7 @@ export default  class TrackSplitGraph {
                 this.yAxisLine.attr("width", xpos - start_point);
 
                 this.split_kilometer_text_left.text(Math.round((point.distance - left_split.distance) / 1000) + "km")
+                        .style("opacity", 1)
                         .attr("y", this.height + 45)
                         .attr("x", start_point);
             }
@@ -83,6 +84,7 @@ export default  class TrackSplitGraph {
                 this.yAxisLineRight.attr("width", this.x(next.distance / 1000) - xpos);
 
                 this.split_kilometer_text_right.text(Math.round((next.distance - point.distance) / 1000) + "km")
+                        .style("opacity", 1)
                         .attr("y", this.height + 45)
                         .attr("x", this.x(next.distance / 1000) - 20);
             }
@@ -439,15 +441,13 @@ export default  class TrackSplitGraph {
         this.x = d3.scaleLinear();
         this.y = d3.scaleLinear();
 
-        this.split_kilometer_text_right = this.foreground.append("g")
-            .style("opacity", 1)
-            .append("text")
+        this.split_kilometer_text_right = this.foreground.append("text")
+            .attr("class", "kilometer-text-right")
             .style("opacity", 0)
             .attr("text-anchor", "right");
 
-        this.split_kilometer_text_left = this.foreground.append("g")
-            .style("opacity", 1)
-            .append("text")
+        this.split_kilometer_text_left = this.foreground.append("text")
+            .attr("class", "kilometer-text-left")
             .style("opacity", 0)
             .attr("text-anchor", "right");
 

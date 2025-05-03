@@ -1,5 +1,9 @@
 # CHANGELOG
 
+### 3. May 2025
+  * Optimize Layout: Map is no without padding left,right
+  * Fix Split Track with Chrome
+
 ### 1. May 2025
   * add blue marker for splitting on track
 

@@ -33,6 +33,12 @@ html, body {
 .mouse-text {
     fill: red;
 }
+.kilometer-text-left {
+    fill: red;
+}
+.kilometer-text-right {
+    fill: blueviolet;
+}
 .map_elevation {
     background-color: white;
     border-radius: 7px;
