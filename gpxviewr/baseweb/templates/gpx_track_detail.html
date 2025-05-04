@@ -17,6 +17,9 @@
         </select>
     </div>
 
+    <div id="sidebarleft_waypoint_switches" class="list-group-item border-end-0 d-inline-block">
+    </div>
+
     <div class="list-group-item border-end-0 d-inline-block">
         <span>Download Infomation as GPX Waypoint Track</span>
             <form method="POST" action="/gpxtrack/{{object.slug}}/download">
@@ -62,7 +65,7 @@
 {% endblock%}
 
 {% block html_title %}
-<span class="d-md-none">{{ object.name|truncatechars:25 }}</span>
+<span class="d-md-none">{{ object.name|truncatechars:20 }}</span>
 <span clasS="d-none d-md-inline">{{ object.name }}</span>
 {% endblock %}
 
@@ -124,7 +127,7 @@
     </div>
 
     <div id="map" style="width: 100%; height: 200px;"></div>
-    <div id="split_track_graph" style="width:100%; height: 200px;" class="collapse"></div>
+    <div id="split_track_graph" style="width:100%; height: 150px;" class="collapse"></div>
     <div id="split_track_graph_legend" style="width: 100%; height: 100px;" class="collapse"></div>
     <div id="split_track_graph_legend_text" style="width: 100%; height: 100px;" class="collapse"></div>
 

@@ -36,7 +36,7 @@ export default  class TrackSplitGraph {
             DomUtil.get(this.tab_element_name).classList.remove("collapse");
             this.split_track_graph_legend.classList.remove("collapse");
             this.split_track_graph_legend_text.classList.remove("collapse");
-            document.getElementById('map').style.height = (this.map_height - 280) + "px";
+            document.getElementById('map').style.height = (this.map_height - 300) + "px";
 
             this.editing = true;
             this.graph();
@@ -168,9 +168,9 @@ export default  class TrackSplitGraph {
                 .attr("x", xpos);
 
             let legend = document.createElement("div");
-            let margin_top = "10px";
+            let margin_top = "5px";
             if (key % 2 == 1) {
-                margin_top = "40px";
+                margin_top = "10px";
             }
             legend.setAttribute("style", "position:absolute;left:"+ (xpos + this.margin.left) + "px;margin-top:"+ margin_top + ";");
 
@@ -281,7 +281,7 @@ export default  class TrackSplitGraph {
 
             let legend_text = document.createElement("div");
             let content = "<small>" + kilometer + "km<br/>"
-            content += '<img src="/static/bootstrap-icons-1.11.2/arrow-up-right.svg" title="Up"/> ' + Math.round(Math.abs(segment_total_ascent)) + "m<br/>";
+            content += '<img  src="/static/bootstrap-icons-1.11.2/arrow-up-right.svg" title="Up"/> ' + Math.round(Math.abs(segment_total_ascent)) + "m<br/>";
             content += '<img src="/static/bootstrap-icons-1.11.2/arrow-down-right.svg" title="Down"/> ' + Math.round(Math.abs(segment_total_descent)) + "m";
             content += "</small>";
             
@@ -293,6 +293,7 @@ export default  class TrackSplitGraph {
 
         let button_upload_div = document.createElement("div");
         button_upload_div.style = "padding-top:80px;"
+        button_upload_div.classList.add("container", "text-center");
         let button_upload = document.createElement("button");
         button_upload.classList.add("btn", "btn-success");
         button_upload.type = "button";
@@ -427,7 +428,7 @@ export default  class TrackSplitGraph {
     }
     async graph() {
         this.width = parseInt(L.DomUtil.get(this.tab_element_name).clientWidth) - this.margin.right - this.margin.left;
-        this.height = 200 - this.margin.top - this.margin.bottom;
+        this.height = 150 - this.margin.top - this.margin.bottom;
 
         this.svg = d3.select("#" + this.tab_element_name).append("svg")
             .attr("width", this.width + this.margin.right + this.margin.left)

@@ -1,5 +1,9 @@
 # CHANGELOG
 
+### X. May 2025
+  * Update django-extensions, celery
+  * allow to show/hide POIs inside Map
+
 ### 3. May 2025
   * Optimize Layout: Map is no without padding left,right
   * Fix Split Track with Chrome
