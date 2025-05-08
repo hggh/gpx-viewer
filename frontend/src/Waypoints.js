@@ -26,46 +26,44 @@ export default class Waypoints {
         this.sidebarleft_waypoint_switches.innerHTML = "";
 
         this.data.waypoint_types.forEach((waypoint_type) => {
-            let div = document.createElement("div");
-            div.classList.add("form-check", "form-switch", "form-check-inline");
-
-            let input = document.createElement("input");
-            input.classList.add("form-check-input");
-            input.type = "checkbox";
-            input.role = "switch";
-            input.checked = true;
-            input.id = "waypoint_type_switch_" + waypoint_type.html_id;
-            input.dataset.waypointName = waypoint_type.name;
-            if (this.leaflet_layers.has(waypoint_type.name) == false) {
-                input.disabled = true;
-                input.checked = false;
-            }
-            div.appendChild(input);
-
-            let label = document.createElement("label");
-            label.classList.add("form-check-label");
-            label.for = "waypoint_type_switch_" + waypoint_type.html_id;
-            label.innerHTML = waypoint_type.name;
-            div.appendChild(label);
 
             if (this.leaflet_layers.has(waypoint_type.name) == true) {
-                input.addEventListener("click", this.waypoint_show_hide.bind(this));
-            }
+                let div = document.createElement("div");
+                div.classList.add("form-check", "form-switch", "form-check-inline");
 
-            this.sidebarleft_waypoint_switches.appendChild(div);
+                let input = document.createElement("input");
+                input.classList.add("form-check-input");
+                input.type = "checkbox";
+                input.role = "switch";
+                input.checked = true;
+                input.id = "waypoint_type_switch_" + waypoint_type.html_id;
+                input.dataset.waypointName = waypoint_type.name;
+                div.appendChild(input);
+
+                let label = document.createElement("label");
+                label.classList.add("form-check-label");
+                label.for = "waypoint_type_switch_" + waypoint_type.html_id;
+                label.innerHTML = waypoint_type.name;
+                div.appendChild(label);
+
+                input.addEventListener("click", this.waypoint_show_hide.bind(this));
+
+                this.sidebarleft_waypoint_switches.appendChild(div);
+            }
         });
     }
     waypoint_show_hide(event) {
         let layergroup = this.leaflet_layers.get(event.target.dataset.waypointName);
 
-        if (event.target.checked == true) {
-            layergroup.layer.addTo(this.map);
-        }
-        else {
-            layergroup.layer.removeFrom(this.map);
+        if (layergroup) {
+            if (event.target.checked == true) {
+                layergroup.layer.addTo(this.map);
+            }
+            else {
+                layergroup.layer.removeFrom(this.map);
+            }
         }
     }
-
     show_route_to(waypoint_pk) {
         var instance = this;
         var url = '/api/gpxfile/' + this.gpx_file_slug + '/geojson_track_to_waypoint/';
