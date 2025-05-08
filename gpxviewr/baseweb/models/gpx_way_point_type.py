@@ -7,6 +7,7 @@ class GPXWayPointType(models.Model):
     osm_name = models.TextField(max_length=100, null=False, blank=False)
     osm_value = models.TextField(max_length=100, null=False, blank=False)
     osm_query_type = models.CharField(max_length=10, null=False, blank=False, default='=')
+    osm_extra_query = models.CharField(max_length=100, null=True, blank=True, default='')
     around = models.IntegerField(null=False, blank=False)
     around_max = models.IntegerField(null=False, blank=False)
     around_duplicate = models.IntegerField(null=False, blank=False, default=3000)

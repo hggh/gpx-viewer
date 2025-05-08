@@ -105,4 +105,18 @@
     marker_filename: marker_bicycle.svg
     checked: false
     generate_track_to_waypoint: true
-   
+- model: baseweb.GPXWayPointType
+  pk: 9
+  fields:
+    name: e bicycles charging station
+    gpx_sym_name: Light
+    osm_name: amenity
+    osm_value: charging_station
+    osm_query_type: "="
+    osm_extra_query: '["bicycle" = "yes"]["access" = "yes"]'
+    around: 1000
+    around_max: 10000
+    around_duplicate: 4000
+    marker_filename: marker_charging_station.svg
+    checked: false
+    generate_track_to_waypoint: false

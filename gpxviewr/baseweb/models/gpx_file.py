@@ -214,7 +214,7 @@ class GPXFile(TimeStampedModel):
         overpass_query = f"""
             [out:json][timeout: 500];
             (
-                nwr["{point_type.osm_name}" {point_type.osm_query_type} "{point_type.osm_value}"](around:{around_meters},{track_latlong_flatten});
+                nwr["{point_type.osm_name}" {point_type.osm_query_type} "{point_type.osm_value}"]{point_type.osm_extra_query}(around:{around_meters},{track_latlong_flatten});
             );
             out center qt;
         """

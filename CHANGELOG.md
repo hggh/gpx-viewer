@@ -1,8 +1,11 @@
 # CHANGELOG
 
-### X. May 2025
+### 8. May 2025
   * Update django-extensions, celery
+  * Update Django
   * allow to show/hide POIs inside Map
+  * allow to query e bike charging stations: access = yes,amenity = charging_station,bicycle = yes
+  * load fixtures on start of application
 
 ### 3. May 2025
   * Optimize Layout: Map is no without padding left,right
