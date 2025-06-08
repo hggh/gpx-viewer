@@ -1,0 +1,24 @@
+{% extends "gcollection_base.html" %}
+{% load static %}
+
+{% block html_title %}
+<span class="d-md-none">GPX Collections</span>
+<span clasS="d-none d-md-inline">GPX Collections</span>
+{% endblock %}
+
+{% block content %}
+{% load static %}
+<main class="col">
+  <div class="container-fluid pt-2">
+    <div class="container-md">
+      <form method="post">
+        {% csrf_token %}
+        {{ form }}
+        <p class="pt-1">
+          <button type="submit" class="btn btn-primary">Create new Collection</button>
+        </p>
+      </form>
+    </div
+  </div>
+</main>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "gcollection_base.html" %}
+{% load static %}
+
+{% block html_title %}
+GPX Collections Viewer
+{% endblock %}
+
+{% block content %}
+{% load static %}
+<main class="col">
+    <div class="container pt-4">
+      <h2>Login to GPX Collections</h2>
+      <form method="post">
+        {% csrf_token %}
+        {{ form }}
+        <button type="submit" class="btn btn-primary">Log In</button>
+      </form>
+    </div>
+</main>
+{% endblock %}

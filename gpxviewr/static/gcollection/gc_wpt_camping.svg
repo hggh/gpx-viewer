@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="7.9375mm"
+   height="9.260417mm"
+   viewBox="0 0 7.9375 9.260417"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.3.2 (091e20e, 2023-11-25)"
+   sodipodi:docname="gc_wpt_camping.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     inkscape:zoom="6.2929854"
+     inkscape:cx="41.23639"
+     inkscape:cy="7.5480868"
+     inkscape:window-width="1920"
+     inkscape:window-height="1131"
+     inkscape:window-x="0"
+     inkscape:window-y="32"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs1" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       id="path1"
+       style="fill:none;stroke:#ff0100;stroke-width:0.465;stroke-linecap:square;stroke-dasharray:none;stroke-opacity:1;paint-order:fill markers stroke"
+       d="M 7.9375,4.630209 C 7.9375,2.073015 6.160631,0 3.96875,0 1.77687,0 0,2.073015 0,4.630209 l 3.968748,4.630208 z"
+       sodipodi:nodetypes="cscc" />
+    <path
+       d="M 5.820833,5 4.233333,2.089583 4.497917,1.295833 H 4.233333 L 3.96875,1.825 3.704166,1.295833 H 3.439583 L 3.704166,2.089583 2.116666,5 Z M 3.96875,3.147916 4.7625,4.735417 H 3.175 Z"
+       style="fill:#ff0000;fill-rule:evenodd;stroke-width:0.264583;stroke-dasharray:none"
+       id="path1-2" />
+  </g>
+</svg>

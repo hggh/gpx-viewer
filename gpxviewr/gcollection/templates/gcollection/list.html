@@ -1,0 +1,30 @@
+{% extends "gcollection_base.html" %}
+{% load static %}
+
+{% block html_title %}
+<span class="d-md-none">GPX Collections</span>
+<span clasS="d-none d-md-inline">GPX Collections</span>
+{% endblock %}
+
+{% block content %}
+{% load static %}
+<main class="col">
+    <div class="container-fluid pt-2">
+        <div class="container-md">
+            <p>
+                <a href="{% url 'gcollection_create' %}">
+                <button type="button" class="btn btn-primary">add new collection</button>
+                </a>
+            </p>
+
+            {% for object in object_list %}
+                <div class="row">
+                    <div class="col">{{ object.date|date:'Y' }}</div>
+                    <div class="col"><a href="{% url 'gcollection_detail' object.pk %}"> {{object}}</a></div>
+                    <div class="col">{{ object.get_human_distance }}</div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</main>
+{% endblock %}

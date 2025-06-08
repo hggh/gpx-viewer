@@ -1,0 +1,11 @@
+---
+- model: gcollection.GCollectionWayPointType
+  pk: 1
+  fields:
+    name: Hotel
+    image_name: gc_wpt_hotel.svg
+- model: gcollection.GCollectionWayPointType
+  pk: 2
+  fields:
+    name: Camping
+    image_name: gc_wpt_camping.svg

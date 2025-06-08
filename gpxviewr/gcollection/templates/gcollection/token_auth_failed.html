@@ -1,0 +1,21 @@
+{% extends "gcollection_base.html" %}
+{% load static %}
+
+{% block html_title %}
+GPX Collections Viewer
+{% endblock %}
+
+{% block content %}
+{% load static %}
+
+<main class="col">
+    <div class="container pt-4">
+        <div class="alert alert-danger" role="alert">
+            Your token is no longer valid or is not known.
+        </div>
+        <div class="container pt-3">
+            You can <a href="{% url 'login' %}">login</a> and manage your own GPX Track Collections.
+        </div>
+    </div>
+</main>
+{% endblock %}

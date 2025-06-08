@@ -18,6 +18,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework.routers import DefaultRouter
+from django.contrib.auth import views as auth_views
 
 from baseweb.views import (
     StatusView,
@@ -37,11 +38,35 @@ from baseweb.viewset import (
     GPXWayPointTypeViewSet,
 )
 
+from gcollection.views import (
+    GCollectionDetailView,
+    GCollectionDetailOGImageView,
+    GCollectionDetailTokenAuthFailedView,
+    GCollectionListView,
+    GCollectionCreateView,
+    GCollectionShareDeleteView,
+    GCollectionShareCreateView,
+    GCollectionGPXFileDownloadView,
+    GCollectionLogoutView,
+    GCollectionLoginView,
+    GCollectionProfileView,
+)
+
+from gcollection.viewset import (
+    GCollectionViewSet,
+    GCollectionGPXFileViewSet,
+    GCollectionWaypointViewSet,
+)
+
 router = DefaultRouter()
 router.register(r'gpxfile', GPXFileViewSet, basename='gpxfile')
 router.register(r'gpxwaypointtype', GPXWayPointTypeViewSet)
+router.register(r'gc', GCollectionViewSet)
+router.register(r'gc-gpxfile', GCollectionGPXFileViewSet)
+router.register(r'gc-waypoint', GCollectionWaypointViewSet)
 
 urlpatterns = [
+    path('social/', include('social_django.urls', namespace="social")),
     path('api/', include(router.urls)),
     path('robots.txt', RobotsTxtView.as_view(), name='robots'),
     path('status', StatusView.as_view(), name='status'),
@@ -53,4 +78,15 @@ urlpatterns = [
     path('gpxtrack/<slug:slug>/download_gpx_track_to_waypoint/<int:pk>', GPXWayPointPathFromTrackDownloadView.as_view()),
     path('gpxtrack/<slug:slug>/user_segment_split_download/<int:pk>', GPXFileUserSegmentSplitDownloadView.as_view()),
     path('waypoint/<int:pk>/update', GPXTrackWaypointUpdateView.as_view(), name='waypoint-update'),
+    path('gc/token-auth-failed', GCollectionDetailTokenAuthFailedView.as_view(), name='gcollection_token_failed'),
+    path('gc/', GCollectionListView.as_view(), name='gcollection_list'),
+    path('gc/<int:pk>', GCollectionDetailView.as_view(), name='gcollection_detail'),
+    path('gc/<int:pk>/og_image.jpg', GCollectionDetailOGImageView.as_view(), name='gcollection_detail_og_image'),
+    path('gc/add', GCollectionCreateView.as_view(), name='gcollection_create'),
+    path('gc_share/<int:pk>/delete', GCollectionShareDeleteView.as_view(), name='gc_share_delete'),
+    path('gc_share/add', GCollectionShareCreateView.as_view(), name='gc_share_create'),
+    path('accounts/login/', GCollectionLoginView.as_view(), name='login'),
+    path('accounts/logout/', GCollectionLogoutView.as_view(), name='logout'),
+    path('accounts/profile/', GCollectionProfileView.as_view(), name='profile'),
+    path('gc_gpx_file/<int:pk>/download', GCollectionGPXFileDownloadView.as_view(), name="gc_gpx_file_download"),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

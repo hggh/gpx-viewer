@@ -20,6 +20,9 @@ geojson==3.2.0
 djangorestframework==3.16.0
 django-cors-headers==4.7.0
 
+social-auth-app-django~=5.4.3
+
 geopy
+smopy
 
 gunicorn

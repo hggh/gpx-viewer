@@ -6,6 +6,7 @@ import "./style.css";
 import L from "leaflet";
 import * as d3 from "d3";
 import * as bootstrap from "bootstrap";
+import Cookies from 'js-cookie';
 
 import "./leaflet.almostover";
 import SplitTrackMenu from "./SplitTrackMenu";
@@ -16,9 +17,151 @@ import MapQueryOpenStreetMap from "./MapQueryOpenStreetMap";
 import GPXFileStatus from "./GPXFileStatus";
 import GPXWayPointTypeStorage from "./GPXWayPointTypeStorage";
 import TrackSplitGraph from "./TrackSplitGraph";
+import GCollectionGPXFile from "./GCollectionGPXFile";
+import GCollectionWaypoint from "./GCollectionWaypoint";
 
 
 document.addEventListener("DOMContentLoaded", function() {
+    if (document.getElementById("gcollection_pk")) {
+        const gcollection_pk = document.getElementById("gcollection_pk").dataset.pk;
+        document.getElementById('map').style.height = window.innerHeight - 120 + "px";
+        const map = L.map('map').setView([51.505, 10.09], 4);
+        const tiles = L.tileLayer('https://tile.openstreetmap.de/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
+
+        if (document.getElementById("modal_gc_share")) {
+            if (window.location.href.indexOf("#share") > -1) {
+                let b = new bootstrap.Modal(document.getElementById("modal_gc_share"));
+                b.toggle();
+            }
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        let url = '/api/gc/' + gcollection_pk;
+        if (urlParams.has('token')) {
+            url += "?token=" + urlParams.get('token');
+        }
+
+        function gc_gpx_file_upload_wait(gc_gpx_file_id) {
+            let timer = setTimeout(gc_gpx_file_upload_wait, 1500, gc_gpx_file_id);
+
+            let r = new XMLHttpRequest();
+            r.open('GET', "/api/gc-gpxfile/" + gc_gpx_file_id + "/");
+            r.addEventListener("load", function() {
+                let data = JSON.parse(r.responseText);
+
+                if (data.job_status >= 10) {
+                    clearTimeout(timer);
+                    location.reload();
+                }
+            });
+            r.send();
+        }
+
+        document.getElementById("modal_gc_gpx_file_add_button").addEventListener("click", (event) => {
+            let button = event.currentTarget;
+            button.disabled = true;
+
+            let formdata = new FormData();
+            let gcollection_id_field = document.getElementById("gc_gpx_file_add_collection_id");
+            let gc_gpx_file_name_field = document.getElementById("gc_gpx_file_name");
+            let gc_gpx_file_file_field = document.getElementById("gc_gpx_file_file");
+            let modal_gc_gpx_file_upload = document.getElementById("modal_gc_gpx_file_upload");
+            let gc_gpx_file_date_field = document.getElementById("gc_gpx_file_date");
+
+            modal_gc_gpx_file_upload.innerHTML = '<div class="spinner-border text-primary" role="status"></div>';
+
+            formdata.append("gcollection", gcollection_id_field.value);
+            formdata.append("name", gc_gpx_file_name_field.value);
+            formdata.append("file", gc_gpx_file_file_field.files[0]);
+            formdata.append("date", gc_gpx_file_date_field.value);
+
+            let r = new XMLHttpRequest();
+            r.open('POST', "/api/gc-gpxfile/");
+            r.setRequestHeader("X-CSRFToken", Cookies.get('csrftoken'));
+            r.addEventListener("load", function() {
+                let data = JSON.parse(r.responseText);
+                if (r.status == 200) {
+                    document.getElementById("form_gc_gpx_file_add").reset();
+
+                    gc_gpx_file_upload_wait(data.id);
+                }
+                else {
+                    if (data.errors) {
+                        button.disabled = false;
+                        modal_gc_gpx_file_upload.innerHTML = data.errors;
+                        
+                    }
+                }
+            });
+            r.send(formdata);
+
+        });
+
+        try {
+            d3.json(url).then(function (data) {
+                data.gpx_files.forEach(gpx_file_pk => {
+                    new GCollectionGPXFile(map, gcollection_pk, gpx_file_pk);
+
+                });
+
+                new GCollectionWaypoint(map, gcollection_pk, data.waypoints);
+
+                if (data.gpx_files.length == 0) {
+                    let m = new bootstrap.Modal(document.getElementById("modal_gc_gpx_file_add"));
+                    m.toggle();
+                }
+
+                if (data.bounds) {
+                    try {
+                        map.fitBounds(data.bounds);
+                    }
+                    catch(err) {
+
+                    }
+                }
+                
+            });
+        } catch (error) {
+            console.log(error);
+        }
+
+        document.querySelectorAll('.gc-gpx-file-delete').forEach((box) => {
+            box.addEventListener("click", (event) => {
+                let t = event.currentTarget;
+
+                let gpx_file_pk = t.dataset.id;
+                if (gpx_file_pk) {
+                    document.getElementById("modal_delete_title").innerHTML = t.dataset.name;
+                    let myModal = new bootstrap.Modal(document.getElementById("modal_delete"));
+                    myModal.toggle()
+
+                    let b = document.getElementById("modal_delete_button");
+                    b.addEventListener("click", (event) => {
+                        b.disabled = true;
+                        document.getElementById("modal_delete_button_close").disabled = true;
+                        document.getElementById("modal_delete_body").innerHTML = '<div class="spinner-border text-primary" role="status"></div>';
+
+                        let r = new XMLHttpRequest();
+                        r.open('DELETE', "/api/gc-gpxfile/" + gpx_file_pk + "/");
+                        r.setRequestHeader("X-CSRFToken", Cookies.get('csrftoken'));
+                        r.addEventListener("load", function() {
+                            if (this.status == 204) {
+                                location.reload();
+                            }
+                            else {
+                                document.getElementById("modal_delete_body").innerHTML = this.responseText;
+                            }
+                        });
+                        r.send();
+                    });
+                }
+            })
+        });
+
+    }
 
     if (document.getElementById("gpx_file_slug")) {
         document.getElementById('map').style.height = window.innerHeight - 120 + "px";
