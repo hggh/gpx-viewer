@@ -29,7 +29,7 @@ export default class GCollectionWaypoint {
             });
 
 
-            this.waypoints.set(waypoint.id, marker)
+            //this.waypoints.set(waypoint.id, marker)
         });
         this.marker.addTo(this.layer);
     }
