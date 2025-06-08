@@ -10,6 +10,7 @@ GPX Collections Viewer
 <main class="col">
     <div class="container pt-4">
       <h2>Login to GPX Collections</h2>
+      <!-- <a href="{% url "social:begin" "github" %}">via GitHub</a> -->
       <form method="post">
         {% csrf_token %}
         {{ form }}
