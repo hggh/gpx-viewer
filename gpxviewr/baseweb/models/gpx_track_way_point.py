@@ -51,6 +51,8 @@ class GPXTrackWayPoint(TimeStampedModel):
     def get_marker_css_name(self) -> str:
         if self.is_camping_site() is True and self.get_url():
             return 'marker_camping_with_url'
+        if self.is_ebike_charging_station() is True and self.tags.get('access', '') == 'yes':
+            return 'marker_ebike_charging_access_yes'
         return 'marker_default'
 
     def get_tags(self) -> dict:
@@ -106,6 +108,11 @@ class GPXTrackWayPoint(TimeStampedModel):
             return self.tags.get('url', None)
 
         return self.tags.get('website', None)
+
+    def is_ebike_charging_station(self) -> bool:
+        if self.waypoint_type.osm_value == 'charging_station':
+            return True
+        return False
 
     def is_camping_site(self) -> bool:
         if self.waypoint_type.osm_value == 'camp_site':

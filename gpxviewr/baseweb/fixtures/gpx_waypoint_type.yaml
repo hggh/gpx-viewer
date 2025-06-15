@@ -113,7 +113,7 @@
     osm_name: amenity
     osm_value: charging_station
     osm_query_type: "="
-    osm_extra_query: '["bicycle" = "yes"]["access" = "yes"]'
+    osm_extra_query: '["bicycle" = "yes"]'
     around: 1000
     around_max: 10000
     around_duplicate: 4000

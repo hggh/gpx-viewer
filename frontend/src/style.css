@@ -12,6 +12,9 @@ html, body {
 .marker_camping_with_url {
     background-color: rgba(50%, 100%, 100%, 0.5)
 }
+.marker_ebike_charging_access_yes {
+    background-color: rgba(0, 255, 0, 0.9)
+}
 .marker_default {
 }
 .maker_edit_polyline {
