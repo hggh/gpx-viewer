@@ -1,5 +1,9 @@
 # CHANGELOG
 
+### 15. June 2025
+  * e bike charging stations: remove access = yes; if station is access=yes display it in green
+  * add bakery shops to query
+
 ### 8. May 2025
   * Update django-extensions, celery
   * Update Django
