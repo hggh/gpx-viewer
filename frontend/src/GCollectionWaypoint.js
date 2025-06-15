@@ -27,10 +27,6 @@ export default class GCollectionWaypoint {
             marker.addEventListener("popupopen", event => {
                 event.target.setPopupContent(waypoint.name);
             });
-
-
-            //this.waypoints.set(waypoint.id, marker)
         });
-        this.marker.addTo(this.layer);
     }
 }

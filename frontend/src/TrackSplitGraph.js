@@ -1,5 +1,6 @@
 import L, { DomUtil, point } from "leaflet";
 import * as d3 from "d3";
+import Cookies from "js-cookie";
 
 export default  class TrackSplitGraph {
     constructor(gpx_file_slug, segment_pk, map, segment, track_name) {
@@ -307,6 +308,7 @@ export default  class TrackSplitGraph {
         let url = "/api/gpxfile/" + this.gpx_file_slug + "/user_segment_splits/";
         let r = new XMLHttpRequest();
         r.open('POST', url);
+        r.setRequestHeader("X-CSRFToken", Cookies.get('csrftoken'));
         r.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
         r.addEventListener("load", (event) => {
             instance.splitted_data = JSON.parse(r.responseText);

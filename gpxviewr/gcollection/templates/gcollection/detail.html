@@ -17,29 +17,6 @@
 {% load static %}
 
 {% if user.is_authenticated %}
-<div class="offcanvas offcanvas-top" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="offcanvasWaypoint" aria-labelledby="offcanvasWaypointLabel">
-  <div class="offcanvas-header">
-    <h5 class="offcanvas-title" id="offcanvasWaypointLabel">Waypoints</h5>
-    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-  </div>
-  <div class="offcanvas-body small">
-    <div class="container">
-      <form action="">
-        <input type="input" class="form-control" name="" id="" placeholder="name..." required/>
-        <select class="form-select" name="" id="" aria-label="Select Waypoint Type" required>
-          {% for waypoint_type in waypoint_types %}
-          <option value="{{waypoint_type.id}}">{{ waypoint_type.name }}</option>
-          {% endfor %}
-        </select>
-        <input type="input" class="form-control" name="" id="" placeholder="Select location on map"/>
-        <button type="button" class="btn btn-success" title="Create Waypoint">Create Waypoint</button>
-      </form>
-    </div>
-  </div>
-</div>
-{% endif %}
-
-{% if user.is_authenticated %}
 <div class="modal" tabindex="-1" id="modal_gc_share">
   <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-xl">
     <div class="modal-content">
@@ -184,6 +161,23 @@
 
 <div class="collapse" id="gcollection_pk" data-pk="{{ object.pk }}"></div>
 <main class="col">
+    <div id="sidebar">
+      <h2><img src="/static/bootstrap-icons-1.11.2/balloon-fill.svg" border="0"> Waypoints</h2>
+      {% if user.is_authenticated %}
+      <form action="">
+        <input type="input" class="form-control" name="" id="" placeholder="name..." required/>
+        <select class="form-select" name="" id="" aria-label="Select Waypoint Type" required>
+          {% for waypoint_type in waypoint_types %}
+          <option value="{{waypoint_type.id}}">{{ waypoint_type.name }}</option>
+          {% endfor %}
+        </select>
+        <button type="button" class="btn btn-secondary" title="cancel creating a waypoint" id="wp_create_button_cancel">cancel</button>
+        <button type="button" class="btn btn-success" title="Create Waypoint" id="wp_create_button_create">Create Waypoint</button>
+      </form>
+      {% else %}
+      Please login to edit/add Waypoints.
+      {% endif %}
+    </div>
     <div id="map" style="width: 100%; height: 200px;"></div>
 </main>
 </div>

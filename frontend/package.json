@@ -24,6 +24,7 @@
     "d3": "^7.9.0",
     "leaflet": "^1.9.4",
     "leaflet-geometryutil": "^0.10.3",
-    "js-cookie": "^3.0.5"
+    "js-cookie": "^3.0.5",
+    "leaflet-sidebar": "^0.2.4"
   }
 }

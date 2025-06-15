@@ -1,5 +1,6 @@
 import * as d3 from "d3";
 import TrackSegment from "./TrackSegment";
+import Cookies from "js-cookie";
 
 
 export default class GPXFileStatus {
@@ -23,6 +24,7 @@ export default class GPXFileStatus {
         var r = new XMLHttpRequest();
         var instance = this;
         r.open('POST', this.get_url());
+        r.setRequestHeader("X-CSRFToken", Cookies.get('csrftoken'));
         r.addEventListener("load", function() {
             instance.status(this.responseText);
         });

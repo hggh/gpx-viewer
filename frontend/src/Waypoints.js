@@ -1,5 +1,6 @@
 import L from "leaflet";
 import * as bootstrap from "bootstrap";
+import Cookies from "js-cookie";
 
 export default class Waypoints {
     constructor(gpx_file_slug, map) {
@@ -153,6 +154,7 @@ export default class Waypoints {
         var instance = this;
         var r = new XMLHttpRequest();
         r.open('POST', this.get_url());
+        r.setRequestHeader("X-CSRFToken", Cookies.get('csrftoken'));
 
         r.addEventListener('load', function(event) {
             instance.data = JSON.parse(r.responseText);

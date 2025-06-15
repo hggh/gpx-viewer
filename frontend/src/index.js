@@ -1,5 +1,6 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'leaflet/dist/leaflet.css';
+import 'leaflet-sidebar/src/L.Control.Sidebar.css';
 import "./style.css";
 
 
@@ -7,6 +8,7 @@ import L from "leaflet";
 import * as d3 from "d3";
 import * as bootstrap from "bootstrap";
 import Cookies from 'js-cookie';
+import sidebar from "leaflet-sidebar";
 
 import "./leaflet.almostover";
 import SplitTrackMenu from "./SplitTrackMenu";
@@ -30,6 +32,49 @@ document.addEventListener("DOMContentLoaded", function() {
             maxZoom: 19,
             attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(map);
+
+        
+
+        L.Control.WayPointContainer = L.Control.extend({
+            options: {
+                position: "topleft",
+            },
+            onAdd: function(map) {
+                var sidebar = L.control.sidebar('sidebar', {
+                    position: 'left'
+                });
+                
+                map.addControl(sidebar);
+
+                let container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
+                container.title = "Manage Waypoints";
+                let button = L.DomUtil.create('a', 'leaflet-control-button', container);
+                let img = L.DomUtil.create('img', '', button);
+                img.src = '/static/bootstrap-icons-1.11.2/balloon-fill.svg';
+                
+                L.DomEvent.disableClickPropagation(button);
+                L.DomEvent.on(button, 'click', function(){
+                    console.log('click');
+                    sidebar.toggle();
+                });
+                console.log(this.options);
+
+                
+
+                return container;
+            },
+            onRemove: function(map) {},
+        });
+        let control = new L.Control.WayPointContainer({'options': {'bar': 'foo'}});
+        control.addTo(map);
+
+        if (document.getElementById("wp_create_button_create")) {
+            let wp_create_button_create = document.getElementById("wp_create_button_create");
+            wp_create_button_create.addEventListener("click", (event) => {
+                event.target;
+                document.getElementById("map").style.cursor = 'crosshair';
+            });
+        }
 
         if (document.getElementById("modal_gc_share")) {
             if (window.location.href.indexOf("#share") > -1) {
