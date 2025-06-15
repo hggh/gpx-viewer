@@ -120,3 +120,17 @@
     marker_filename: marker_charging_station.svg
     checked: false
     generate_track_to_waypoint: false
+- model: baseweb.GPXWayPointType
+  pk: 10
+  fields:
+    name: bakery
+    gpx_sym_name: bakery
+    osm_name: shop
+    osm_value: bakery
+    osm_query_type: "="
+    around: 1000
+    around_max: 10000
+    around_duplicate: 4000
+    marker_filename: marker_bakery.svg
+    checked: false
+    generate_track_to_waypoint: false
