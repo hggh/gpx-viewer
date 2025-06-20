@@ -1,4 +1,4 @@
-{% extends "gcollection_base.html" %}
+{% extends "base.html" %}
 {% load static %}
 
 {% block html_title %}
@@ -7,6 +7,29 @@ GPX Collections Viewer
 
 {% block content %}
 {% load static %}
+<div class="modal fade" id="profile_delete_modal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Delete your profile and all stored data</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>You want really delete all your data and your account?</p>
+        
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <form method="post">
+          <input type="hidden" value="{{user.id}}" name="user_id"/>
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger">Delete all your data</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
 <main class="col">
     <div class="container pt-4">
       <h2>Profile</h2>
@@ -28,12 +51,8 @@ GPX Collections Viewer
         <div class="col">{{ user.email }}</div>
       </div>
       <div class="container pt-2">
-        <form method="post">
-            <input type="hidden" value="{{user.id}}" name="user_id"/>
-            {% csrf_token %}
-            <button type="submit" class="btn btn-danger">Delete all your data</button>
-        </form>
-    </div>
+        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#profile_delete_modal">Delete your profile</button>
+      </div>
     </div>
 </main>
 {% endblock %}

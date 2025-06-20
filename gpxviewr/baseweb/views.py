@@ -1,12 +1,13 @@
 from typing import Any
 from django import http
 from django.shortcuts import redirect
+from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.contrib import messages
 from django.db import models
 from django.forms.forms import BaseForm
 from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
-from django.views.generic import TemplateView, CreateView, DetailView, FormView, UpdateView, View
+from django.views.generic import TemplateView, CreateView, DetailView, FormView, UpdateView, View, ListView
 from django.http import HttpResponse, JsonResponse, Http404
 
 from django.conf import settings
@@ -23,6 +24,7 @@ from .models import (
 from .forms import (
     GPXTrackWayPointDownload,
     GPXFileUploadForm,
+    GPXFileUpdateForm,
 )
 
 from .tasks import gpx_file_load_into_database
@@ -47,6 +49,18 @@ class IndexView(CreateView):
     template_name = 'index.html'
     model = GPXFile
     form_class = GPXFileUploadForm
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def get_initial(self):
+        initial = super().get_initial()
+
+        initial['user'] = self.request.user
+
+        return initial
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
@@ -74,9 +88,37 @@ class IndexView(CreateView):
         return super().get_success_url()
 
 
-class GPXFileDetailView(DetailView):
+class GPXFileListView(LoginRequiredMixin, ListView):
+    model = GPXFile
+    template_name = 'gpx_file_list.html'
+
+    def get_queryset(self):
+        return super().get_queryset().filter(user=self.request.user)
+
+
+class GPXFileEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    template_name = 'gpx_track_edit.html'
+    model = GPXFile
+    form_class = GPXFileUpdateForm
+
+    def test_func(self):
+        if self.request.user.is_authenticated and self.get_object().user == self.request.user:
+            return True
+        return False
+
+
+class GPXFileDetailView(UserPassesTestMixin, DetailView):
     template_name = 'gpx_track_detail.html'
     model = GPXFile
+
+    def test_func(self):
+        if self.get_object().perm_public_available is False:
+            if self.request.user and self.request.user.is_authenticated and self.get_object().user == self.request.user:
+                return True
+            else:
+                return False
+
+        return True
 
     def get(self, request, *args, **kwargs):
         try:
@@ -95,23 +137,20 @@ class GPXFileDetailView(DetailView):
         return context
 
 
-class GPXTrackWaypointUpdateView(UpdateView):
-    # FIXME hier auch auf slug prüfen
-    model = GPXTrackWayPoint
-    template_name = 'foo'
-    fields = ['hidden']
-
-    def form_valid(self, form):
-        self.object = form.save()
-        return JsonResponse({"status": "ok"})
-
-
-class GPXTrackDownloadView(FormView):
-    template_name = 'foo'
+class GPXTrackDownloadView(UserPassesTestMixin, DetailView, FormView):
+    model = GPXFile
     form_class = GPXTrackWayPointDownload
 
-    def form_valid(self, form):
+    def test_func(self):
+        if self.get_object().perm_public_available is False:
+            if self.request.user.is_authenticated and self.get_object().user == self.request.user:
+                return True
+            else:
+                return False
+        else:
+            return True
 
+    def form_valid(self, form):
         waypoint_types = form.cleaned_data.get('waypoint_types', [1, 2, 3])
         slug = form.cleaned_data.get('slug')
         self.object = GPXFile.objects.get(slug=slug)
@@ -124,24 +163,54 @@ class GPXTrackDownloadView(FormView):
         return r
 
 
-class WaypointDetailView(DetailView):
+class WaypointDetailView(UserPassesTestMixin, DetailView):
     model = GPXTrackWayPoint
     template_name = '_waypoint_detail.html'
 
+    def test_func(self):
+        self.get_object()
+        if self.gpx_file.perm_public_available is False:
+            if self.request.user.is_authenticated and self.gpx_file.user == self.request.user:
+                return True
+            else:
+                return False
+        else:
+            return True
+
     def get_object(self, queryset=None):
-        gpx_file = GPXFile.objects.get(slug=self.kwargs.get('slug', None))
-        object = GPXTrackWayPoint.objects.get(gpx_file=gpx_file, pk=self.kwargs.get('pk', None))
+        self.gpx_file = GPXFile.objects.get(slug=self.kwargs.get('slug', None))
+        object = GPXTrackWayPoint.objects.get(gpx_file=self.gpx_file, pk=self.kwargs.get('pk', None))
 
         return object
 
 
-class GPXFileUserSegmentSplitView(DetailView):
+class GPXFileUserSegmentSplitView(UserPassesTestMixin, DetailView):
     model = GPXFile
     template_name = '_track_split.html'
 
+    def test_func(self):
+        if self.get_object().perm_public_available is False:
+            if self.request.user.is_authenticated and self.get_object().user == self.request.user:
+                return True
+            else:
+                return False
 
-class GPXFileUserSegmentSplitDownloadView(DetailView):
+        return True
+
+
+class GPXFileUserSegmentSplitDownloadView(UserPassesTestMixin, DetailView):
     model = GPXFileUserSegmentSplit
+
+    def test_func(self):
+        gpx_file = self.get_object().gpx_file
+
+        if gpx_file.perm_public_available is False:
+            if self.request.user.is_authenticated and gpx_file.user == self.request.user:
+                return True
+            else:
+                return False
+        else:
+            return True
 
     def get_object(self, queryset=None):
         gpx_file = GPXFile.objects.get(slug=self.kwargs.get('slug', None))
@@ -160,8 +229,19 @@ class GPXFileUserSegmentSplitDownloadView(DetailView):
         return r
 
 
-class GPXWayPointPathFromTrackDownloadView(DetailView):
+class GPXWayPointPathFromTrackDownloadView(UserPassesTestMixin, DetailView):
     model = GPXTrackWayPoint
+
+    def test_func(self):
+        gpx_file = self.get_object().gpx_file
+
+        if gpx_file.perm_public_available is False:
+            if self.request.user.is_authenticated and gpx_file.user == self.request.user:
+                return True
+            else:
+                return False
+        else:
+            return True
 
     def get_object(self, queryset=None):
         gpx_file = GPXFile.objects.get(slug=self.kwargs.get('slug', None))

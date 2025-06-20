@@ -326,6 +326,7 @@ export default  class TrackSplitGraph {
         var url = "/api/gpxfile/" + this.gpx_file_slug + "/user_segment_split/";
         var r = new XMLHttpRequest();
         r.open('POST', url);
+        r.setRequestHeader("X-CSRFToken", Cookies.get('csrftoken'));
         r.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
         r.addEventListener("load", (event) => {
             location.reload();

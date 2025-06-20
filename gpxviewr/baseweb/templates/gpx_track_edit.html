@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block html_title %}
+<span class="d-md-none">{{ object.name|truncatechars:20 }}</span>
+<span clasS="d-none d-md-inline">{{ object.name }}</span>
+{% endblock %}
+
+{% block split_track_button %}
+{% endblock%}
+
+{% block content %}
+{% load static %}
+<main class="col">
+    <div class="container-sm pt-2">
+        <form method="post" action="{% url 'gpx-file-edit' object.slug %}">
+        {% csrf_token %}
+        {{ form }}
+        <input type="submit" class="btn btn-primary mt-3" title="Update" value="Update"/>
+        </form>
+        <a href="{% url 'gpx-file-detail' object.slug %}">
+            <button type="button" class="btn btn-info mt-3">Cancel</button>
+        </a>
+    </div>
+</main>
+{% endblock %}

@@ -27,6 +27,7 @@ class GCollectionForm(forms.ModelForm):
 
 
 class GcollectionShareForm(forms.ModelForm):
+    perm_download = forms.BooleanField(widget=forms.widgets.CheckboxInput())
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user')
         super().__init__(*args, **kwargs)
@@ -35,7 +36,7 @@ class GcollectionShareForm(forms.ModelForm):
 
     class Meta:
         model = GcollectionShare
-        fields = ['gcollection', 'valid_until_date']
+        fields = ['gcollection', 'valid_until_date', 'perm_download',]
 
 
 class GCollectionProfileDeleteForm(forms.Form):

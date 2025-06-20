@@ -1,4 +1,4 @@
-{% extends "gcollection_base.html" %}
+{% extends "base.html" %}
 {% load static %}
 
 {% block html_title %}
@@ -24,6 +24,12 @@
                     <div class="col">{{ object.get_human_distance }}</div>
                 </div>
             {% endfor %}
+            {% if not object_list %}
+            <p>
+                With the Collection feature you can document your bike packing tour. Create a new Collection and upload for every day your GPX Track.<br/>
+                You can also document your hotel or camping place. Later it will be possible to upload pictures and text about the tour.
+            </p>
+            {% endif %}
         </div>
     </div>
 </main>

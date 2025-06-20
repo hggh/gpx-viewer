@@ -46,6 +46,12 @@ class GCollectionDetailView(UserPassesTestMixin, DetailView):
 
         if self.request.user.is_authenticated:
             context['waypoint_types'] = GCollectionWayPointType.objects.all()
+        
+        token = self.request.GET.get('token', None)
+        if token:
+            tokens = self.get_object().shares.all().filter(slug=token).filter(valid_until_date__gte=timezone.now())
+            if tokens.count() == 1:
+                context['share_token'] = tokens.get()
 
         return context
 

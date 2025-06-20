@@ -35,7 +35,6 @@
         Finde Toiletten, Camping Plätze und mehr von OpenStreetMap entlang deiner GPX Route für die Radreise.
     </div>
 </div>
-
 <form method="post" id="gpx_track_upload" enctype="multipart/form-data">
     {% csrf_token %}
 
@@ -58,6 +57,23 @@
         <label for="delete_after" class="col-sm-2 col-form-label">delete after</label>
         <div class="col-sm-5">
             <input type="date" class="form-control" name="delete_after" required id="id_delete_after" value="{{form.delete_after.value}}">
+        </div>
+    </div>
+    <div class="row mb-3">
+        <label for="perm_public_available" class="col-sm-2 col-form-label">public available via URL</label> 
+        <div class="col-sm-10">
+            <input type="hidden" name="user" value="{% if user.is_authenticated %}{{user.id}}{% endif %}"/>
+            <select class="form-select" name="perm_public_available" id="id_perm_public_available" {% if user.is_authenticated %}{%else%}disabled{% endif %}>
+                {% if user.is_authenticated %}
+                <option value="true">Yes</option>
+                <option value="false" selected>No</option>
+                {% else %}
+                <option value="true" selected>Yes</option>
+                <option value="false">No</option>
+                {% endif %}
+            </select>
+            If you have no account the GPX Track with the Waypoints (POI) are available via the URL. Every person who knows the secret URL can access the Track and modify the Segment Splits.<br/>
+            If you log in, you can select <i>no</i>, the GPX Track is only available for your User.
         </div>
     </div>
     <div class="row mb-3">

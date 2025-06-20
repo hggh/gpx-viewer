@@ -1,6 +1,8 @@
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from rest_framework.permissions import BasePermission
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -13,7 +15,7 @@ from .models import (
     GPXTrackSegment,
     GPXTrackSegmentPoint,
 )
-from .serializers import GPXWayPointTypeSerializer
+from .serializers import GPXWayPointTypeSerializer, GPXFileSerializer
 
 
 class GPXWayPointTypeViewSet(viewsets.ReadOnlyModelViewSet):
@@ -21,10 +23,31 @@ class GPXWayPointTypeViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = GPXWayPointTypeSerializer
 
 
-class GPXFileViewSet(viewsets.ViewSet):
+class GPXFilePermission(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if type(obj) is GPXFile:
+            if obj.perm_public_available is False:
+                if request.user.is_authenticated and obj.user == request.user:
+                    return True
+                else:
+                    return False
+            else:
+                return True
+        else:
+            print(f"{obj} with {type(obj)} not kown")
+            return False
+
+
+class GPXFileViewSet(viewsets.mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+    authentication_classes = [SessionAuthentication, BasicAuthentication]
+    queryset = GPXFile.objects.all()
+    serializer_class = GPXFileSerializer
+    permission_classes = [GPXFilePermission]
+    lookup_field = 'slug'
+
     @action(detail=True, methods=['POST',])
-    def job_status(self, request, pk=None):
-        gpx_file = GPXFile.objects.get(slug=pk)
+    def job_status(self, request, slug=None):
+        gpx_file = self.get_object()
 
         return Response({
             'job_status_name': gpx_file.get_job_status(),
@@ -32,8 +55,8 @@ class GPXFileViewSet(viewsets.ViewSet):
         })
 
     @action(detail=True, methods=['GET',])
-    def json(self, request, pk=None):
-        gpx_file = GPXFile.objects.get(slug=pk)
+    def json(self, request, slug=None):
+        gpx_file = self.get_object()
 
         json = gpx_file.get_json_data()
         if json is None:
@@ -42,8 +65,8 @@ class GPXFileViewSet(viewsets.ViewSet):
         return Response(json)
 
     @action(detail=True, methods=['POST',])
-    def geojson_track_to_waypoint(self, request, pk=None):
-        gpx_file = GPXFile.objects.get(slug=pk)
+    def geojson_track_to_waypoint(self, request, slug=None):
+        gpx_file = self.get_object()
 
         waypoint_pk = request.data.get('waypoint_pk', None)
 
@@ -61,18 +84,18 @@ class GPXFileViewSet(viewsets.ViewSet):
             return Response({}, status=404)
 
     @action(detail=True, methods=['POST',])
-    def user_segment_splits(self, request, pk=None):
-        gpx_file = GPXFile.objects.get(slug=pk)
+    def user_segment_splits(self, request, slug=None):
+        gpx_file = self.get_object()
 
         return Response(gpx_file.get_user_segment_splits(segment_pk=request.data.get('segment_pk', None)))
 
     @action(detail=True, methods=['POST',])
-    def user_segment_split(self, request, pk=None):
+    def user_segment_split(self, request, slug=None):
         splitted_data = request.data.get('splitted_data', [])
         segment_pk = request.data.get('segment_pk', None)
         if segment_pk is None:
             return Response({"segment_pk missing"}, status=403)
-        gpx_file = GPXFile.objects.get(slug=pk)
+        gpx_file = self.get_object()
 
         segment = GPXTrackSegment.objects.get(pk=segment_pk, track__gpx_file=gpx_file)
 
@@ -109,8 +132,8 @@ class GPXFileViewSet(viewsets.ViewSet):
         return Response({})
 
     @action(detail=True, methods=['POST',])
-    def waypoints(self, request, pk=None):
-        gpx_file = GPXFile.objects.get(slug=pk)
+    def waypoints(self, request, slug=None):
+        gpx_file = self.get_object()
 
         waypoints_data = []
         for w in gpx_file.waypoints.all():

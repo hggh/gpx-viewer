@@ -57,10 +57,11 @@ AUTH_USER_MODEL = "gcollection.GUser"
 SOCIAL_AUTH_JSONFIELD_ENABLED = True
 SOCIAL_AUTH_URL_NAMESPACE = 'social'
 SOCIAL_AUTH_REQUIRE_POST = False
-LOGIN_REDIRECT_URL = '/gc'
+LOGIN_REDIRECT_URL = '/'
 
 AUTHENTICATION_BACKENDS = (
     'social_core.backends.github.GithubOAuth2',
+#    'social_core.backends.strava.StravaOAuth',
     'django.contrib.auth.backends.ModelBackend',
 )
 

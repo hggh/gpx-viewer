@@ -10,7 +10,12 @@ class GCollectionLogoutView(auth_views.LogoutView):
 
 
 class GCollectionLoginView(auth_views.LoginView):
-    next_page = '/gc'
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        context['local_login'] = self.request.GET.get('local_login', None) == '1'
+
+        return context
 
 
 class GCollectionProfileView(LoginRequiredMixin, TemplateView, FormView):

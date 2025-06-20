@@ -12,14 +12,44 @@
 <body>
 	<div class="popup" id="popup"></div>
 	<nav class="navbar navbar-dark bg-dark">
-		<button class="btn btn-outline-info" data-bs-toggle="offcanvas" data-bs-target="#offcanvas" role="button">
-			<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-list" viewBox="0 0 16 16">
-				<path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5"/>
-			</svg>
-		</button>
-		<span class="navbar-brand">{% block html_title %}{% endblock %}</span>
-		<div>
-			{% block split_track_button %}{% endblock%}
+		<div class="container-fluid">
+			<div class="d-flex gap-1">
+				<button class="btn btn-outline-info" data-bs-toggle="offcanvas" data-bs-target="#offcanvas" role="button">
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-list" viewBox="0 0 16 16">
+						<path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5"/>
+					</svg>
+				</button>
+				{% block share_collection %}{% endblock %}
+			</div>
+			<span class="navbar-brand">{% block html_title %}{% endblock %}</span>
+			<div class="d-flex gap-1">
+				{% block split_track_button %}{% endblock%}
+			
+			<div class="dropdown">
+				<button type="button" class="btn btn-outline-info dropdown-toggle" title="Profile" data-bs-toggle="dropdown" aria-expanded="false">
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+						<path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0"></path>
+						<path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"></path>
+					</svg>
+				</button>
+				<ul class="dropdown-menu dropdown-menu-end">
+				{% if user.is_authenticated %}
+					<li><a href="{% url 'gcollection_list' %}" class="dropdown-item">Your Collections</a></li>
+					<li><a href="{% url 'gpx_file_list' %}" class="dropdown-item">Your GPX Tracks (POI search)</a></li>
+					<li><a href="{% url 'profile' %}" class="dropdown-item">Your Profile</a></li>
+					<li>
+						<form action="{% url 'logout' %}" method="post" id="logoutform">
+							{% csrf_token %}
+							<a class="dropdown-item" href="#" onclick="document.getElementById('logoutform').submit()">Logout</a>
+						</form>
+					</li>
+				{% else %}		
+					<li><a class="dropdown-item" href="{% url 'login' %}">Login</a></li>
+				{% endif %}
+				</ul>
+			</div>
+
+			</div>
 		</div>
 	</nav>
 

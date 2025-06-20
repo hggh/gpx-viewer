@@ -57,6 +57,8 @@ class GPXFile(TimeStampedModel):
     ]
 
     slug = models.SlugField(default=generate_slug_token, editable=False, max_length=50)
+    user = models.ForeignKey("gcollection.GUser", on_delete=models.CASCADE, related_name='gpx_files', null=True, blank=True)
+    perm_public_available = models.BooleanField(default=False, null=False, blank=False)
     name = models.CharField(max_length=200, null=False, blank=False)
     wpt_options = models.JSONField(default=dict)
     job_status = models.IntegerField(default=1, null=False)
@@ -76,6 +78,9 @@ class GPXFile(TimeStampedModel):
     def save(self, **kwargs):
         if self.name is None or self.name == '':
             self.name = self.file.name.replace('.gpx', '')
+
+        if self.user is None:
+            self.perm_public_available = True
 
         return super().save(**kwargs)
 

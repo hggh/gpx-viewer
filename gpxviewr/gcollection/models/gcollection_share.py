@@ -34,6 +34,7 @@ class GcollectionShare(TimeStampedModel):
     slug = models.SlugField(default=generate_slug_token, editable=False, max_length=50, unique=True)
     gcollection = models.ForeignKey("gcollection.GCollection", on_delete=models.CASCADE, related_name='shares')
     valid_until_date = models.DateField(null=False, blank=False)
+    perm_download = models.BooleanField(default=False, null=True, blank=True)
 
     class Meta:
         pass
