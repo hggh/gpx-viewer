@@ -10,7 +10,7 @@
 <meta property="og:title" content="GPX Collection - {{object.name}}"/>
 <meta name="description" property="og:description" content="Collection of GPX Tracks"/>
 <meta property="og:type" content="website"/>
-<meta property="og:image" content="https://gpxviewr.genannt.name{% url 'gcollection_detail_og_image' object.id %}"/>
+<meta property="og:image" content="https://gpxviewr.genannt.name{% url 'gcollection_detail_og_image' object.id %}{% if share_token %}?token={{share_token.slug}}{% endif %}"/>
 {% endblock %}
 
 {% block share_collection %}
