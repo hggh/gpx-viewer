@@ -2,7 +2,7 @@
 
 ### 20. June 2025
   * Mark camp sites with group_only=yes and permanent_camping=only with red
-  * Add Login for GPX Viewer via Github
+  * Add Login for GPX Viewer via Github and Strava
 
 ### 15. June 2025
   * e bike charging stations: remove access = yes; if station is access=yes display it in green

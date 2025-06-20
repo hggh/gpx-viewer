@@ -61,7 +61,7 @@ LOGIN_REDIRECT_URL = '/'
 
 AUTHENTICATION_BACKENDS = (
     'social_core.backends.github.GithubOAuth2',
-#    'social_core.backends.strava.StravaOAuth',
+    'social_core.backends.strava.StravaOAuth',
     'django.contrib.auth.backends.ModelBackend',
 )
 
