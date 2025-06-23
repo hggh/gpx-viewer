@@ -4,6 +4,7 @@ from django.contrib.gis.db import models
 class GPXWayPointType(models.Model):
     name = models.TextField(max_length=100, null=False, blank=False)
     gpx_sym_name = models.CharField(max_length=100)
+    gpx_type_name = models.CharField(max_length=100)
     osm_name = models.TextField(max_length=100, null=False, blank=False)
     osm_value = models.TextField(max_length=100, null=False, blank=False)
     osm_query_type = models.CharField(max_length=10, null=False, blank=False, default='=')

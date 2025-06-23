@@ -1,5 +1,10 @@
 # CHANGELOG
 
+### 23. June 2025
+  * fix footer
+  * allow GPX Split Download with Waypoints
+  * bookmark Waypoints
+
 ### 20. June 2025
   * Mark camp sites with group_only=yes and permanent_camping=only with red
   * Add Login for GPX Viewer via Github and Strava

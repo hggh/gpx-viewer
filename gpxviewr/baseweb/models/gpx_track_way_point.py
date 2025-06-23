@@ -3,6 +3,7 @@ import phonenumbers
 from django.contrib.gis.db import models
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.gis.geos import Point
+from geopy import distance as geopy_distance
 
 from django_extensions.db.models import TimeStampedModel
 
@@ -13,6 +14,7 @@ class GPXTrackWayPoint(TimeStampedModel):
     name = models.CharField(max_length=100, null=False, blank=True)
     tags = models.JSONField(default=dict)
     hidden = models.BooleanField(null=False, blank=False, default=False)
+    bookmark = models.BooleanField(null=False, default=False, blank=False, db_index=True)
 
     location = models.PointField(default=Point(0.0, 0.0), db_index=True)
     track_segment_point_nearby = models.ForeignKey("GPXTrackSegmentPoint", related_name='waypoints', on_delete=models.CASCADE)
@@ -35,10 +37,15 @@ class GPXTrackWayPoint(TimeStampedModel):
                 "name": self.waypoint_type.name,
                 "html_id": self.waypoint_type.html_id(),
                 "marker_image_path": self.waypoint_type.marker_image_path(),
-
             }
         }
         return data
+
+    def get_air_distance_from_track(self):
+        d = geopy_distance.distance((self.track_segment_point_nearby.location.x, self.track_segment_point_nearby.location.y), (self.location.x, self.location.y))
+        if d.m > 1500:
+            return f"{d.km} km"
+        return f"{d.m} m"
 
     def has_gpx_track_to(self) -> bool:
         try:

@@ -3,6 +3,7 @@
   fields:
     name: toilets
     gpx_sym_name: Restroom
+    gpx_type_name: TOILET
     osm_name: amenity
     osm_value: toilets
     osm_query_type: "="
@@ -16,6 +17,7 @@
   fields:
     name: camping
     gpx_sym_name: Campground
+    gpx_type_name: CAMPSITE
     osm_name: tourism
     osm_value: camp_site
     osm_query_type: "="
@@ -30,6 +32,7 @@
   fields:
     name: drinking water
     gpx_sym_name: Drinking Water
+    gpx_type_name: WATER
     osm_name: amenity
     osm_value: drinking_water
     osm_query_type: "="
@@ -43,6 +46,7 @@
   fields:
     name: fuel/gas station
     gpx_sym_name: Gas Station
+    gpx_type_name: REST_AREA
     osm_name: amenity
     osm_value: fuel
     osm_query_type: "="
@@ -56,6 +60,7 @@
   fields:
     name: convenience store
     gpx_sym_name: Shopping Center
+    gpx_type_name: STORE
     osm_name: shop
     osm_value: supermarket|convenience
     osm_query_type: "~"
@@ -69,6 +74,7 @@
   fields:
     name: Hotel/Motel
     gpx_sym_name: Residence
+    gpx_type_name: AID_STATION
     osm_name: tourism
     osm_value: apartment|guest_house|hostel|hotel|motel
     osm_query_type: "~"
@@ -83,6 +89,7 @@
   fields:
     name: Shelter
     gpx_sym_name: Picnic Area
+    gpx_type_name: CAMPSITE
     osm_name: shelter_type
     osm_value: lean_to|weather_shelter
     osm_query_type: "~"
@@ -96,6 +103,7 @@
   fields:
     name: Bicycle Shops
     gpx_sym_name: Wrecker
+    gpx_type_name: STORE
     osm_name: shop
     osm_value: bicycle
     osm_query_type: "="
@@ -110,6 +118,7 @@
   fields:
     name: e bicycles charging station
     gpx_sym_name: Light
+    gpx_type_name: AID_STATION
     osm_name: amenity
     osm_value: charging_station
     osm_query_type: "="
@@ -125,6 +134,7 @@
   fields:
     name: bakery
     gpx_sym_name: bakery
+    gpx_type_name: STORE
     osm_name: shop
     osm_value: bakery
     osm_query_type: "="

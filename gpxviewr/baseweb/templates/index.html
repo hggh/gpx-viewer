@@ -56,7 +56,7 @@
     <div class="row mb-3">
         <label for="delete_after" class="col-sm-2 col-form-label">delete after</label>
         <div class="col-sm-5">
-            <input type="date" class="form-control" name="delete_after" required id="id_delete_after" value="{{form.delete_after.value}}">
+            <input type="date" class="form-control" min="{% now "Y-m-d" %}" name="delete_after" required id="id_delete_after" value="{{form.delete_after.value}}">
         </div>
     </div>
     <div class="row mb-3">

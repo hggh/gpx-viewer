@@ -135,7 +135,21 @@ export default class Waypoints {
                             }, parseInt(event.target.dataset.popupAutoclose) * 1000);
                         }
                     });
+                    document.getElementById("waypoint_bookmark").addEventListener("click", (event) => {
+                        let waypoint_pk = event.currentTarget.dataset.pk;
+                        let gpx_file_slug = event.currentTarget.dataset.gpxFileSlug;
+                        console.log(waypoint_pk, gpx_file_slug);
 
+                        let l = new XMLHttpRequest();
+                        l.open('POST', '/api/gpxfile/' + gpx_file_slug + '/waypoint_bookmark_toggle/' + waypoint_pk + '/');
+                        l.setRequestHeader("X-CSRFToken", Cookies.get('csrftoken'));
+                        l.addEventListener('load', function(event) {
+                            marker.closePopup();
+                            marker.openPopup();
+                        })
+                        l.send();
+
+                    });
                 });
                 r.send()
             });

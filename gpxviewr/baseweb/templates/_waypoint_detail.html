@@ -1,7 +1,7 @@
 {% load static %}
 <div class="" id="waypoint_tags_info_{{object.id}}">
     <h5 id="offcanvasTopLabel" id="canvas_top_title">{{object.name}}</h5>
-    <div style="float:right;">
+    <div class="d-flex gap-1" style="float:right">
         <a class="text-decoration-none" href="https://www.google.com/maps/search/?api=1&query={{object.location.x}},{{object.location.y}}" title="Open Waypoint in Google Maps" target="_blank">
             <img class="text-decoration-none" width="15px" height="15px" src="{% static 'bootstrap-icons-1.11.2/google.svg' %}"/>
         </a>
@@ -9,6 +9,19 @@
         title="Copy geo Link to clipboard" onclick="navigator.clipboard.writeText('{{object.location.x}},{{object.location.y}}');">
             <img id="clipboard_button_{{object.id}}" data-popup-text="copied..." data-popup-autoclose="1" width="15px" height="15px" src="{% static 'bootstrap-icons-1.11.2/geo.svg' %}">
         </a>
+        {% if object.bookmark == False %}
+        <a href="#" title="Add Waypoint to bookmarks" id="waypoint_bookmark" data-pk="{{object.id}}" data-gpx-file-slug="{{object.gpx_file.slug}}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark" viewBox="0 0 16 16">
+                <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z"/>
+            </svg>
+        </a>
+        {% else %}
+        <a href="#" title="Remove Waypoint from bookmarks" id="waypoint_bookmark" data-pk="{{object.id}}" data-gpx-file-slug="{{object.gpx_file.slug}}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark-heart-fill" viewBox="0 0 16 16">
+                <path d="M2 15.5a.5.5 0 0 0 .74.439L8 13.069l5.26 2.87A.5.5 0 0 0 14 15.5V2a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2zM8 4.41c1.387-1.425 4.854 1.07 0 4.277C3.146 5.48 6.613 2.986 8 4.412z"/>
+            </svg>
+        </a>
+        {% endif %}
     </div>
     <div style="clear:both">
     {% if object.track_segment_distance %}

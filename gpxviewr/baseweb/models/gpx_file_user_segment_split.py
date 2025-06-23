@@ -46,8 +46,8 @@ class GPXFileUserSegmentSplit(TimeStampedModel):
     def get_segment_id(self) -> int:
         return self.point_start.segment.pk
 
-    def generate_gpx(self) -> str:
-        from baseweb.models import GPXTrackSegmentPoint
+    def generate_gpx(self, include_waypoints=False, include_waypoints_types={}) -> str:
+        from baseweb.models import GPXTrackSegmentPoint, GPXTrackWayPoint
 
         points = GPXTrackSegmentPoint.objects.filter(
             segment__id=self.point_start.segment.pk,
@@ -70,6 +70,23 @@ class GPXFileUserSegmentSplit(TimeStampedModel):
             w.elevation = point.elevation
 
             segment.points.append(w)
+
+        if include_waypoints is True:
+            waypoints = GPXTrackWayPoint.objects.all().filter(track_segment_point_nearby__pk__in=points.values_list('pk', flat=True))
+            for waypoint in waypoints:
+                if waypoint.waypoint_type.name in include_waypoints_types and include_waypoints_types.get(waypoint.waypoint_type.name, {}).get('state', False) is True:
+                    w = gpxpy.gpx.GPXWaypoint(
+                        latitude=waypoint.track_segment_point_nearby.location.x,
+                        longitude=waypoint.track_segment_point_nearby.location.y,
+                        symbol=waypoint.waypoint_type.gpx_sym_name,
+                        name=waypoint.name,
+                        type=waypoint.waypoint_type.gpx_type_name,
+                    )
+                    if include_waypoints_types.get(waypoint.waypoint_type.name, {}).get('bookmark', False) is True:
+                        if waypoint.bookmark is True:
+                            gpx.waypoints.append(w)
+                    else:
+                        gpx.waypoints.append(w)
 
         track.segments.append(segment)
         gpx.tracks.append(track)

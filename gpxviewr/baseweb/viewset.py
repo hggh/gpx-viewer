@@ -114,7 +114,6 @@ class GPXFileViewSet(viewsets.mixins.RetrieveModelMixin, viewsets.GenericViewSet
             except IndexError:
                 element_next = None
                 point_end = segment.points.all().last()
-            print(f"Next element {element_next}")
 
             u = GPXFileUserSegmentSplit(
                 name=f"Track {user_split_number}",
@@ -128,6 +127,16 @@ class GPXFileViewSet(viewsets.mixins.RetrieveModelMixin, viewsets.GenericViewSet
 
         if len(update_splits) > 0:
             GPXFileUserSegmentSplit.update_segments(update_splits, gpx_file=gpx_file, segment_pk=segment_pk)
+
+        return Response({})
+
+    @action(detail=True, methods=['POST',], url_path="waypoint_bookmark_toggle/(?P<waypoint_pk>[^/.]+)")
+    def waypoint_bookmark_toggle(self, request, waypoint_pk=None, slug=None):
+        gpx_file = self.get_object()
+
+        w = GPXTrackWayPoint.objects.get(pk=waypoint_pk, gpx_file=gpx_file)
+        w.bookmark = not w.bookmark
+        w.save(update_fields=['bookmark'])
 
         return Response({})
 

@@ -1,3 +1,5 @@
+import * as bootstrap from "bootstrap";
+
 export default class SplitTrackMenu {
     constructor(gpx_file_slug, map, sidebar_split_track_id) {
         this.map = map;
@@ -23,5 +25,15 @@ export default class SplitTrackMenu {
         var sidebar_split_track = document.getElementById(this.sidebar_split_track_id);
 
         sidebar_split_track.innerHTML = data;
+
+        const headings = document.querySelectorAll(".gpx-user-segment-split-download-with-waypoints");
+        for (const heading of headings) {
+            heading.addEventListener("click", (event) => {
+                let b = new bootstrap.Modal(document.getElementById("gpx-track-user-segment-split-choose-waypoints"));
+                document.getElementById("gpx-track-user-segment-split-choose-waypoints-download").dataset.url = event.target.dataset.url;
+                document.getElementById("gpx-track-user-segment-split-choose-waypoints-form").action = event.target.dataset.url;
+                b.show();
+            });
+        }
     }
 }

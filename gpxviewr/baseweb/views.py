@@ -221,7 +221,19 @@ class GPXFileUserSegmentSplitDownloadView(UserPassesTestMixin, DetailView):
     def get(self, request, *args, **kwargs):
         self.object = self.get_object()
 
-        r = HttpResponse(self.object.generate_gpx(), headers={
+        include_waypoints_types = {}
+        include_waypoints = self.request.GET.get('include_waypoints', '0') == '1'
+
+        if include_waypoints is True:
+            for wpt in self.object.gpx_file.get_waypoint_types():
+                include_waypoints_types.update({
+                    wpt.name: {
+                        'state': self.request.GET.get(wpt.name, 'off') == 'on',
+                        'bookmark': self.request.GET.get(f"{wpt.name}_bookmark", 'off') == 'on',
+                    }
+                })
+
+        r = HttpResponse(self.object.generate_gpx(include_waypoints=include_waypoints, include_waypoints_types=include_waypoints_types), headers={
             "Content-Type": "application/gpx+xml",
             "Content-Disposition": f'attachment; filename="{self.object.name}.gpx"',
         })
