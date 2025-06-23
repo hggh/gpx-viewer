@@ -138,7 +138,7 @@ class GPXFileViewSet(viewsets.mixins.RetrieveModelMixin, viewsets.GenericViewSet
         w.bookmark = not w.bookmark
         w.save(update_fields=['bookmark'])
 
-        return Response({})
+        return Response({'bookmark': w.bookmark})
 
     @action(detail=True, methods=['POST',])
     def waypoints(self, request, slug=None):

@@ -1,6 +1,7 @@
 import L from "leaflet";
 import * as bootstrap from "bootstrap";
 import Cookies from "js-cookie";
+import GToastNotification from "./GToastNotification";
 
 export default class Waypoints {
     constructor(gpx_file_slug, map) {
@@ -124,21 +125,15 @@ export default class Waypoints {
                     marker_event.setPopupContent(r.responseText);
                     marker_event.update();
                     L.DomEvent.on(L.DomUtil.get("clipboard_button_" + waypoint_id), "click", (event) => {
-                        let popup = L.DomUtil.get("popup");
-                        popup.innerHTML = event.target.dataset.popupText;
-                        popup.style.display = "flex";
-
-                        if (event.target.dataset.popupAutoclose) {
-                            setTimeout(() => {
-                                let popup = L.DomUtil.get("popup");
-                                popup.style.display = "none";
-                            }, parseInt(event.target.dataset.popupAutoclose) * 1000);
-                        }
+                        let t = new GToastNotification(
+                            "GPS Position",
+                            "GPS Position copied to clipboard."
+                        );
+                        t.show();
                     });
                     document.getElementById("waypoint_bookmark").addEventListener("click", (event) => {
                         let waypoint_pk = event.currentTarget.dataset.pk;
                         let gpx_file_slug = event.currentTarget.dataset.gpxFileSlug;
-                        console.log(waypoint_pk, gpx_file_slug);
 
                         let l = new XMLHttpRequest();
                         l.open('POST', '/api/gpxfile/' + gpx_file_slug + '/waypoint_bookmark_toggle/' + waypoint_pk + '/');
@@ -146,6 +141,22 @@ export default class Waypoints {
                         l.addEventListener('load', function(event) {
                             marker.closePopup();
                             marker.openPopup();
+
+                            let wp = JSON.parse(l.responseText);
+                            if (wp.bookmark == true) {
+                                let t = new GToastNotification(
+                                    "Waypoint",
+                                    "Added bookmark."
+                                );
+                                t.show();
+                            }
+                            else {
+                                let t = new GToastNotification(
+                                    "Waypoint",
+                                    "Removed bookmark."
+                                );
+                                t.show();
+                            }
                         })
                         l.send();
 
