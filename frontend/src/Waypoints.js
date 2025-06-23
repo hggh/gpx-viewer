@@ -71,6 +71,7 @@ export default class Waypoints {
         var r = new XMLHttpRequest();
         r.open('POST', url);
         r.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        r.setRequestHeader("X-CSRFToken", Cookies.get('csrftoken'));
         r.addEventListener('load', function(event) {
             if (r.status == 200) {
                 var d = JSON.parse(r.responseText);

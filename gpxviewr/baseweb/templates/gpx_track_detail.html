@@ -10,14 +10,18 @@
 {% block sidebarleft %}
 <div class="list-group border-0 rounded-0 text-sm-start min-vh-100 border-end" >
     <div class="list-group-item border-end-0 d-inline-block">
-        <label for="osm_tile_lang">map language:</label>
-        <select class="form-select form-select-sm" aria-label="OSM language" id="osm_tile_lang">
-            <option value="https://tile.openstreetmap.de/{z}/{x}/{y}.png" selected>german</option>
-            <option value="https://tile.openstreetmap.org/{z}/{x}/{y}.png">english</option>
-        </select>
+        <div class="row">
+            <div class="col-sm-3"><label for="osm_tile_lang">map language:</label></div>
+            <div class="col-sm-5"><select class="form-select form-select-sm" aria-label="OSM language" id="osm_tile_lang">
+                <option value="https://tile.openstreetmap.de/{z}/{x}/{y}.png" selected>german</option>
+                <option value="https://tile.openstreetmap.org/{z}/{x}/{y}.png">english</option>
+            </select></div>
+        </div>
     </div>
-
-    <div id="sidebarleft_waypoint_switches" class="list-group-item border-end-0 d-inline-block">
+    <div class="list-group-item border-end-0 d-inline-block">
+        <label for="customRange3" class="form-label">Show/Hide Waypoints in map:</label>
+        <div id="sidebarleft_waypoint_switches" class="">
+        </div>
     </div>
 
     <div class="list-group-item border-end-0 d-inline-block">
@@ -41,10 +45,14 @@
         <input type="range" class="form-range" value="16" min="16" max="42" step="2" id="waypoint_icon_size">
     </div>
     <div class="list-group-item border-end-0 d-inline-block">
-        <h2>Tracks</h2>
+        <label for="customRange3" class="form-label">Tracks</label><br/>
         {% for track in object.tracks.all %}
             {{ track.name }} / {{track.get_human_distance }} {%if track.link %}<a href="{{ track.link }}" target="_blank">Link ({{track.get_link_hostname}})</a>{% endif %}<br/>
         {% endfor %}
+    </div>
+    <div class="list-group-item border-end-0 d-inline-block">
+        <label for="customRange3" class="form-label">GPX Track will be deleted on:</label>
+        {{object.delete_after}}
     </div>
 </div>
 {% endblock%}
