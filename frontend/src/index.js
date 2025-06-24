@@ -21,6 +21,7 @@ import GPXWayPointTypeStorage from "./GPXWayPointTypeStorage";
 import TrackSplitGraph from "./TrackSplitGraph";
 import GCollectionGPXFile from "./GCollectionGPXFile";
 import GCollectionWaypoint from "./GCollectionWaypoint";
+import "./leaflet-maplibre-gl";
 
 
 document.addEventListener("DOMContentLoaded", function() {
@@ -33,7 +34,6 @@ document.addEventListener("DOMContentLoaded", function() {
             attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(map);
 
-        
 
         L.Control.WayPointContainer = L.Control.extend({
             options: {
@@ -211,16 +211,54 @@ document.addEventListener("DOMContentLoaded", function() {
     if (document.getElementById("gpx_file_slug")) {
         document.getElementById('map').style.height = window.innerHeight - 120 + "px";
 
-        const gpx_file_slug = document.getElementById("gpx_file_slug").dataset.slug;
-        const map = L.map('map').setView([51.505, 10.09], 3);
-        const tiles = L.tileLayer('https://tile.openstreetmap.de/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        }).addTo(map);
-
-        document.querySelector("#osm_tile_lang").addEventListener("change", (event) => {
-            tiles.setUrl(event.target.value);
+        var osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 15,
+            attribution: '© OpenStreetMap'
         });
+        var osmDE = L.tileLayer('https://tile.openstreetmap.de/{z}/{x}/{y}.png', {
+            maxZoom: 15,
+            attribution: '© OpenStreetMap'
+        });
+        var hillshade = L.maplibreGL({
+            pane: 'overlayPane',
+            style: {
+                'version': 8,
+                'sources': {
+                    'dem': {
+                        'type': 'raster-dem',
+                        'tiles': [
+                            'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'
+                        ],
+                        'encoding': 'terrarium',
+                        'tileSize': 256,
+                        'maxzoom': 19
+                    }
+                },
+                'layers': [
+                    {
+                        'id': 'hillshading',
+                        'source': 'dem',
+                        'type': 'hillshade',
+                        'paint': {
+                            'hillshade-exaggeration': 0.3,
+                        }
+                    },
+                ]
+            },
+        })
+
+        var baseMaps = {
+            "OpenStreetMap": osm,
+            "OpenStreetMap.DE": osmDE,
+        };
+
+        var overlayMaps = {
+            "Hillshade": hillshade,
+        };
+
+        const gpx_file_slug = document.getElementById("gpx_file_slug").dataset.slug;
+        const map = L.map('map', {layers: [osmDE]}).setView([51.505, 10.09], 3);
+        var layerControl = L.control.layers(baseMaps, overlayMaps).addTo(map);
 
         L.Control.ElevationContainer = L.Control.extend({
             options: {

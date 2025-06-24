@@ -5,6 +5,8 @@
   * allow GPX Split Download with Waypoints
   * bookmark Waypoints
   * nicer copy to clipboard popover with BS Toast
+  * add Hillshade Overlay Map
+  * changed color of Toast
 
 ### 20. June 2025
   * Mark camp sites with group_only=yes and permanent_camping=only with red

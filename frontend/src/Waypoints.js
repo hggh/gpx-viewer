@@ -125,10 +125,7 @@ export default class Waypoints {
                     marker_event.setPopupContent(r.responseText);
                     marker_event.update();
                     L.DomEvent.on(L.DomUtil.get("clipboard_button_" + waypoint_id), "click", (event) => {
-                        let t = new GToastNotification(
-                            "GPS Position",
-                            "GPS Position copied to clipboard."
-                        );
+                        let t = new GToastNotification("GPS Position copied to clipboard.");
                         t.show();
                     });
                     document.getElementById("waypoint_bookmark").addEventListener("click", (event) => {
@@ -144,17 +141,11 @@ export default class Waypoints {
 
                             let wp = JSON.parse(l.responseText);
                             if (wp.bookmark == true) {
-                                let t = new GToastNotification(
-                                    "Waypoint",
-                                    "Added bookmark."
-                                );
+                                let t = new GToastNotification("Waypoint bookmarked.");
                                 t.show();
                             }
                             else {
-                                let t = new GToastNotification(
-                                    "Waypoint",
-                                    "Removed bookmark."
-                                );
+                                let t = new GToastNotification("Waypoint removed from bookmarks.");
                                 t.show();
                             }
                         })

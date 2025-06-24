@@ -22,9 +22,10 @@
   "dependencies": {
     "bootstrap": "^5.3.3",
     "d3": "^7.9.0",
+    "js-cookie": "^3.0.5",
     "leaflet": "^1.9.4",
     "leaflet-geometryutil": "^0.10.3",
-    "js-cookie": "^3.0.5",
-    "leaflet-sidebar": "^0.2.4"
+    "leaflet-sidebar": "^0.2.4",
+    "maplibre-gl": "^5.6.0"
   }
 }
