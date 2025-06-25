@@ -230,6 +230,8 @@ class GPXFileUserSegmentSplitDownloadView(UserPassesTestMixin, DetailView):
                     wpt.name: {
                         'state': self.request.GET.get(wpt.name, 'off') == 'on',
                         'bookmark': self.request.GET.get(f"{wpt.name}_bookmark", 'off') == 'on',
+                        'wp_mode_garmin': self.request.GET.get('wp_mode_garmin', 'off') == 'on',
+                        'wp_mode_orginal': self.request.GET.get('wp_mode_orginal', 'off') == 'on',
                     }
                 })
 

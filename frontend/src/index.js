@@ -212,11 +212,11 @@ document.addEventListener("DOMContentLoaded", function() {
         document.getElementById('map').style.height = window.innerHeight - 120 + "px";
 
         var osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 15,
+            maxZoom: 19,
             attribution: '© OpenStreetMap'
         });
         var osmDE = L.tileLayer('https://tile.openstreetmap.de/{z}/{x}/{y}.png', {
-            maxZoom: 15,
+            maxZoom: 19,
             attribution: '© OpenStreetMap'
         });
         var hillshade = L.maplibreGL({
@@ -257,7 +257,10 @@ document.addEventListener("DOMContentLoaded", function() {
         };
 
         const gpx_file_slug = document.getElementById("gpx_file_slug").dataset.slug;
-        const map = L.map('map', {layers: [osmDE]}).setView([51.505, 10.09], 3);
+        const map = L.map('map', {
+            layers: [osmDE],
+            maxzoom: 19,
+        }).setView([51.505, 10.09], 3);
         var layerControl = L.control.layers(baseMaps, overlayMaps).addTo(map);
 
         L.Control.ElevationContainer = L.Control.extend({

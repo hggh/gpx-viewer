@@ -19,15 +19,25 @@
         {% for waypoint_type in object.get_waypoint_types %}
         <div class="form-check form-switch">
             <input class="form-check-input" type="checkbox" role="switch" name="{{waypoint_type.name}}" id="{{waypoint_type.name}}" checked>
-            <label class="form-check-label" for="switchCheckChecked">{{waypoint_type.name }}</label>
+            <label class="form-check-label" for="{{waypoint_type.name}}">{{waypoint_type.name }}</label>
         </div>
         <div class="ms-3 form-check form-switch">
             <input class="form-check-input" type="checkbox" role="switch" name="{{waypoint_type.name}}_bookmark" id="{{waypoint_type.name}}">
-            <label class="form-check-label" for="switchCheckChecked">only bookmarked</label>
+            <label class="form-check-label" for="{{waypoint_type.name}}_bookmark">only bookmarked</label>
         </div>
         {% endfor %}
-        <br/>
-        The POI waypoint will be placed on the Track, not on the orginal position. Garmin supports only Waypoints directly on the track and Garmin will strip the name and only suports only 200 waypoints per Track. (depends on your device)
+        <hr/>
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" role="switch" name="wp_mode_garmin" id="wp_mode_garmin" checked>
+          <label class="form-check-label" for="wp_mode_garmin">Garmin Waypoint mode.<br/>
+            The POI waypoint will be placed on the Track, not on the orginal position. Garmin supports only Waypoints directly on the track and Garmin will strip the name (after 15 chars) and supports only 200 waypoints per Track. (depends on your device)
+          </label>
+        </div>
+        <hr/>
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" role="switch" name="wp_mode_orginal" id="wp_mode_orginal" checked>
+          <label class="form-check-label" for="wp_mode_orginal">Include POI on orginal position.</label>
+        </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>

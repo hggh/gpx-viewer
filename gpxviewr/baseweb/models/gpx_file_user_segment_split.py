@@ -75,17 +75,33 @@ class GPXFileUserSegmentSplit(TimeStampedModel):
             waypoints = GPXTrackWayPoint.objects.all().filter(track_segment_point_nearby__pk__in=points.values_list('pk', flat=True))
             for waypoint in waypoints:
                 if waypoint.waypoint_type.name in include_waypoints_types and include_waypoints_types.get(waypoint.waypoint_type.name, {}).get('state', False) is True:
-                    w = gpxpy.gpx.GPXWaypoint(
-                        latitude=waypoint.track_segment_point_nearby.location.x,
-                        longitude=waypoint.track_segment_point_nearby.location.y,
-                        symbol=waypoint.waypoint_type.gpx_sym_name,
-                        name=waypoint.name,
-                        type=waypoint.waypoint_type.gpx_type_name,
-                    )
                     if include_waypoints_types.get(waypoint.waypoint_type.name, {}).get('bookmark', False) is True:
-                        if waypoint.bookmark is True:
-                            gpx.waypoints.append(w)
+                        if waypoint.bookmark is False:
+                            continue
+
+                    if not waypoint.name:
+                        name = waypoint.waypoint_type.name
                     else:
+                        name= waypoint.name
+
+                    if include_waypoints_types.get(waypoint.waypoint_type.name, {}).get('wp_mode_garmin', False) is True:
+                        w = gpxpy.gpx.GPXWaypoint(
+                            latitude=waypoint.track_segment_point_nearby.location.x,
+                            longitude=waypoint.track_segment_point_nearby.location.y,
+                            symbol=waypoint.waypoint_type.gpx_sym_name,
+                            name=name,
+                            type=waypoint.waypoint_type.gpx_type_name,
+                        )
+                        gpx.waypoints.append(w)
+
+                    if include_waypoints_types.get(waypoint.waypoint_type.name, {}).get('wp_mode_orginal', False) is True:
+                        w = gpxpy.gpx.GPXWaypoint(
+                            latitude=waypoint.location.x,
+                            longitude=waypoint.location.y,
+                            symbol=waypoint.waypoint_type.gpx_sym_name,
+                            name=name,
+                            type=waypoint.waypoint_type.gpx_type_name,
+                        )
                         gpx.waypoints.append(w)
 
         track.segments.append(segment)

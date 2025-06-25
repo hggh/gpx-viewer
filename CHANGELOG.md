@@ -1,5 +1,9 @@
 # CHANGELOG
 
+### 25. June 2025
+  * max zoom again 19
+  * garmin vs orginal position of Waypoint added
+
 ### 23. June 2025
   * fix footer
   * allow GPX Split Download with Waypoints
