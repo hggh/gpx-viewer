@@ -219,6 +219,10 @@ document.addEventListener("DOMContentLoaded", function() {
             maxZoom: 19,
             attribution: '© OpenStreetMap'
         });
+        var osmFR = L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', {
+            maxZoom: 20,
+            attribution: '&copy; OpenStreetMap France | &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        });
         var hillshade = L.maplibreGL({
             pane: 'overlayPane',
             style: {
@@ -250,6 +254,7 @@ document.addEventListener("DOMContentLoaded", function() {
         var baseMaps = {
             "OpenStreetMap": osm,
             "OpenStreetMap.DE": osmDE,
+            "OpenStreetMap.FR": osmFR,
         };
 
         var overlayMaps = {

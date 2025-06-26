@@ -3,6 +3,7 @@
 ### 25. June 2025
   * max zoom again 19
   * garmin vs orginal position of Waypoint added
+  * OSM Map FR
 
 ### 23. June 2025
   * fix footer
