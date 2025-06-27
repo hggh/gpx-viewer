@@ -22,7 +22,6 @@ from .models import (
 )
 
 from .forms import (
-    GPXTrackWayPointDownload,
     GPXFileUploadForm,
     GPXFileUpdateForm,
 )
@@ -137,9 +136,8 @@ class GPXFileDetailView(UserPassesTestMixin, DetailView):
         return context
 
 
-class GPXTrackDownloadView(UserPassesTestMixin, DetailView, FormView):
+class GPXTrackDownloadView(UserPassesTestMixin, DetailView):
     model = GPXFile
-    form_class = GPXTrackWayPointDownload
 
     def test_func(self):
         if self.get_object().perm_public_available is False:
@@ -150,14 +148,23 @@ class GPXTrackDownloadView(UserPassesTestMixin, DetailView, FormView):
         else:
             return True
 
-    def form_valid(self, form):
-        waypoint_types = form.cleaned_data.get('waypoint_types', [1, 2, 3])
-        slug = form.cleaned_data.get('slug')
-        self.object = GPXFile.objects.get(slug=slug)
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
 
-        r = HttpResponse(self.object.generate_download_gpx_file(waypoint_types), headers={
+        include_waypoints_types = {}
+        for wpt in self.object.get_waypoint_types():
+            include_waypoints_types.update({
+                wpt.name: {
+                    'state': self.request.GET.get(wpt.name, 'off') == 'on',
+                    'bookmark': self.request.GET.get(f"{wpt.name}_bookmark", 'off') == 'on',
+                    'wp_mode_garmin': self.request.GET.get('wp_mode_garmin', 'off') == 'on',
+                    'wp_mode_orginal': self.request.GET.get('wp_mode_orginal', 'off') == 'on',
+                }
+            })
+
+        r = HttpResponse(self.object.generate_download_gpx_file(include_waypoints_types), headers={
             "Content-Type": "application/gpx+xml",
-            "Content-Disposition": 'attachment; filename="waypoints.gpx"',
+            "Content-Disposition": f'attachment; filename="{self.object.file.name}"',
         })
 
         return r

@@ -69,8 +69,3 @@ class GPXFileUploadForm(forms.ModelForm):
     class Meta:
         model = GPXFile
         fields = ["file", "wpt_options", "delete_after", "perm_public_available", "user"]
-
-
-class GPXTrackWayPointDownload(forms.Form):
-    slug = forms.CharField()
-    waypoint_types = forms.MultipleChoiceField(choices=waypoint_types_choices)

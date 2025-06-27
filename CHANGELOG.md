@@ -1,5 +1,8 @@
 # CHANGELOG
 
+### 27. June 2025
+  * better download of track with POIs
+
 ### 25. June 2025
   * max zoom again 19
   * garmin vs orginal position of Waypoint added

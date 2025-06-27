@@ -131,23 +131,43 @@ class GPXFile(TimeStampedModel):
             })
         return wtps
 
-    def generate_download_gpx_file(self, options) -> str:
-        gpx = gpxpy.gpx.GPX()
-        gpx.name = self.name
-        gpx.creator = 'GPX Tools by hggh'
+    def generate_download_gpx_file(self, include_waypoints_types) -> str:
+        from baseweb.models import GPXTrackWayPoint
 
-        for w in self.waypoints.all().filter(waypoint_type__in=options).filter(hidden=False):
-            wp = gpxpy.gpx.GPXWaypoint()
-            wp.latitude = w.location.x
-            wp.longitude = w.location.y
-            wp.name = w.name
-            wp.symbol = w.waypoint_type.gpx_sym_name
+        f = open(self.file.path, 'r')
+        gpx = gpxpy.parse(f)
 
-            if w.get_url():
-                wp.link = w.get_url()
-                wp.link_text = w.get_url()
+        waypoints = GPXTrackWayPoint.objects.all().filter(gpx_file=self)
+        for waypoint in waypoints:
+            if waypoint.waypoint_type.name in include_waypoints_types and include_waypoints_types.get(waypoint.waypoint_type.name, {}).get('state', False) is True:
+                if include_waypoints_types.get(waypoint.waypoint_type.name, {}).get('bookmark', False) is True:
+                    if waypoint.bookmark is False:
+                        continue
 
-            gpx.waypoints.append(wp)
+                if not waypoint.name:
+                    name = waypoint.waypoint_type.name
+                else:
+                    name= waypoint.name
+
+                if include_waypoints_types.get(waypoint.waypoint_type.name, {}).get('wp_mode_garmin', False) is True:
+                    w = gpxpy.gpx.GPXWaypoint(
+                        latitude=waypoint.track_segment_point_nearby.location.x,
+                        longitude=waypoint.track_segment_point_nearby.location.y,
+                        symbol=waypoint.waypoint_type.gpx_sym_name,
+                        name=name,
+                        type=waypoint.waypoint_type.gpx_type_name,
+                    )
+                    gpx.waypoints.append(w)
+
+                if include_waypoints_types.get(waypoint.waypoint_type.name, {}).get('wp_mode_orginal', False) is True:
+                    w = gpxpy.gpx.GPXWaypoint(
+                        latitude=waypoint.location.x,
+                        longitude=waypoint.location.y,
+                        symbol=waypoint.waypoint_type.gpx_sym_name,
+                        name=name,
+                        type=waypoint.waypoint_type.gpx_type_name,
+                    )
+                    gpx.waypoints.append(w)
 
         return gpx.to_xml()
 
