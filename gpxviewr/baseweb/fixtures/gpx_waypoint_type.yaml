@@ -6,6 +6,7 @@
     gpx_type_name: TOILET
     osm_name: amenity
     osm_value: toilets
+    osmand_icon: amenity_toilets
     osm_query_type: "="
     around: 600
     around_max: 5000
@@ -20,6 +21,7 @@
     gpx_type_name: CAMPSITE
     osm_name: tourism
     osm_value: camp_site
+    osmand_icon: tourism_camp_site
     osm_query_type: "="
     around: 5000
     around_max: 10000
@@ -35,6 +37,7 @@
     gpx_type_name: WATER
     osm_name: amenity
     osm_value: drinking_water
+    osmand_icon: amenity_drinking_water
     osm_query_type: "="
     around: 600
     around_max: 2000
@@ -49,6 +52,7 @@
     gpx_type_name: REST_AREA
     osm_name: amenity
     osm_value: fuel
+    osmand_icon: fuel
     osm_query_type: "="
     around: 100
     around_max: 1000
@@ -63,6 +67,7 @@
     gpx_type_name: STORE
     osm_name: shop
     osm_value: supermarket|convenience
+    osmand_icon: shop_yes
     osm_query_type: "~"
     around: 300
     around_max: 1000
@@ -77,6 +82,7 @@
     gpx_type_name: AID_STATION
     osm_name: tourism
     osm_value: apartment|guest_house|hostel|hotel|motel
+    osmand_icon: tourism_hotel
     osm_query_type: "~"
     around: 5000
     around_max: 10000
@@ -92,6 +98,7 @@
     gpx_type_name: CAMPSITE
     osm_name: shelter_type
     osm_value: lean_to|weather_shelter
+    osmand_icon: tourism_picnic_site
     osm_query_type: "~"
     around: 5000
     around_max: 10000
@@ -106,6 +113,7 @@
     gpx_type_name: STORE
     osm_name: shop
     osm_value: bicycle
+    osmand_icon: club_bicycle
     osm_query_type: "="
     around: 1000
     around_max: 10000
@@ -121,6 +129,7 @@
     gpx_type_name: AID_STATION
     osm_name: amenity
     osm_value: charging_station
+    osmand_icon: charging_station
     osm_query_type: "="
     osm_extra_query: '["bicycle" = "yes"]'
     around: 1000
@@ -137,6 +146,7 @@
     gpx_type_name: STORE
     osm_name: shop
     osm_value: bakery
+    osmand_icon: shop_bakery
     osm_query_type: "="
     around: 1000
     around_max: 10000

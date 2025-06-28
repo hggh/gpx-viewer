@@ -58,6 +58,9 @@ class GPXFileUserSegmentSplit(TimeStampedModel):
         gpx = gpxpy.gpx.GPX()
         gpx.creator = 'GPX Tools by hggh'
         gpx.name = self.name
+        gpx.nsmap.update({
+            'osmand': "https://osmand.net/docs/technical/osmand-file-formats/osmand-gpx",
+        })
 
         track = gpxpy.gpx.GPXTrack()
         track.name = self.name
@@ -79,29 +82,12 @@ class GPXFileUserSegmentSplit(TimeStampedModel):
                         if waypoint.bookmark is False:
                             continue
 
-                    if not waypoint.name:
-                        name = waypoint.waypoint_type.name
-                    else:
-                        name= waypoint.name
-
                     if include_waypoints_types.get(waypoint.waypoint_type.name, {}).get('wp_mode_garmin', False) is True:
-                        w = gpxpy.gpx.GPXWaypoint(
-                            latitude=waypoint.track_segment_point_nearby.location.x,
-                            longitude=waypoint.track_segment_point_nearby.location.y,
-                            symbol=waypoint.waypoint_type.gpx_sym_name,
-                            name=name,
-                            type=waypoint.waypoint_type.gpx_type_name,
-                        )
+                        w = waypoint.generate_gpx_waypoint(mode='garmin')
                         gpx.waypoints.append(w)
 
                     if include_waypoints_types.get(waypoint.waypoint_type.name, {}).get('wp_mode_orginal', False) is True:
-                        w = gpxpy.gpx.GPXWaypoint(
-                            latitude=waypoint.location.x,
-                            longitude=waypoint.location.y,
-                            symbol=waypoint.waypoint_type.gpx_sym_name,
-                            name=name,
-                            type=waypoint.waypoint_type.gpx_type_name,
-                        )
+                        w = waypoint.generate_gpx_waypoint()
                         gpx.waypoints.append(w)
 
         track.segments.append(segment)

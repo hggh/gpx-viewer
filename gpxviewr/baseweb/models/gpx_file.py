@@ -136,6 +136,9 @@ class GPXFile(TimeStampedModel):
 
         f = open(self.file.path, 'r')
         gpx = gpxpy.parse(f)
+        gpx.nsmap.update({
+            'osmand': "https://osmand.net/docs/technical/osmand-file-formats/osmand-gpx",
+        })
 
         waypoints = GPXTrackWayPoint.objects.all().filter(gpx_file=self)
         for waypoint in waypoints:
@@ -144,29 +147,12 @@ class GPXFile(TimeStampedModel):
                     if waypoint.bookmark is False:
                         continue
 
-                if not waypoint.name:
-                    name = waypoint.waypoint_type.name
-                else:
-                    name= waypoint.name
-
                 if include_waypoints_types.get(waypoint.waypoint_type.name, {}).get('wp_mode_garmin', False) is True:
-                    w = gpxpy.gpx.GPXWaypoint(
-                        latitude=waypoint.track_segment_point_nearby.location.x,
-                        longitude=waypoint.track_segment_point_nearby.location.y,
-                        symbol=waypoint.waypoint_type.gpx_sym_name,
-                        name=name,
-                        type=waypoint.waypoint_type.gpx_type_name,
-                    )
+                    w = waypoint.generate_gpx_waypoint(mode='garmin')
                     gpx.waypoints.append(w)
 
                 if include_waypoints_types.get(waypoint.waypoint_type.name, {}).get('wp_mode_orginal', False) is True:
-                    w = gpxpy.gpx.GPXWaypoint(
-                        latitude=waypoint.location.x,
-                        longitude=waypoint.location.y,
-                        symbol=waypoint.waypoint_type.gpx_sym_name,
-                        name=name,
-                        type=waypoint.waypoint_type.gpx_type_name,
-                    )
+                    w = waypoint.generate_gpx_waypoint()
                     gpx.waypoints.append(w)
 
         return gpx.to_xml()

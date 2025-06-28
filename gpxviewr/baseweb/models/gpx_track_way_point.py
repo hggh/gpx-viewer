@@ -1,4 +1,6 @@
 import phonenumbers
+import gpxpy
+from xml.etree import ElementTree
 
 from django.contrib.gis.db import models
 from django.core.exceptions import ObjectDoesNotExist
@@ -41,11 +43,11 @@ class GPXTrackWayPoint(TimeStampedModel):
         }
         return data
 
-    def get_air_distance_from_track(self):
+    def get_air_distance_from_track(self) -> str:
         d = geopy_distance.distance((self.track_segment_point_nearby.location.x, self.track_segment_point_nearby.location.y), (self.location.x, self.location.y))
         if d.m > 1500:
-            return f"{d.km} km"
-        return f"{d.m} m"
+            return f"{int(d.km)} km"
+        return f"{int(d.m)} m"
 
     def has_gpx_track_to(self) -> bool:
         try:
@@ -95,6 +97,37 @@ class GPXTrackWayPoint(TimeStampedModel):
                 return value
         return None
 
+    def generate_gpx_waypoint(self, mode='normal'):
+        if not self.name:
+            name = self.waypoint_type.name
+        else:
+            name= self.name
+
+        w = gpxpy.gpx.GPXWaypoint(
+            symbol=self.waypoint_type.gpx_sym_name,
+            name=name,
+            type=self.waypoint_type.gpx_type_name,
+        )
+        if self.get_url():
+            w.link = self.get_url()
+        if self.get_phone():
+            w.comment = self.get_phone()
+
+        if mode == 'garmin':
+            w.latitude = self.track_segment_point_nearby.location.x
+            w.longitude = self.track_segment_point_nearby.location.y
+        else:
+            w.latitude = self.location.x
+            w.longitude = self.location.y
+
+        w.description = "away: " + self.get_air_distance_from_track()
+
+        osmand_icon = ElementTree.Element("osmand:icon")
+        osmand_icon.text = self.waypoint_type.osmand_icon
+        w.extensions.append(osmand_icon)
+
+        return w
+
     def get_phone(self) -> str | None:
         if self.tags.get('phone', None):
             try:
@@ -111,7 +144,7 @@ class GPXTrackWayPoint(TimeStampedModel):
                 pass
         return None
 
-    def get_url(self) -> str:
+    def get_url(self) -> None | str:
         if self.tags.get('contact:website', None):
             return self.tags.get('contact:website')
 
