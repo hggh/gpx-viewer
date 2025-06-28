@@ -2,6 +2,7 @@
 
 ### 27. June 2025
   * better download of track with POIs
+  * OSMand Icons
 
 ### 25. June 2025
   * max zoom again 19
