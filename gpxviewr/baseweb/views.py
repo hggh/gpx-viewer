@@ -111,6 +111,13 @@ class GPXFileDetailView(UserPassesTestMixin, DetailView):
     model = GPXFile
 
     def test_func(self):
+        try:
+            self.get_object()
+        except Http404:
+            messages.add_message(self.request, messages.WARNING, "Track does not longer exists, upload a new...")
+
+            return redirect('/')
+
         if self.get_object().perm_public_available is False:
             if self.request.user and self.request.user.is_authenticated and self.get_object().user == self.request.user:
                 return True
@@ -118,16 +125,6 @@ class GPXFileDetailView(UserPassesTestMixin, DetailView):
                 return False
 
         return True
-
-    def get(self, request, *args, **kwargs):
-        try:
-            self.object = self.get_object()
-            context = self.get_context_data(object=self.object)
-            return self.render_to_response(context)
-        except Http404:
-            messages.add_message(self.request, messages.WARNING, "Track does not longer exists, upload a new...")
-
-            return redirect('/')
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
