@@ -37,7 +37,7 @@ export default  class TrackSplitGraph {
             DomUtil.get(this.tab_element_name).classList.remove("collapse");
             this.split_track_graph_legend.classList.remove("collapse");
             this.split_track_graph_legend_text.classList.remove("collapse");
-            document.getElementById('map').style.height = (this.map_height - 300) + "px";
+            document.getElementById('map').style.height = (this.map_height - 350) + "px";
 
             this.editing = true;
             this.graph();
