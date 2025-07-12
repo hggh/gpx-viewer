@@ -114,9 +114,7 @@ class GPXFileDetailView(UserPassesTestMixin, DetailView):
         try:
             self.get_object()
         except Http404:
-            messages.add_message(self.request, messages.WARNING, "Track does not longer exists, upload a new...")
-
-            return redirect('/')
+            return False
 
         if self.get_object().perm_public_available is False:
             if self.request.user and self.request.user.is_authenticated and self.get_object().user == self.request.user:
@@ -131,6 +129,13 @@ class GPXFileDetailView(UserPassesTestMixin, DetailView):
 
         context['waypoint_types'] = GPXWayPointType.objects.all()
         return context
+
+    def handle_no_permission(self):
+        try:
+            self.get_object()
+        except Http404:
+            messages.add_message(self.request, messages.WARNING, "Track does not longer exists, upload a new...")
+        return redirect('/')
 
 
 class GPXTrackDownloadView(UserPassesTestMixin, DetailView):
