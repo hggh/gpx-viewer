@@ -1,5 +1,8 @@
 # CHANGELOG
 
+### 27. August 2025
+  * add vending machines (pizza,drinks,sweets,tubes)
+
 ### 27. June 2025
   * better download of track with POIs
   * OSMand Icons

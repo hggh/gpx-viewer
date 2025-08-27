@@ -154,3 +154,20 @@
     marker_filename: marker_bakery.svg
     checked: false
     generate_track_to_waypoint: false
+- model: baseweb.GPXWayPointType
+  pk: 11
+  fields:
+    name: vending machine (drinks,pizza,water,sweets,tubes)
+    gpx_sym_name: Food Source
+    gpx_type_name: STORE
+    osm_name: amenity
+    osm_value: vending_machine
+    osmand_icon: shop_bakery
+    osm_query_type: "="
+    osm_extra_query: '["vending" ~ "drinks|food|pizza|sweets|water|bicycle_tube"]'
+    around: 1000
+    around_max: 5000
+    around_duplicate: 4000
+    marker_filename: marker_vending.svg
+    checked: false
+    generate_track_to_waypoint: false
