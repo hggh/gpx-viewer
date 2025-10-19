@@ -1,5 +1,9 @@
 # CHANGELOG
 
+### 19. October 2025
+  * Upgrade Django to 5.2.7
+  * Mark camp sites with tents=no as red
+
 ### 27. August 2025
   * add vending machines (pizza,drinks,sweets,tubes)
 
