@@ -60,13 +60,16 @@ class GPXTrackWayPoint(TimeStampedModel):
     def get_marker_css_name(self) -> str:
         if self.is_camping_site() is True and self.tags.get('permanent_camping', '') == 'only':
             return 'marker_camping_red'
-        if self.is_camping_site() is True and self.tags.get('group_only', '') == 'yes':
+        elif self.is_camping_site() is True and self.tags.get('group_only', '') == 'yes':
             return 'marker_camping_red'
-        if self.is_camping_site() is True and self.get_url():
+        elif self.is_camping_site() is True and self.tags.get('tents', '') == 'no':
+            return 'marker_camping_red'
+        elif self.is_camping_site() is True and self.get_url():
             return 'marker_camping_with_url'
-        if self.is_ebike_charging_station() is True and self.tags.get('access', '') == 'yes':
+        elif self.is_ebike_charging_station() is True and self.tags.get('access', '') == 'yes':
             return 'marker_ebike_charging_access_yes'
-        return 'marker_default'
+        else:
+            return 'marker_default'
 
     def get_tags(self) -> dict:
         tags = self.tags
