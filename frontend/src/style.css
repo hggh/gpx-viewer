@@ -22,6 +22,76 @@ html, body {
 .maker_edit_polyline {
     background-color: #0000ff;
 }
+.osm_feature_toilets {
+    background-image: url("images/features/toilets.svg");
+    height: 16px;
+    width: 16px;
+}
+.osm_feature_toilets_no {
+    background-image: url("images/features/toilets_no.svg");
+    height: 16px;
+    width: 16px;
+}
+.osm_feature_caravans {
+    background-image: url("images/features/caravans.svg");
+    height: 16px;
+    width: 16px;
+}
+.osm_feature_caravans_no {
+    background-image: url("images/features/caravans_no.svg");
+    height: 16px;
+    width: 16px;
+}
+.osm_feature_shower {
+    background-image: url("images/features/shower.svg");
+    height: 16px;
+    width: 16px;
+}
+.osm_feature_shower_no {
+    background-image: url("images/features/shower_no.svg");
+    height: 16px;
+    width: 16px;
+}
+.osm_feature_tents {
+    background-image: url("images/features/tents.svg");
+    height: 16px;
+    width: 16px;
+}
+.osm_feature_tents_no {
+    background-image: url("images/features/tents_no.svg");
+    height: 16px;
+    width: 16px;
+}
+.osm_feature_cabins {
+    background-image: url("images/features/cabins.svg");
+    height: 16px;
+    width: 16px;
+}
+.osm_feature_cabins_no {
+    background-image: url("images/features/cabins_no.svg");
+    height: 16px;
+    width: 16px;
+}
+.osm_feature_drinking_water {
+    background-image: url("images/features/drinking_water.svg");
+    height: 16px;
+    width: 16px;
+}
+.osm_feature_drinking_water_no {
+    background-image: url("images/features/drinking_water_no.svg");
+    height: 16px;
+    width: 16px;
+}
+.osm_feature_openfire {
+    background-image: url("images/features/openfire.svg");
+    height: 16px;
+    width: 16px;
+}
+.osm_feature_openfire_no {
+    background-image: url("images/features/openfire_no.svg");
+    height: 16px;
+    width: 16px;
+}
 .listening-rect {
     fill: transparent;
 }

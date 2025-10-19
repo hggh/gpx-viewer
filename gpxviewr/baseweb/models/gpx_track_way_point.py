@@ -71,6 +71,69 @@ class GPXTrackWayPoint(TimeStampedModel):
         else:
             return 'marker_default'
 
+    def has_feature_css_toilets(self):
+        if self.tags.get('toilets', None) is None:
+            return ''
+
+        if self.tags.get('toilets', None) == 'yes':
+            return 'osm_feature_toilets'
+
+        return 'osm_feature_toilets_no'
+
+    def has_feature_css_caravans(self):
+        if self.tags.get('caravans', None) is None:
+            return ''
+
+        if self.tags.get('caravans', None) == 'yes':
+            return 'osm_feature_caravans'
+
+        return 'osm_feature_caravans_no'
+
+    def has_feature_css_shower(self):
+        if self.tags.get('shower', None) is None:
+            return ''
+
+        if self.tags.get('shower', None) in ['yes', 'cold', 'hot']:
+            return 'osm_feature_shower'
+
+        return 'osm_feature_shower_no'
+
+    def has_feature_css_tents(self):
+        if self.tags.get('tents', None) is None:
+            return ''
+
+        if self.tags.get('tents', None) == 'yes':
+            return 'osm_feature_tents'
+
+        return 'osm_feature_tents_no'
+
+    def has_feature_css_cabins(self):
+        if self.tags.get('cabins', None) is None:
+            return ''
+
+        if self.tags.get('cabins', None) == 'yes':
+            return 'osm_feature_cabins'
+
+        return 'osm_feature_cabins_no'
+
+    def has_feature_css_drinking_water(self):
+        if self.tags.get('drinking_water', None) is None:
+            return ''
+
+        if self.tags.get('drinking_water', None) == 'yes':
+            return 'osm_feature_drinking_water'
+
+        return 'osm_feature_drinking_water_no'
+
+    def has_feature_css_openfire(self):
+        if self.tags.get('openfire', None) is None:
+            return ''
+
+        if self.tags.get('openfire', None) == 'yes':
+            return 'osm_feature_openfire'
+
+        return 'osm_feature_openfire_no'
+
     def get_tags(self) -> dict:
         tags = self.tags
         tags.pop('contact:website', None)
@@ -79,6 +142,14 @@ class GPXTrackWayPoint(TimeStampedModel):
         tags.pop('website', None)
         tags.pop('url', None)
         tags.pop('name', None)
+        tags.pop('toilets', None)
+        tags.pop('tourism', None)
+        tags.pop('caravans', None)
+        tags.pop('shower', None)
+        tags.pop('tents', None)
+        tags.pop('cabins', None)
+        tags.pop('drinking_water', None)
+        tags.pop('openfire', None)
 
         return tags
 

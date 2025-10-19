@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   version="1.1"
+   width="16"
+   height="16"
+   viewBox="0 0 16 16"
+   id="svg294"
+   sodipodi:docname="tents_no.svg"
+   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs298" />
+  <sodipodi:namedview
+     id="namedview296"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="14.75"
+     inkscape:cx="4.5084746"
+     inkscape:cy="8"
+     inkscape:window-width="1920"
+     inkscape:window-height="1131"
+     inkscape:window-x="0"
+     inkscape:window-y="32"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg294" />
+  <path
+     d="M 15,15 9.0000012,3.9999992 10.000001,1 H 9.0000012 l -1,1.9999995 L 7.0000002,1 h -1 l 1,2.9999992 -6,11.0000008 z M 8.0000012,7.9999992 11.000001,14.000001 H 5.0000002 Z"
+     style="fill:#0092da;fill-rule:evenodd"
+     id="path292" />
+  <path
+     id="rect5996"
+     style="fill:#ff0000;stroke-width:0.275906;stroke-linecap:square;paint-order:fill markers stroke"
+     d="M 14.488282,1.5e-7 9.9999999e-8,14.490235 V 16 H 1.4121101 L 16,1.4101563 V 1.5e-7 Z" />
+</svg>

@@ -43,6 +43,31 @@
     <br/>
     {% endif %}
 
+    <div class="d-flex gap-1" style="float:right">
+        {%if object.has_feature_css_toilets %}
+        <div class="{{object.has_feature_css_toilets}}"></div>
+        {% endif %}
+        {%if object.has_feature_css_caravans %}
+        <div class="{{object.has_feature_css_caravans}}"></div>
+        {% endif %}
+        {%if object.has_feature_css_shower %}
+        <div class="{{object.has_feature_css_shower}}"></div>
+        {% endif %}
+        {%if object.has_feature_css_tents %}
+        <div class="{{object.has_feature_css_tents}}"></div>
+        {% endif %}
+        {%if object.has_feature_css_cabins %}
+        <div class="{{object.has_feature_css_cabins}}"></div>
+        {% endif %}
+        {%if object.has_feature_css_drinking_water %}
+        <div class="{{object.has_feature_css_drinking_water}}"></div>
+        {% endif %}
+        {%if object.has_feature_css_openfire %}
+        <div class="{{object.has_feature_css_openfire}}"></div>
+        {% endif %}
+    </div>
+    <div style="clear:both"></div>
+
     {% for name, value in object.get_tags.items %}
     <b>{{name}}:</b> {{value}}<br/>
     {% endfor %}
