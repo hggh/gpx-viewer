@@ -62,6 +62,16 @@ html, body {
     height: 16px;
     width: 16px;
 }
+.osm_feature_fee {
+    background-image: url("images/features/fee.svg");
+    height: 16px;
+    width: 16px;
+}
+.osm_feature_fee_no {
+    background-image: url("images/features/fee_no.svg");
+    height: 16px;
+    width: 16px;
+}
 .osm_feature_cabins {
     background-image: url("images/features/cabins.svg");
     height: 16px;

@@ -134,6 +134,15 @@ class GPXTrackWayPoint(TimeStampedModel):
 
         return 'osm_feature_openfire_no'
 
+    def has_feature_css_fee(self):
+        if self.tags.get('fee', None) is None:
+            return ''
+
+        if self.tags.get('fee', None) == 'yes':
+            return 'osm_feature_fee'
+
+        return 'osm_feature_fee_no'
+
     def get_tags(self) -> dict:
         tags = self.tags
         tags.pop('contact:website', None)
@@ -150,6 +159,7 @@ class GPXTrackWayPoint(TimeStampedModel):
         tags.pop('cabins', None)
         tags.pop('drinking_water', None)
         tags.pop('openfire', None)
+        tags.pop('fee', None)
 
         return tags
 
