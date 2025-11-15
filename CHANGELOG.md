@@ -1,5 +1,8 @@
 # CHANGELOG
 
+### 15. November 2025
+  * Upgrae Django to 5.2.8
+
 ### 19. October 2025
   * Upgrade Django to 5.2.7
   * Mark camp sites with tents=no as red
