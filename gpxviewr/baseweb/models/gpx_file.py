@@ -221,7 +221,7 @@ class GPXFile(TimeStampedModel):
         track_points = pandas.DataFrame(points, columns=["lat", "lon"])
         track_latlong_flatten = ",".join(track_points.to_numpy().flatten().astype("str"))
 
-        api = overpy.Overpass()
+        api = overpy.Overpass(headers={'User-Agent': 'overpy/gpx-utils.de'})
         overpass_query = f"""
             [out:json][timeout: 500];
             (

@@ -7,7 +7,7 @@ requests
 phonenumbers
 
 gpxpy @ git+https://github.com/hggh/gpxpy.git@bugfix/hggh/url_link_escape_href
-overpy==0.7
+overpy @ git:https://github.com/Frankkkkk/python-overpy/tree/fvd-headers
 numpy
 pandas
 
